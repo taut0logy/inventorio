@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '@/../images/logo.png';
 import { Separator } from '@/components/ui/separator';
 import { Github, Twitter, Mail, Instagram } from 'lucide-react';
 

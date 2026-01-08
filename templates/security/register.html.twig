@@ -9,7 +9,38 @@
     loginPath: path('app_login'),
     googlePath: path('connect_google'),
     facebookPath: path('connect_facebook'),
-    errors: errors|default({})
+    errors: errors|default({}),
+    translations: {
+        create_account: 'auth.register.title'|trans,
+        start_desc: 'auth.start_desc'|trans,
+        full_name: 'auth.full_name'|trans,
+        email: 'auth.email'|trans,
+        password: 'auth.password'|trans,
+        confirm_password: 'auth.confirm_password'|trans,
+        i_agree: 'auth.i_agree'|trans,
+        terms: 'auth.terms'|trans,
+        privacy: 'auth.privacy'|trans,
+        create_account_btn: 'auth.register.submit'|trans,
+        or_continue: 'auth.or_continue'|trans,
+        already_account: 'auth.already_account'|trans,
+        sign_in_link: 'auth.sign_in_link'|trans,
+        email_required: 'val.email_required'|trans,
+        email_invalid: 'val.email_invalid'|trans,
+        password_required: 'val.password_required'|trans,
+        name_required: 'val.name_required'|trans,
+        name_min: 'val.name_min'|trans,
+        password_min: 'val.password_min'|trans,
+        password_lower: 'val.password_lower'|trans,
+        password_upper: 'val.password_upper'|trans,
+        password_number: 'val.password_number'|trans,
+        confirm_required: 'val.confirm_required'|trans,
+        password_mismatch: 'val.password_mismatch'|trans,
+        terms_required: 'val.terms_required'|trans,
+        pw_chars: 'pw.chars'|trans,
+        pw_lower: 'pw.lower'|trans,
+        pw_upper: 'pw.upper'|trans,
+        pw_number: 'pw.number'|trans
+    }
 }) }}>
     {# Fallback while loading #}
     <div class="flex items-center justify-center min-h-[60vh]">

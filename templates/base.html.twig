@@ -24,6 +24,15 @@
             } : null,
             locale: app.request.locale,
             theme: app.user ? app.user.theme : 'light',
+            translations: {
+                dashboard: 'nav.dashboard'|trans,
+                inventory: 'nav.inventory'|trans,
+                profile: 'nav.profile'|trans,
+                logout: 'nav.logout'|trans,
+                login: 'nav.login'|trans,
+                register: 'nav.register'|trans,
+                app_name: 'app_name'|trans
+            },
             homePath: path('app_home'),
             loginPath: path('app_login'),
             registerPath: path('app_register'),
@@ -54,7 +63,10 @@
 
         {# React Footer Component #}
         <div {{ react_component('Footer', {
-            locale: app.request.locale
+            locale: app.request.locale,
+            translations: {
+                app_name: 'app_name'|trans
+            }
         }) }}>
             {# Fallback footer #}
             <footer class="border-t py-6">

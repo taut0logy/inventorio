@@ -18,8 +18,8 @@ class ProfileFormType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'constraints' => [
-                    new NotBlank(['message' => 'Please enter your name']),
-                    new Length(['min' => 2, 'max' => 100]),
+                    new NotBlank(message: 'Please enter your name'),
+                    new Length(min: 2, max: 100),
                 ],
                 'attr' => ['class' => 'form-input'],
             ])

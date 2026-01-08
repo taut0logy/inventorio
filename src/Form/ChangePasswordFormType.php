@@ -18,9 +18,7 @@ class ChangePasswordFormType extends AbstractType
         $builder
             ->add('currentPassword', PasswordType::class, [
                 'constraints' => [
-                    new UserPassword([
-                        'message' => 'Your current password is invalid.',
-                    ]),
+                    new UserPassword(message: 'Your current password is invalid.'),
                 ],
                 'attr' => ['autocomplete' => 'current-password'],
             ])
@@ -29,17 +27,12 @@ class ChangePasswordFormType extends AbstractType
                 'first_options' => [
                     'attr' => ['autocomplete' => 'new-password'],
                     'constraints' => [
-                        new NotBlank([
-                            'message' => 'Please enter a password',
-                        ]),
-                        new Length([
-                            'min' => 8,
-                            'max' => 4096,
-                        ]),
-                        new Regex([
-                            'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
-                            'message' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-                        ]),
+                        new NotBlank(message: 'Please enter a password'),
+                        new Length(min: 8, max: 4096),
+                        new Regex(
+                            pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                            message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+                        ),
                     ],
                 ],
                 'second_options' => [

@@ -6,17 +6,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 
-export default function ForgotPasswordPage({ loginPath, csrfToken }) {
+export default function ForgotPasswordPage({ loginPath, csrfToken, translations = {} }) {
     const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
+
+    const t = (key, fallback) => translations[key] || fallback;
 
     const handleSubmit = async (e) => {
         // We let the form submit naturally to the backend controller
         setIsLoading(true);
         if (!email) {
             e.preventDefault();
-            setError('Please enter your email address.');
+            setError(t('error_email', 'Please enter your email address.'));
             setIsLoading(false);
         }
     };
@@ -25,9 +27,9 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
         <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12">
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold">Reset password</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{t('title', 'Reset password')}</CardTitle>
                     <CardDescription>
-                        Enter your email address and we'll send you a link to reset your password.
+                        {t('desc', "Enter your email address and we'll send you a link to reset your password.")}
                     </CardDescription>
                 </CardHeader>
                 <form method="post" onSubmit={handleSubmit}>
@@ -41,7 +43,7 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
                         )}
                         
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{t('email', 'Email')}</Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -57,12 +59,12 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
                     <CardFooter className="flex flex-col space-y-4">
                         <Button className="w-full" type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Send Reset Link
+                            {t('btn', 'Send Reset Link')}
                         </Button>
                         <Button variant="link" className="px-0 font-normal" asChild>
                             <a href={loginPath} className="flex items-center text-muted-foreground hover:text-primary">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to login
+                                {t('back', 'Back to login')}
                             </a>
                         </Button>
                     </CardFooter>

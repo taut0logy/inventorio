@@ -1,0 +1,103 @@
+# General
+app_name: ইনভেন্টোরিও
+action.save: পরিবর্তন সংরক্ষণ করুন
+action.update: হালনাগাদ
+action.cancel: বাতিল
+action.delete: মুছে ফেলুন
+action.edit: সম্পাদনা
+action.upload_avatar: ছবি পরিবর্তন করুন
+
+# Navigation
+nav.dashboard: ড্যাশবোর্ড
+nav.inventory: ইনভেন্টরি
+nav.profile: প্রোফাইল
+nav.logout: লগআউট
+nav.login: লগইন
+nav.register: নিবন্ধন
+
+# Profile
+profile.title: অ্যাকাউন্ট সেটিংস
+profile.tab.general: সাধারণ
+profile.tab.security: নিরাপত্তা
+profile.details.title: প্রোফাইল বিবরণ
+profile.details.description: আপনার প্রোফাইল এবং পছন্দসমূহ পরিচালনা করুন।
+profile.field.name: পূর্ণ নাম
+profile.field.email: ইমেল
+profile.field.email_help: ইমেল পরিবর্তন করা যাবে না।
+profile.field.theme: থিম
+profile.field.language: ভাষা
+profile.field.avatar_help: JPG, GIF বা PNG। সর্বোচ্চ 1MB।
+profile.flash.updated: প্রোফাইল সফলভাবে হালনাগাদ হয়েছে।
+
+# Password
+password.title: পাসওয়ার্ড পরিবর্তন
+password.description: আপনার অ্যাকাউন্ট সুরক্ষিত রাখতে পাসওয়ার্ড হালনাগাদ করুন।
+password.current: বর্তমান পাসওয়ার্ড
+password.new: নতুন পাসওয়ার্ড
+password.confirm: নতুন পাসওয়ার্ড নিশ্চিত করুন
+password.flash.updated: পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।
+password.error.mismatch: পাসওয়ার্ড ক্ষেত্রগুলি মিলতে হবে।
+
+# Auth
+auth.login.title: আপনার অ্যাকাউন্টে সাইন ইন করুন
+auth.register.title: একটি অ্যাকাউন্ট তৈরি করুন
+auth.register.submit: অ্যাকাউন্ট তৈরি করুন
+auth.welcome_back: পুনরাগমন স্বাগতম
+auth.sign_in_desc: আপনার অ্যাকাউন্টে সাইন ইন করুন
+auth.email: ইমেল
+auth.password: পাসওয়ার্ড
+auth.forgot_password: পাসওয়ার্ড ভুলে গেছেন?
+auth.remember_me: আমাকে মনে রাখুন
+auth.sign_in_btn: সাইন ইন
+auth.or_continue: অথবা চালিয়ে যান
+auth.no_account: কোন অ্যাকাউন্ট নেই?
+auth.sign_up_link: নিবন্ধন করুন
+auth.start_desc: শুরু করতে আপনার বিবরণ লিখুন
+auth.full_name: পূর্ণ নাম
+auth.confirm_password: পাসওয়ার্ড নিশ্চিত করুন
+auth.i_agree: আমি সম্মত
+auth.terms: পরিষেবার শর্তাবলী
+auth.privacy: গোপনীয়তা নীতি
+auth.already_account: ইতিমধ্যে একটি অ্যাকাউন্ট আছে?
+auth.sign_in_link: প্রবেশ করুন
+
+# Validation
+val.email_required: ইমেল প্রয়োজন
+val.email_invalid: একটি বৈধ ইমেল ঠিকানা লিখুন
+val.password_required: পাসওয়ার্ড প্রয়োজন
+val.name_required: নাম প্রয়োজন
+val.name_min: নাম অন্তত ২ অক্ষরের হতে হবে
+val.password_min: পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে
+val.password_lower: পাসওয়ার্ডে একটি ছোট হাতের অক্ষর থাকতে হবে
+val.password_upper: পাসওয়ার্ডে একটি বড় হাতের অক্ষর থাকতে হবে
+val.password_number: পাসওয়ার্ডে একটি সংখ্যা থাকতে হবে
+val.confirm_required: দয়া করে পাসওয়ার্ড নিশ্চিত করুন
+val.password_mismatch: পাসওয়ার্ড মিলছে না
+val.terms_required: আপনাকে শর্তাবলীতে সম্মত হতে হবে
+
+# Password Strength
+pw.chars: অন্তত ৮ অক্ষর
+pw.lower: একটি ছোট হাতের অক্ষর
+pw.upper: একটি বড় হাতের অক্ষর
+pw.number: একটি সংখ্যা
+
+# Reset Password Flow
+reset.forgot.title: পাসওয়ার্ড রিসেট করুন
+reset.forgot.desc: আপনার ইমেল ঠিকানা লিখুন এবং আমরা আপনার পাসওয়ার্ড রিসেট করার জন্য একটি লিঙ্ক পাঠাব।
+reset.forgot.btn: রিসেট লিঙ্ক পাঠান
+reset.forgot.back: লগইনে ফিরে যান
+reset.check.title: আপনার ইমেল চেক করুন
+reset.check.desc: আমরা আপনার ইমেল ঠিকানায় একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠিয়েছি।
+reset.check.spam: যদি আপনি কয়েক মিনিটের মধ্যে ইমেল না পান, তবে দয়া করে আপনার স্প্যাম ফোল্ডারটি চেক করুন।
+reset.check.expire: লিঙ্কটি ১ ঘণ্টার মধ্যে মেয়াদ শেষ হবে।
+reset.check.return: লগইনে ফিরে যান
+reset.new.title: নতুন পাসওয়ার্ড সেট করুন
+reset.new.desc: নিচে আপনার নতুন পাসওয়ার্ড লিখুন।
+reset.new.strength: শক্তি
+reset.new.weak: দুর্বল
+reset.new.medium: মাঝারি
+reset.new.strong: শক্তিশালী
+reset.new.process: প্রক্রিয়া করা হচ্ছে...
+reset.new.btn: পাসওয়ার্ড রিসেট করুন
+val.password_min_6: পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।
+val.email_enter: দয়া করে আপনার ইমেল ঠিকানা লিখুন।

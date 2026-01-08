@@ -4,7 +4,21 @@
 
 {% block body %}
 <div {{ react_component('ResetPasswordPage', {
-    loginPath: path('app_login')
+    loginPath: path('app_login'),
+    translations: {
+        title: 'reset.new.title'|trans,
+        desc: 'reset.new.desc'|trans,
+        new_password: 'password.new'|trans,
+        confirm_password: 'password.confirm'|trans,
+        strength: 'reset.new.strength'|trans,
+        weak: 'reset.new.weak'|trans,
+        medium: 'reset.new.medium'|trans,
+        strong: 'reset.new.strong'|trans,
+        process: 'reset.new.process'|trans,
+        btn: 'reset.new.btn'|trans,
+        min_length: 'val.password_min_6'|trans,
+        mismatch: 'password.error.mismatch'|trans
+    }
 }) }}>
     {# Fallback while loading #}
     <div class="flex items-center justify-center min-h-[60vh]">

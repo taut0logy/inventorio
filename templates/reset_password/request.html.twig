@@ -4,7 +4,15 @@
 
 {% block body %}
 <div {{ react_component('ForgotPasswordPage', {
-    loginPath: path('app_login')
+    loginPath: path('app_login'),
+    translations: {
+        title: 'reset.forgot.title'|trans,
+        desc: 'reset.forgot.desc'|trans,
+        email: 'auth.email'|trans,
+        btn: 'reset.forgot.btn'|trans,
+        back: 'reset.forgot.back'|trans,
+        error_email: 'val.email_enter'|trans
+    }
 }) }}>
     {# Fallback while loading #}
     <div class="flex items-center justify-center min-h-[60vh]">

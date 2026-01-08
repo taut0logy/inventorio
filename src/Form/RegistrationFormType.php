@@ -24,14 +24,12 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your name',
-                    ]),
-                    new Length([
-                        'min' => 2,
-                        'minMessage' => 'Your name should be at least {{ limit }} characters',
-                        'max' => 100,
-                    ]),
+                    new NotBlank(message: 'Please enter your name'),
+                    new Length(
+                        min: 2,
+                        minMessage: 'Your name should be at least {{ limit }} characters',
+                        max: 100
+                    ),
                 ],
                 'attr' => [
                     'placeholder' => 'Full Name',
@@ -40,12 +38,8 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your email',
-                    ]),
-                    new Email([
-                        'message' => 'Please enter a valid email address',
-                    ]),
+                    new NotBlank(message: 'Please enter your email'),
+                    new Email(message: 'Please enter a valid email address'),
                 ],
                 'attr' => [
                     'placeholder' => 'Email Address',
@@ -62,18 +56,16 @@ class RegistrationFormType extends AbstractType
                         'autocomplete' => 'new-password',
                     ],
                     'constraints' => [
-                        new NotBlank([
-                            'message' => 'Please enter a password',
-                        ]),
-                        new Length([
-                            'min' => 8,
-                            'minMessage' => 'Your password should be at least {{ limit }} characters',
-                            'max' => 4096,
-                        ]),
-                        new Regex([
-                            'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
-                            'message' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-                        ]),
+                        new NotBlank(message: 'Please enter a password'),
+                        new Length(
+                            min: 8,
+                            minMessage: 'Your password should be at least {{ limit }} characters',
+                            max: 4096
+                        ),
+                        new Regex(
+                            pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                            message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+                        ),
                     ],
                 ],
                 'second_options' => [
@@ -88,9 +80,7 @@ class RegistrationFormType extends AbstractType
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'constraints' => [
-                    new IsTrue([
-                        'message' => 'You must agree to the terms of service.',
-                    ]),
+                    new IsTrue(message: 'You must agree to the terms of service.'),
                 ],
                 'label' => 'I agree to the Terms of Service',
             ])

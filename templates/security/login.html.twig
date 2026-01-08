@@ -11,7 +11,22 @@
     registerPath: path('app_register'),
     forgotPasswordPath: path('app_forgot_password_request'),
     googlePath: path('connect_google'),
-    facebookPath: path('connect_facebook')
+    facebookPath: path('connect_facebook'),
+    translations: {
+        welcome_back: 'auth.welcome_back'|trans,
+        sign_in_desc: 'auth.sign_in_desc'|trans,
+        email: 'auth.email'|trans,
+        password: 'auth.password'|trans,
+        forgot_password: 'auth.forgot_password'|trans,
+        remember_me: 'auth.remember_me'|trans,
+        sign_in_btn: 'auth.sign_in_btn'|trans,
+        or_continue: 'auth.or_continue'|trans,
+        no_account: 'auth.no_account'|trans,
+        sign_up_link: 'auth.sign_up_link'|trans,
+        email_required: 'val.email_required'|trans,
+        email_invalid: 'val.email_invalid'|trans,
+        password_required: 'val.password_required'|trans
+    }
 }) }}>
     {# Fallback while loading #}
     <div class="flex items-center justify-center min-h-[60vh]">

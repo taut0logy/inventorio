@@ -5,7 +5,14 @@
 {% block body %}
 <div {{ react_component('CheckEmailPage', {
     loginPath: path('app_login'),
-    resetToken: resetToken
+    resetToken: resetToken,
+    translations: {
+        title: 'reset.check.title'|trans,
+        desc: 'reset.check.desc'|trans,
+        spam: 'reset.check.spam'|trans,
+        expire: 'reset.check.expire'|trans,
+        return: 'reset.check.return'|trans
+    }
 }) }}>
     {# Fallback while loading #}
     <div class="flex items-center justify-center min-h-[60vh]">
