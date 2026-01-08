@@ -21,6 +21,42 @@ nav.logout: লগআউট
 nav.login: লগইন
 nav.register: নিবন্ধন
 
+# Home
+home.hero.title: আপনার ইনভেন্টরি পরিচালনা করুন
+home.hero.subtitle: নমনীয় ফিল্ড, অনন্য আইডি ফরম্যাট এবং শক্তিশালী সাংগঠনিক সরঞ্জাম দিয়ে কাস্টম ইনভেন্টরি তৈরি করুন।
+home.hero.create: ইনভেন্টরি তৈরি করুন
+home.hero.my_inventories: আমার ইনভেন্টরি
+home.latest.title: সর্বশেষ ইনভেন্টরি
+home.popular.title: সেরা ৫ জনপ্রিয়
+home.categories.title: ক্যাটাগরি
+home.browse_tags: ট্যাগ দ্বারা ব্রাউজ করুন
+home.no_inventories: এখনো কোন ইনভেন্টরি নেই। প্রথমটি তৈরি করুন!
+home.no_popular: কোন জনপ্রিয় ইনভেন্টরি নেই।
+home.no_tags: কোন ট্যাগ নেই।
+home.view_all: সব দেখুন
+
+# Common
+table.title: শিরোনাম
+table.category: ক্যাটাগরি
+table.items: আইটেম
+table.created: তৈরি
+table.views: দেখা
+table.actions: অ্যাকশন
+
+# Inventory
+inventory.add_item: আইটেম যোগ করুন
+inventory.activity: কার্যকলাপ
+inventory.comments: আলোচনা
+inventory.empty_title: কোন আইটেম নেই
+inventory.empty_description: এই ইনভেন্টরিতে আপনার প্রথম আইটেম যোগ করে শুরু করুন।
+inventory.create_title: নতুন ইনভেন্টরি তৈরি করুন
+inventory.create_desc: একটি নতুন ইনভেন্টরি স্পেস তৈরি করতে নিচের বিবরণ পূরণ করুন।
+inventory.form.title: শিরোনাম
+inventory.form.category: ক্যাটাগরি
+inventory.form.public: পাবলিক ইনভেন্টরি
+inventory.form.submit: তৈরি করুন
+inventory.form.cancel: বাতিল
+
 # Profile
 profile.title: অ্যাকাউন্ট সেটিংস
 profile.tab.general: সাধারণ

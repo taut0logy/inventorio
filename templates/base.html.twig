@@ -31,7 +31,7 @@
             logoutPath: path('app_logout'),
             profilePath: path('app_profile'),
             adminPath: '#',
-            myInventoriesPath: '#',
+            myInventoriesPath: app.user ? path('app_inventory_index') : '#',
             searchPath: '#'
         }) }}>
             <script>

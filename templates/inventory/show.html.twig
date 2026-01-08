@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ inventory.title }} - Inventorio{% endblock %}
+
+{% block body %}
+    <div {{ react_component('InventoryShowPage', {
+        inventory: {
+            id: inventory.id ~ '',
+            title: inventory.title,
+            description: inventory.description,
+            isPublic: inventory.isPublic,
+            imageUrl: inventory.imageUrl,
+            category: {
+                name: inventory.category.name,
+                icon: inventory.category.iconUrl
+            }
+        },
+        currentUser: app.user ? {
+            id: app.user.id ~ '',
+            name: app.user.name
+        } : null,
+        isCreator: isCreator,
+        items: inventory.items|map(item => {
+            id: item.id ~ '',
+            customId: item.customId,
+            customString1Value: item.customString1Value,
+            customNumber1Value: item.customNumber1Value,
+            customText1Value: item.customText1Value
+        })
+    }) }}></div>
+{% endblock %}

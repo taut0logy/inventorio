@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Inventories - Inventorio{% endblock %}
+
+{% block body %}
+    <div {{ react_component('MyInventoriesPage', {
+        inventories: inventories|map(i => {
+            id: i.id ~ '',
+            title: i.title,
+            category: i.category.name,
+            itemCount: i.items|length,
+            isPublic: i.isPublic,
+            createdAt: i.createdAt|date('M d, Y')
+        }),
+        categories: categories|map(c => {
+            id: c.id ~ '',
+            name: c.name,
+            icon: c.iconUrl
+        }),
+        showEndpoint: path('app_inventory_show', {id: '__id__' })
+    }) }}></div>
+{% endblock %}

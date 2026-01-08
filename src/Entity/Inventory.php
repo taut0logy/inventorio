@@ -24,31 +24,26 @@ class Inventory
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isPublic = false;
+
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $imageUrl = null;
 
-    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'inventories')]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Version]
+    private int $version = 1;
+
+    #[ORM\ManyToOne(inversedBy: 'inventories')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $creator = null;
 
-    #[ORM\Column(options: ['default' => true])]
-    private bool $isPublic = true;
-
-    #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $customIdFormat = null;
-
-    #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $customFieldsConfig = null;
-
-    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
-    private int $version = 1;
-
-    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
-    private int $viewCount = 0;
+    #[ORM\OneToMany(targetEntity: Item::class, mappedBy: 'inventory')]
+    private Collection $items;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
@@ -59,18 +54,10 @@ class Inventory
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
 
-    #[ORM\OneToMany(targetEntity: Item::class, mappedBy: 'inventory', orphanRemoval: true)]
-    private Collection $items;
-
-    #[ORM\ManyToMany(targetEntity: Tag::class)]
-    #[ORM\JoinTable(name: 'inventory_tags')]
-    private Collection $tags;
-
     public function __construct()
     {
         $this->id = Uuid::v7();
         $this->items = new ArrayCollection();
-        $this->tags = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -113,6 +100,17 @@ class Inventory
         return $this;
     }
 
+    public function isPublic(): bool
+    {
+        return $this->isPublic;
+    }
+
+    public function setPublic(bool $isPublic): static
+    {
+        $this->isPublic = $isPublic;
+        return $this;
+    }
+
     public function getImageUrl(): ?string
     {
         return $this->imageUrl;
@@ -122,6 +120,11 @@ class Inventory
     {
         $this->imageUrl = $imageUrl;
         return $this;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
     }
 
     public function getCategory(): ?Category
@@ -146,58 +149,31 @@ class Inventory
         return $this;
     }
 
-    public function isPublic(): bool
+    /**
+     * @return Collection<int, Item>
+     */
+    public function getItems(): Collection
     {
-        return $this->isPublic;
+        return $this->items;
     }
 
-    public function setPublic(bool $isPublic): static
+    public function addItem(Item $item): static
     {
-        $this->isPublic = $isPublic;
+        if (!$this->items->contains($item)) {
+            $this->items->add($item);
+            $item->setInventory($this);
+        }
         return $this;
     }
 
-    public function getCustomIdFormat(): ?array
+    public function removeItem(Item $item): static
     {
-        return $this->customIdFormat;
-    }
-
-    public function setCustomIdFormat(?array $customIdFormat): static
-    {
-        $this->customIdFormat = $customIdFormat;
-        return $this;
-    }
-
-    public function getCustomFieldsConfig(): ?array
-    {
-        return $this->customFieldsConfig;
-    }
-
-    public function setCustomFieldsConfig(?array $customFieldsConfig): static
-    {
-        $this->customFieldsConfig = $customFieldsConfig;
-        return $this;
-    }
-
-    public function getVersion(): int
-    {
-        return $this->version;
-    }
-
-    public function incrementVersion(): static
-    {
-        $this->version++;
-        return $this;
-    }
-
-    public function getViewCount(): int
-    {
-        return $this->viewCount;
-    }
-
-    public function incrementViewCount(): static
-    {
-        $this->viewCount++;
+        if ($this->items->removeElement($item)) {
+            // set the owning side to null (unless already changed)
+            if ($item->getInventory() === $this) {
+                $item->setInventory(null);
+            }
+        }
         return $this;
     }
 
@@ -220,76 +196,5 @@ class Inventory
     {
         $this->deletedAt = $deletedAt;
         return $this;
-    }
-
-    public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
-    }
-
-    public function softDelete(): static
-    {
-        $this->deletedAt = new \DateTime();
-        return $this;
-    }
-
-    public function restore(): static
-    {
-        $this->deletedAt = null;
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Item>
-     */
-    public function getItems(): Collection
-    {
-        return $this->items;
-    }
-
-    public function addItem(Item $item): static
-    {
-        if (!$this->items->contains($item)) {
-            $this->items->add($item);
-            $item->setInventory($this);
-        }
-        return $this;
-    }
-
-    public function removeItem(Item $item): static
-    {
-        if ($this->items->removeElement($item)) {
-            if ($item->getInventory() === $this) {
-                $item->setInventory(null);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Tag>
-     */
-    public function getTags(): Collection
-    {
-        return $this->tags;
-    }
-
-    public function addTag(Tag $tag): static
-    {
-        if (!$this->tags->contains($tag)) {
-            $this->tags->add($tag);
-        }
-        return $this;
-    }
-
-    public function removeTag(Tag $tag): static
-    {
-        $this->tags->removeElement($tag);
-        return $this;
-    }
-
-    public function getItemCount(): int
-    {
-        return $this->items->count();
     }
 }

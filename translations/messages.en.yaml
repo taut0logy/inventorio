@@ -21,6 +21,42 @@ nav.logout: Logout
 nav.login: Login
 nav.register: Register
 
+# Home
+home.hero.title: Manage Your Inventory
+home.hero.subtitle: Create custom inventories with flexible fields, unique ID formats, and powerful organization tools.
+home.hero.create: Create Inventory
+home.hero.my_inventories: My Inventories
+home.latest.title: Latest Inventories
+home.popular.title: Top 5 Popular
+home.categories.title: Categories
+home.browse_tags: Browse by Tags
+home.no_inventories: No inventories yet. Be the first to create one!
+home.no_popular: No popular inventories yet.
+home.no_tags: No tags available.
+home.view_all: View All
+
+# Common
+table.title: Title
+table.category: Category
+table.items: Items
+table.created: Created
+table.views: Views
+table.actions: Actions
+
+# Inventory
+inventory.add_item: Add Item
+inventory.activity: Activity
+inventory.comments: Discussion
+inventory.empty_title: No items yet
+inventory.empty_description: Start by adding your first item to this inventory.
+inventory.create_title: Create New Inventory
+inventory.create_desc: Fill in the details below to create a new inventory space.
+inventory.form.title: Title
+inventory.form.category: Category
+inventory.form.public: Public Inventory
+inventory.form.submit: Create Inventory
+inventory.form.cancel: Cancel
+
 # Profile
 profile.title: Account Settings
 profile.tab.general: General

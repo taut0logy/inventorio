@@ -33,6 +33,7 @@ class AppFixtures extends Fixture
             $category->setIconUrl($categoryData['icon']);
             $manager->persist($category);
         }
+        $manager->flush();
 
         // Create predefined tags
         $tags = [
@@ -58,6 +59,46 @@ class AppFixtures extends Fixture
             $tag->setName($tagName);
             $tag->setPredefined(true);
             $manager->persist($tag);
+        }
+
+        // Create Users
+        $admin = new \App\Entity\User();
+        $admin->setEmail('admin@example.com');
+        $admin->setName('Admin User');
+        $admin->setPassword('$2y$13$XyQk.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'); // bcrypt hash for 'password'
+        $admin->setRoles(['ROLE_ADMIN']);
+        $admin->setEmailVerified(true);
+        $manager->persist($admin);
+
+        $user = new \App\Entity\User();
+        $user->setEmail('user@example.com');
+        $user->setName('John Doe');
+        $user->setPassword('$2y$13$XyQk.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'); // bcrypt hash for 'password'
+        $user->setEmailVerified(true);
+        $manager->persist($user);
+
+        $manager->flush(); // Flush users to get IDs
+
+        // Create Inventories
+        $inventoryTitles = [
+            'Main Warehouse', 'Office Storage', 'Garage Tools', 'Home Library',
+            'Kitchen Pantry', 'Vehicle Fleet', 'Project Alpha', 'Backup Supplies'
+        ];
+
+        foreach ($inventoryTitles as $i => $title) {
+            $inventory = new \App\Entity\Inventory();
+            $inventory->setTitle($title);
+            $inventory->setDescription("Description for $title. This simulates a Markdown *description*.");
+            $inventory->setPublic($i % 2 === 0);
+            $inventory->setCategory($manager->getRepository(Category::class)->findOneBy(['name' => 'Other'])); // Fallback
+            
+            // Assign random category
+            // We can't easily get random category without querying all, so let's just pick one we created
+            // Effectively we just use one for now or loop
+            
+            $inventory->setCreator($i % 3 === 0 ? $admin : $user);
+            
+            $manager->persist($inventory);
         }
 
         $manager->flush();
