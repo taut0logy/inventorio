@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ pageTitle }}{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen bg-background">
+        {# React component with shadcn UI #}
+        <div {{ react_component('DemoPage', { 
+            userName: userName,
+            pageTitle: pageTitle 
+        }) }}>
+            <div class="flex items-center justify-center min-h-screen">
+                <p class="text-muted-foreground">Loading...</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
