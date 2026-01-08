@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profile - Inventorio{% endblock %}
+
+{% block body %}
+<div {{ react_component('ProfilePage', {
+    user: {
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        theme: user.theme,
+        locale: user.locale
+    },
+    updateProfilePath: path('app_profile_update'),
+    changePasswordPath: path('app_profile_change_password'),
+    csrfToken: csrf_token('profile_form'),
+    passwordCsrfToken: csrf_token('change_password_form'),
+    profileErrors: profile_errors|default({}),
+    passwordErrors: password_errors|default({}),
+    activeTab: active_tab|default('general'),
+    hasPassword: user.password is not null
+}) }}></div>
+{% endblock %}

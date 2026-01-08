@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login - Inventorio{% endblock %}
+
+{% block body %}
+<div {{ react_component('LoginPage', {
+    lastUsername: last_username|default(''),
+    error: error ? error.messageKey|trans(error.messageData, 'security') : null,
+    csrfToken: csrf_token('authenticate'),
+    loginPath: path('app_login'),
+    registerPath: path('app_register'),
+    forgotPasswordPath: path('app_forgot_password_request'),
+    googlePath: path('connect_google'),
+    facebookPath: path('connect_facebook')
+}) }}>
+    {# Fallback while loading #}
+    <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="animate-pulse text-muted-foreground">Loading...</div>
+    </div>
+</div>
+{% endblock %}

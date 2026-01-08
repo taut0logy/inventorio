@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register - Inventorio{% endblock %}
+
+{% block body %}
+<div {{ react_component('RegisterPage', {
+    csrfToken: csrf_token('registration_form'),
+    registerPath: path('app_register'),
+    loginPath: path('app_login'),
+    googlePath: path('connect_google'),
+    facebookPath: path('connect_facebook'),
+    errors: errors|default({})
+}) }}>
+    {# Fallback while loading #}
+    <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="animate-pulse text-muted-foreground">Loading...</div>
+    </div>
+</div>
+{% endblock %}

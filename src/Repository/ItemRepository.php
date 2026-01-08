@@ -1,0 +1,119 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\Item;
+use App\Entity\Inventory;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+/**
+ * @extends ServiceEntityRepository<Item>
+ */
+class ItemRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Item::class);
+    }
+
+    /**
+     * Find items by inventory (non-deleted)
+     */
+    public function findByInventory(Inventory $inventory): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.inventory = :inventory')
+            ->andWhere('i.deletedAt IS NULL')
+            ->setParameter('inventory', $inventory)
+            ->orderBy('i.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find all items including soft-deleted (for admin)
+     */
+    public function findByInventoryIncludeDeleted(Inventory $inventory): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.inventory = :inventory')
+            ->setParameter('inventory', $inventory)
+            ->orderBy('i.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Get next sequence number for inventory
+     */
+    public function getNextSequenceNumber(Inventory $inventory): int
+    {
+        $result = $this->createQueryBuilder('i')
+            ->select('MAX(i.sequenceNumber)')
+            ->andWhere('i.inventory = :inventory')
+            ->setParameter('inventory', $inventory)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return ($result ?? 0) + 1;
+    }
+
+    /**
+     * Check if custom_id exists in inventory
+     */
+    public function customIdExists(Inventory $inventory, string $customId, ?string $excludeItemId = null): bool
+    {
+        $qb = $this->createQueryBuilder('i')
+            ->select('COUNT(i.id)')
+            ->andWhere('i.inventory = :inventory')
+            ->andWhere('i.customId = :customId')
+            ->setParameter('inventory', $inventory)
+            ->setParameter('customId', $customId);
+
+        if ($excludeItemId) {
+            $qb->andWhere('i.id != :excludeId')
+               ->setParameter('excludeId', $excludeItemId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    /**
+     * Update with optimistic lock check
+     */
+    public function updateWithLock(Item $item, int $expectedVersion): bool
+    {
+        $affected = $this->createQueryBuilder('i')
+            ->update()
+            ->set('i.version', 'i.version + 1')
+            ->set('i.updatedAt', ':now')
+            ->where('i.id = :id')
+            ->andWhere('i.version = :version')
+            ->setParameter('id', $item->getId())
+            ->setParameter('version', $expectedVersion)
+            ->setParameter('now', new \DateTime())
+            ->getQuery()
+            ->execute();
+
+        return $affected > 0;
+    }
+
+    public function save(Item $item, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($item);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(Item $item, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($item);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+}

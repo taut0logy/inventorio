@@ -645,7 +645,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         }>,
  *     },
  *     uid?: bool|array{ // Uid configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         default_uuid_version?: 7|6|4|1|Param, // Default: 7
  *         name_based_uuid_version?: 5|3|Param, // Default: 5
  *         name_based_uuid_namespace?: scalar|null|Param,
@@ -1525,6 +1525,78 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     controllers_path?: scalar|null|Param, // The path to the directory where React controller components are stored - relevant only when using symfony/asset-mapper. // Default: "%kernel.project_dir%/assets/react/controllers"
  *     name_glob?: list<scalar|null|Param>,
  * }
+ * @psalm-type KnpuOauth2ClientConfig = array{
+ *     http_client?: scalar|null|Param, // Service id of HTTP client to use (must implement GuzzleHttp\ClientInterface) // Default: null
+ *     http_client_options?: array{
+ *         timeout?: int|Param,
+ *         proxy?: scalar|null|Param,
+ *         verify?: bool|Param, // Use only with proxy option set
+ *     },
+ *     clients?: array<string, array<string, mixed>>,
+ * }
+ * @psalm-type SymfonycastsResetPasswordConfig = array{
+ *     request_password_repository: scalar|null|Param, // A class that implements ResetPasswordRequestRepositoryInterface - usually your ResetPasswordRequestRepository.
+ *     lifetime?: int|Param, // The length of time in seconds that a password reset request is valid for after it is created. // Default: 3600
+ *     throttle_limit?: int|Param, // Another password reset cannot be made faster than this throttle time in seconds. // Default: 3600
+ *     enable_garbage_collection?: bool|Param, // Enable/Disable automatic garbage collection. // Default: true
+ * }
+ * @psalm-type SymfonycastsVerifyEmailConfig = array{
+ *     lifetime?: int|Param, // The length of time in seconds that a signed URI is valid for after it is created. // Default: 3600
+ * }
+ * @psalm-type StofDoctrineExtensionsConfig = array{
+ *     orm?: array<string, array{ // Default: []
+ *         translatable?: scalar|null|Param, // Default: false
+ *         timestampable?: scalar|null|Param, // Default: false
+ *         blameable?: scalar|null|Param, // Default: false
+ *         sluggable?: scalar|null|Param, // Default: false
+ *         tree?: scalar|null|Param, // Default: false
+ *         loggable?: scalar|null|Param, // Default: false
+ *         ip_traceable?: scalar|null|Param, // Default: false
+ *         sortable?: scalar|null|Param, // Default: false
+ *         softdeleteable?: scalar|null|Param, // Default: false
+ *         uploadable?: scalar|null|Param, // Default: false
+ *         reference_integrity?: scalar|null|Param, // Default: false
+ *     }>,
+ *     mongodb?: array<string, array{ // Default: []
+ *         translatable?: scalar|null|Param, // Default: false
+ *         timestampable?: scalar|null|Param, // Default: false
+ *         blameable?: scalar|null|Param, // Default: false
+ *         sluggable?: scalar|null|Param, // Default: false
+ *         tree?: scalar|null|Param, // Default: false
+ *         loggable?: scalar|null|Param, // Default: false
+ *         ip_traceable?: scalar|null|Param, // Default: false
+ *         sortable?: scalar|null|Param, // Default: false
+ *         softdeleteable?: scalar|null|Param, // Default: false
+ *         uploadable?: scalar|null|Param, // Default: false
+ *         reference_integrity?: scalar|null|Param, // Default: false
+ *     }>,
+ *     class?: array{
+ *         translatable?: scalar|null|Param, // Default: "Gedmo\\Translatable\\TranslatableListener"
+ *         timestampable?: scalar|null|Param, // Default: "Gedmo\\Timestampable\\TimestampableListener"
+ *         blameable?: scalar|null|Param, // Default: "Gedmo\\Blameable\\BlameableListener"
+ *         sluggable?: scalar|null|Param, // Default: "Gedmo\\Sluggable\\SluggableListener"
+ *         tree?: scalar|null|Param, // Default: "Gedmo\\Tree\\TreeListener"
+ *         loggable?: scalar|null|Param, // Default: "Gedmo\\Loggable\\LoggableListener"
+ *         sortable?: scalar|null|Param, // Default: "Gedmo\\Sortable\\SortableListener"
+ *         softdeleteable?: scalar|null|Param, // Default: "Gedmo\\SoftDeleteable\\SoftDeleteableListener"
+ *         uploadable?: scalar|null|Param, // Default: "Gedmo\\Uploadable\\UploadableListener"
+ *         reference_integrity?: scalar|null|Param, // Default: "Gedmo\\ReferenceIntegrity\\ReferenceIntegrityListener"
+ *     },
+ *     softdeleteable?: array{
+ *         handle_post_flush_event?: bool|Param, // Default: false
+ *     },
+ *     uploadable?: array{
+ *         default_file_path?: scalar|null|Param, // Default: null
+ *         mime_type_guesser_class?: scalar|null|Param, // Default: "Stof\\DoctrineExtensionsBundle\\Uploadable\\MimeTypeGuesserAdapter"
+ *         default_file_info_class?: scalar|null|Param, // Default: "Stof\\DoctrineExtensionsBundle\\Uploadable\\UploadedFileInfo"
+ *         validate_writable_directory?: bool|Param, // Default: true
+ *     },
+ *     default_locale?: scalar|null|Param, // Default: "en"
+ *     translation_fallback?: bool|Param, // Default: false
+ *     persist_default_translation?: bool|Param, // Default: false
+ *     skip_translation_on_load?: bool|Param, // Default: false
+ *     metadata_cache_pool?: scalar|null|Param, // Default: null
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1540,6 +1612,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     monolog?: MonologConfig,
  *     webpack_encore?: WebpackEncoreConfig,
  *     react?: ReactConfig,
+ *     knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *     symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
+ *     symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
+ *     stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1558,6 +1634,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         maker?: MakerConfig,
  *         webpack_encore?: WebpackEncoreConfig,
  *         react?: ReactConfig,
+ *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
+ *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
+ *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1574,6 +1654,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         monolog?: MonologConfig,
  *         webpack_encore?: WebpackEncoreConfig,
  *         react?: ReactConfig,
+ *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
+ *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
+ *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1591,6 +1675,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         monolog?: MonologConfig,
  *         webpack_encore?: WebpackEncoreConfig,
  *         react?: ReactConfig,
+ *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
+ *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
+ *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

@@ -5,35 +5,67 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
+            
+            # Form login
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: app_home
+                enable_csrf: true
+            
+            # Logout
+            logout:
+                path: app_logout
+                target: app_home
+            
+            # Remember me
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 week
+                path: /
+            
+            # OAuth Authenticators
+            custom_authenticators:
+                - App\Security\GoogleAuthenticator
+                - App\Security\FacebookAuthenticator
+            entry_point: form_login
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-
-    # Note: Only the *first* matching rule is applied
+    # Access Control
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/inventories/\w+/items$, methods: [POST], roles: ROLE_USER }
+        # Public routes (no auth required)
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth, roles: PUBLIC_ACCESS }
+        - { path: ^/api/inventories, methods: [GET], roles: PUBLIC_ACCESS }
+        - { path: ^/api/search, roles: PUBLIC_ACCESS }
+        - { path: ^/connect, roles: PUBLIC_ACCESS }
 
 when@test:
     security:
         password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

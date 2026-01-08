@@ -1,18 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app.request.locale }}" class="{{ app.user ? app.user.theme : 'light' }}">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Inventorio{% endblock %}</title>
+        <link rel="icon" href="{{ asset('build/images/logo.png') }}">
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
-
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body class="min-h-screen bg-background text-foreground flex flex-col">
+        {# React Header Component #}
+        <div {{ react_component('Header', {
+            user: app.user ? {
+                id: app.user.id ~ '',
+                name: app.user.name,
+                email: app.user.email,
+                avatarUrl: app.user.avatarUrl,
+                roles: app.user.roles
+            } : null,
+            locale: app.request.locale,
+            theme: app.user ? app.user.theme : 'light',
+            homePath: path('app_home'),
+            loginPath: path('app_login'),
+            registerPath: path('app_register'),
+            logoutPath: path('app_logout'),
+            profilePath: path('app_profile'),
+            adminPath: '#',
+            myInventoriesPath: '#',
+            searchPath: '#'
+        }) }}>
+            {# Fallback header #}
+            <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur h-14">
+                <div class="container mx-auto flex h-14 items-center px-4">
+                    <a href="{{ path('app_home') }}" class="flex items-center space-x-2">
+                        <img src="{{ asset('build/images/logo.png') }}" alt="Inventorio" class="h-8 w-8">
+                        <span class="font-bold">Inventorio</span>
+                    </a>
+                </div>
+            </header>
+        </div>
+
+        {# React Flash Messages & Toaster #}
+        <div {{ react_component('FlashHandler', { messages: app.flashes }) }}></div>
+
+        {# Main Content #}
+        <main class="flex-1">
+            {% block body %}{% endblock %}
+        </main>
+
+        {# React Footer Component #}
+        <div {{ react_component('Footer', {
+            locale: app.request.locale
+        }) }}>
+            {# Fallback footer #}
+            <footer class="border-t py-6">
+                <div class="container mx-auto text-center text-sm text-muted-foreground px-4">
+                    Built with Symfony + React + shadcn/ui
+                </div>
+            </footer>
+        </div>
     </body>
 </html>

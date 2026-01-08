@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Home - Inventorio{% endblock %}
+
+{% block body %}
+<div {{ react_component('HomePage', {
+    user: app.user ? {
+        id: app.user.id ~ '',
+        name: app.user.name,
+        email: app.user.email,
+        avatarUrl: app.user.avatarUrl,
+        roles: app.user.roles
+    } : null,
+    categories: categories|map(c => {
+        id: c.id ~ '',
+        name: c.name,
+        icon: c.iconUrl
+    }),
+    tags: tags|map(t => {
+        id: t.id ~ '',
+        name: t.name
+    }),
+    latestInventories: latestInventories|map(i => {
+        id: i.id ~ '',
+        title: i.title,
+        category: i.category.name,
+        itemCount: i.items|length,
+        createdAt: i.createdAt|date('M d, Y')
+    }),
+    popularInventories: popularInventories|map(i => {
+        id: i.id ~ '',
+        title: i.title,
+        viewCount: i.viewCount
+    }),
+    homePath: path('app_home'),
+    loginPath: path('app_login'),
+    registerPath: path('app_register')
+}) }}>
+    {# Fallback while loading #}
+    <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="animate-pulse text-muted-foreground">Loading...</div>
+    </div>
+</div>
+{% endblock %}

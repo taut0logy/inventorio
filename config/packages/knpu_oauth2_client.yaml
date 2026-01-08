@@ -1,0 +1,20 @@
+knpu_oauth2_client:
+    clients:
+        # Google OAuth2 client
+        google:
+            type: google
+            client_id: '%env(GOOGLE_CLIENT_ID)%'
+            client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
+            redirect_route: connect_google_check
+            redirect_params: {}
+            # access_type: offline # Optional: if you need refresh tokens
+            # prompt: consent      # Optional: force consent screen
+
+        # Facebook OAuth2 client
+        facebook:
+            type: facebook
+            client_id: '%env(FACEBOOK_CLIENT_ID)%'
+            client_secret: '%env(FACEBOOK_CLIENT_SECRET)%'
+            redirect_route: connect_facebook_check
+            redirect_params: {}
+            graph_api_version: v18.0
