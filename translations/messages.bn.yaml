@@ -9,6 +9,12 @@ action.upload_avatar: ছবি পরিবর্তন করুন
 
 # Navigation
 nav.dashboard: ড্যাশবোর্ড
+nav.home: হোম
+nav.settings: সেটিংস
+nav.admin: অ্যাডমিন প্যানেল
+nav.search: ইনভেন্টরি অনুসন্ধান...
+nav.dark_mode: ডার্ক মোড
+nav.language: ভাষা
 nav.inventory: ইনভেন্টরি
 nav.profile: প্রোফাইল
 nav.logout: লগআউট
@@ -101,3 +107,20 @@ reset.new.process: প্রক্রিয়া করা হচ্ছে...
 reset.new.btn: পাসওয়ার্ড রিসেট করুন
 val.password_min_6: পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।
 val.email_enter: দয়া করে আপনার ইমেল ঠিকানা লিখুন।
+
+# Footer
+footer.tagline: সবার জন্য স্মার্ট ইনভেন্টরি ম্যানেজমেন্ট।
+footer.product: পণ্য
+footer.features: বৈশিষ্ট্য
+footer.pricing: মূল্য
+footer.docs: ডকুমেন্টেশন
+footer.company: কোম্পানি
+footer.about: সম্পর্কে
+footer.blog: ব্লগ
+footer.careers: চাকরি
+footer.legal: আইনি
+footer.privacy: গোপনীয়তা নীতি
+footer.terms: পরিষেবার শর্তাবলী
+footer.rights: সর্বস্বত্ব সংরক্ষিত।
+footer.built_with: Symfony + React + shadcn/ui দিয়ে তৈরি
+footer.contact: যোগাযোগ

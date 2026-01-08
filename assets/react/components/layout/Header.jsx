@@ -29,6 +29,8 @@ import {
     Shield
 } from 'lucide-react';
 
+import { t } from '@/lib/i18n';
+
 export default function Header({ 
     user, 
     locale = 'en',
@@ -40,14 +42,11 @@ export default function Header({
     profilePath = '/profile',
     adminPath = '/admin',
     myInventoriesPath = '/my-inventories',
-    searchPath = '/search',
-    translations = {}
+    searchPath = '/search'
 }) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [currentTheme, setCurrentTheme] = useState(theme);
     const [currentLocale, setCurrentLocale] = useState(locale);
-
-    const t = (key, fallback) => translations[key] || fallback;
 
     const isLoggedIn = !!user;
     const isAdmin = user?.roles?.includes('ROLE_ADMIN');
@@ -61,9 +60,8 @@ export default function Header({
 
     const toggleLocale = () => {
         const newLocale = currentLocale === 'en' ? 'bn' : 'en';
-        setCurrentLocale(newLocale);
-        // TODO: Redirect to locale-prefixed URL or save preference
-        window.location.href = `?_locale=${newLocale}`;
+        // Redirect to the backend controller to update preference and session
+        window.location.href = `/switch-locale/${newLocale}`;
     };
 
     const getInitials = (name) => {
@@ -78,7 +76,7 @@ export default function Header({
                 onClick={onClick}
                 className="transition-colors hover:text-foreground text-foreground/60"
             >
-                Home
+                {t('nav.home', 'Home')}
             </a>
             {isLoggedIn && (
                 <a 
@@ -86,7 +84,7 @@ export default function Header({
                     onClick={onClick}
                     className="transition-colors hover:text-foreground text-foreground/60"
                 >
-                    {t('inventory', 'My Inventories')}
+                    {t('nav.inventory', 'My Inventories')}
                 </a>
             )}
         </nav>
@@ -112,7 +110,7 @@ export default function Header({
                         <Input 
                             type="search" 
                             name="q"
-                            placeholder="Search inventories..." 
+                            placeholder={t('nav.search', 'Search inventories...')} 
                             className="pl-9 w-64"
                         />
                     </form>
@@ -164,19 +162,19 @@ export default function Header({
                                 <DropdownMenuItem asChild>
                                     <a href={myInventoriesPath} className="cursor-pointer">
                                         <LayoutDashboard className="mr-2 h-4 w-4" />
-                                        {t('inventory', 'My Inventories')}
+                                        {t('nav.inventory', 'My Inventories')}
                                     </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <a href={profilePath} className="cursor-pointer">
                                         <User className="mr-2 h-4 w-4" />
-                                        {t('profile', 'Profile')}
+                                        {t('nav.profile', 'Profile')}
                                     </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <a href={profilePath} className="cursor-pointer">
                                         <Settings className="mr-2 h-4 w-4" />
-                                        Settings
+                                        {t('nav.settings', 'Settings')}
                                     </a>
                                 </DropdownMenuItem>
                                 {isAdmin && (
@@ -185,7 +183,7 @@ export default function Header({
                                         <DropdownMenuItem asChild>
                                             <a href={adminPath} className="cursor-pointer">
                                                 <Shield className="mr-2 h-4 w-4" />
-                                                Admin Panel
+                                                {t('nav.admin', 'Admin Panel')}
                                             </a>
                                         </DropdownMenuItem>
                                     </>
@@ -194,7 +192,7 @@ export default function Header({
                                 <DropdownMenuItem asChild>
                                     <a href={logoutPath} className="cursor-pointer text-destructive">
                                         <LogOut className="mr-2 h-4 w-4" />
-                                        {t('logout', 'Log out')}
+                                        {t('nav.logout', 'Log out')}
                                     </a>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -202,10 +200,10 @@ export default function Header({
                     ) : (
                         <div className="hidden sm:flex items-center space-x-2">
                             <Button variant="ghost" size="sm" asChild>
-                                <a href={loginPath}>{t('login', 'Login')}</a>
+                                <a href={loginPath}>{t('nav.login', 'Login')}</a>
                             </Button>
                             <Button size="sm" asChild>
-                                <a href={registerPath}>{t('register', 'Register')}</a>
+                                <a href={registerPath}>{t('nav.register', 'Register')}</a>
                             </Button>
                         </div>
                     )}
@@ -225,7 +223,7 @@ export default function Header({
                                     <Input 
                                         type="search" 
                                         name="q"
-                                        placeholder="Search..." 
+                                        placeholder={t('nav.search', 'Search...')} 
                                         className="pl-9"
                                     />
                                 </form>
@@ -236,10 +234,10 @@ export default function Header({
                                 {!isLoggedIn && (
                                     <div className="flex flex-col space-y-2 pt-4 border-t">
                                         <Button asChild>
-                                            <a href={loginPath}>{t('login', 'Login')}</a>
+                                            <a href={loginPath}>{t('nav.login', 'Login')}</a>
                                         </Button>
                                         <Button variant="outline" asChild>
-                                            <a href={registerPath}>{t('register', 'Register')}</a>
+                                            <a href={registerPath}>{t('nav.register', 'Register')}</a>
                                         </Button>
                                     </div>
                                 )}
@@ -249,7 +247,7 @@ export default function Header({
                                     <div className="flex items-center justify-between">
                                         <Label htmlFor="mobile-theme" className="flex items-center gap-2">
                                             {currentTheme === 'light' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                                            Dark Mode
+                                            {t('nav.dark_mode', 'Dark Mode')}
                                         </Label>
                                         <Switch 
                                             id="mobile-theme"
@@ -260,7 +258,7 @@ export default function Header({
                                     <div className="flex items-center justify-between">
                                         <Label className="flex items-center gap-2">
                                             <Globe className="h-4 w-4" />
-                                            Language
+                                            {t('nav.language', 'Language')}
                                         </Label>
                                         <Button variant="outline" size="sm" onClick={toggleLocale}>
                                             {currentLocale === 'en' ? 'বাংলা' : 'English'}
@@ -281,7 +279,7 @@ export default function Header({
                         <Input 
                             type="search" 
                             name="q"
-                            placeholder="Search inventories..." 
+                            placeholder={t('nav.search', 'Search inventories...')} 
                             className="pl-9"
                             autoFocus
                         />

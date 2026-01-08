@@ -7,14 +7,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, AlertCircle, Check, Eye, EyeOff, Lock } from 'lucide-react';
 
-export default function ResetPasswordPage({ loginPath, translations = {} }) {
+import { t } from '@/lib/i18n';
+
+export default function ResetPasswordPage({ loginPath }) {
     const [isLoading, setIsLoading] = useState(false);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-
-    const t = (key, fallback) => translations[key] || fallback;
     
     // Calculate password strength
     const calculateStrength = (pwd) => {
@@ -42,14 +42,14 @@ export default function ResetPasswordPage({ loginPath, translations = {} }) {
 
         if (password.length < 6) {
             e.preventDefault();
-            setError(t('min_length', 'Password must be at least 6 characters long.'));
+            setError(t('val.password_min_6', 'Password must be at least 6 characters long.'));
             setIsLoading(false);
             return;
         }
 
         if (password !== confirmPassword) {
             e.preventDefault();
-            setError(t('mismatch', 'Passwords do not match.'));
+            setError(t('val.password_mismatch', 'Passwords do not match.'));
             setIsLoading(false);
             return;
         }
@@ -61,9 +61,9 @@ export default function ResetPasswordPage({ loginPath, translations = {} }) {
         <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold">{t('title', 'Set new password')}</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{t('reset.new.title', 'Set new password')}</CardTitle>
                     <CardDescription>
-                        {t('desc', 'Please enter your new password below.')}
+                        {t('reset.new.desc', 'Please enter your new password below.')}
                     </CardDescription>
                 </CardHeader>
                 <form method="post" onSubmit={handleSubmit}>
@@ -77,7 +77,7 @@ export default function ResetPasswordPage({ loginPath, translations = {} }) {
                         )}
                         
                         <div className="space-y-2">
-                            <Label htmlFor="password">{t('new_password', 'New Password')}</Label>
+                            <Label htmlFor="password">{t('password.new', 'New Password')}</Label>
                             <div className="relative">
                                 <Input
                                     id="password"
@@ -107,9 +107,9 @@ export default function ResetPasswordPage({ loginPath, translations = {} }) {
                             {password && (
                                 <div className="space-y-1 pt-1">
                                     <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>{t('strength', 'Strength')}</span>
+                                        <span>{t('reset.new.strength', 'Strength')}</span>
                                         <span>
-                                            {strength < 40 ? t('weak', 'Weak') : strength < 80 ? t('medium', 'Medium') : t('strong', 'Strong')}
+                                            {strength < 40 ? t('reset.new.weak', 'Weak') : strength < 80 ? t('reset.new.medium', 'Medium') : t('reset.new.strong', 'Strong')}
                                         </span>
                                     </div>
                                     <Progress value={strength} className={`h-1.5 ${getStrengthColor(strength)}`} />
@@ -118,7 +118,7 @@ export default function ResetPasswordPage({ loginPath, translations = {} }) {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirm_password">{t('confirm_password', 'Confirm New Password')}</Label>
+                            <Label htmlFor="confirm_password">{t('password.confirm', 'Confirm New Password')}</Label>
                             <Input
                                 id="confirm_password"
                                 name="confirm_password"
@@ -135,12 +135,12 @@ export default function ResetPasswordPage({ loginPath, translations = {} }) {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    {t('process', 'Processing...')}
+                                    {t('reset.new.process', 'Processing...')}
                                 </>
                             ) : (
                                 <>
                                     <Check className="mr-2 h-4 w-4" />
-                                    {t('btn', 'Reset Password')}
+                                    {t('reset.new.btn', 'Reset Password')}
                                 </>
                             )}
                         </Button>

@@ -1,49 +1,11 @@
 import React from 'react';
 import logo from '@/../images/logo.png';
 import { Separator } from '@/components/ui/separator';
-import { Github, Twitter, Mail, Instagram } from 'lucide-react';
+import { Github, Twitter, Mail } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 export default function Footer({ locale = 'en' }) {
     const currentYear = new Date().getFullYear();
-
-    const translations = {
-        en: {
-            tagline: 'Smart inventory management for everyone.',
-            product: 'Product',
-            features: 'Features',
-            pricing: 'Pricing',
-            docs: 'Documentation',
-            company: 'Company',
-            about: 'About',
-            blog: 'Blog',
-            careers: 'Careers',
-            legal: 'Legal',
-            privacy: 'Privacy Policy',
-            terms: 'Terms of Service',
-            rights: 'All rights reserved.',
-            builtWith: 'Built with Symfony + React + shadcn/ui',
-            contact: 'Contact'
-        },
-        bn: {
-            tagline: 'সবার জন্য স্মার্ট ইনভেন্টরি ম্যানেজমেন্ট।',
-            product: 'পণ্য',
-            features: 'বৈশিষ্ট্য',
-            pricing: 'মূল্য',
-            docs: 'ডকুমেন্টেশন',
-            company: 'কোম্পানি',
-            about: 'সম্পর্কে',
-            blog: 'ব্লগ',
-            careers: 'চাকরি',
-            legal: 'আইনি',
-            privacy: 'গোপনীয়তা নীতি',
-            terms: 'পরিষেবার শর্তাবলী',
-            rights: 'সর্বস্বত্ব সংরক্ষিত।',
-            builtWith: 'Symfony + React + shadcn/ui দিয়ে তৈরি',
-            contact: 'যোগাযোগ'
-        }
-    };
-
-    const t = translations[locale] || translations.en;
 
     return (
         <footer className="border-t bg-background">
@@ -56,7 +18,7 @@ export default function Footer({ locale = 'en' }) {
                             <span className="font-bold">Inventorio</span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-4">
-                            {t.tagline}
+                            {t('footer.tagline', 'Smart inventory management for everyone.')}
                         </p>
                         <div className="flex space-x-4">
                             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -73,21 +35,21 @@ export default function Footer({ locale = 'en' }) {
 
                     {/* Product Links */}
                     <div>
-                        <h3 className="font-semibold mb-4">{t.product}</h3>
+                        <h3 className="font-semibold mb-4">{t('footer.product', 'Product')}</h3>
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.features}
+                                    {t('footer.features', 'Features')}
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.pricing}
+                                    {t('footer.pricing', 'Pricing')}
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.docs}
+                                    {t('footer.docs', 'Documentation')}
                                 </a>
                             </li>
                         </ul>
@@ -95,21 +57,21 @@ export default function Footer({ locale = 'en' }) {
 
                     {/* Company Links */}
                     <div>
-                        <h3 className="font-semibold mb-4">{t.company}</h3>
+                        <h3 className="font-semibold mb-4">{t('footer.company', 'Company')}</h3>
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.about}
+                                    {t('footer.about', 'About')}
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.blog}
+                                    {t('footer.blog', 'Blog')}
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.careers}
+                                    {t('footer.careers', 'Careers')}
                                 </a>
                             </li>
                         </ul>
@@ -117,16 +79,16 @@ export default function Footer({ locale = 'en' }) {
 
                     {/* Legal Links */}
                     <div>
-                        <h3 className="font-semibold mb-4">{t.legal}</h3>
+                        <h3 className="font-semibold mb-4">{t('footer.legal', 'Legal')}</h3>
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.privacy}
+                                    {t('footer.privacy', 'Privacy Policy')}
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                                    {t.terms}
+                                    {t('footer.terms', 'Terms of Service')}
                                 </a>
                             </li>
                         </ul>
@@ -136,8 +98,8 @@ export default function Footer({ locale = 'en' }) {
                 <Separator className="my-8" />
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-                    <p>© {currentYear} Inventorio. {t.rights}</p>
-                    <p>{t.builtWith}</p>
+                    <p>© {currentYear} Inventorio. {t('footer.rights', 'All rights reserved.')}</p>
+                    <p>{t('footer.built_with', 'Built with Symfony + React + shadcn/ui')}</p>
                 </div>
             </div>
         </footer>

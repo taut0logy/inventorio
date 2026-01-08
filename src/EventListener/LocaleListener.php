@@ -14,13 +14,16 @@ final class LocaleListener
     ) {
     }
 
-    #[AsEventListener(event: KernelEvents::REQUEST, priority: 5)]
+    #[AsEventListener(event: KernelEvents::REQUEST, priority: 20)]
     public function onKernelRequest(RequestEvent $event): void
     {
+        $request = $event->getRequest();
         $user = $this->security->getUser();
 
         if ($user && method_exists($user, 'getLocale')) {
-            $event->getRequest()->setLocale($user->getLocale());
+           $request->setLocale($user->getLocale());
+        } elseif ($request->hasPreviousSession() && $sessionLocale = $request->getSession()->get('_locale')) {
+            $request->setLocale($sessionLocale);
         }
     }
 }

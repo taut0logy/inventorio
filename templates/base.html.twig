@@ -24,15 +24,7 @@
             } : null,
             locale: app.request.locale,
             theme: app.user ? app.user.theme : 'light',
-            translations: {
-                dashboard: 'nav.dashboard'|trans,
-                inventory: 'nav.inventory'|trans,
-                profile: 'nav.profile'|trans,
-                logout: 'nav.logout'|trans,
-                login: 'nav.login'|trans,
-                register: 'nav.register'|trans,
-                app_name: 'app_name'|trans
-            },
+            translations: {},
             homePath: path('app_home'),
             loginPath: path('app_login'),
             registerPath: path('app_register'),
@@ -42,6 +34,137 @@
             myInventoriesPath: '#',
             searchPath: '#'
         }) }}>
+            <script>
+                window.INVENTORY_TRANSLATIONS = {
+                    // General
+                    'app_name': {{ 'app_name'|trans|json_encode|raw }},
+                    'action.save': {{ 'action.save'|trans|json_encode|raw }},
+                    'action.update': {{ 'action.update'|trans|json_encode|raw }},
+                    'action.cancel': {{ 'action.cancel'|trans|json_encode|raw }},
+                    'action.delete': {{ 'action.delete'|trans|json_encode|raw }},
+                    'action.edit': {{ 'action.edit'|trans|json_encode|raw }},
+                    'action.upload_avatar': {{ 'action.upload_avatar'|trans|json_encode|raw }},
+
+                    // Navigation
+                    'nav.dashboard': {{ 'nav.dashboard'|trans|json_encode|raw }},
+                    'nav.home': {{ 'nav.home'|trans|json_encode|raw }},
+                    'nav.settings': {{ 'nav.settings'|trans|json_encode|raw }},
+                    'nav.admin': {{ 'nav.admin'|trans|json_encode|raw }},
+                    'nav.search': {{ 'nav.search'|trans|json_encode|raw }},
+                    'nav.dark_mode': {{ 'nav.dark_mode'|trans|json_encode|raw }},
+                    'nav.language': {{ 'nav.language'|trans|json_encode|raw }},
+                    'nav.inventory': {{ 'nav.inventory'|trans|json_encode|raw }},
+                    'nav.profile': {{ 'nav.profile'|trans|json_encode|raw }},
+                    'nav.logout': {{ 'nav.logout'|trans|json_encode|raw }},
+                    'nav.login': {{ 'nav.login'|trans|json_encode|raw }},
+                    'nav.register': {{ 'nav.register'|trans|json_encode|raw }},
+
+                    // Profile
+                    'profile.title': {{ 'profile.title'|trans|json_encode|raw }},
+                    'profile.tab.general': {{ 'profile.tab.general'|trans|json_encode|raw }},
+                    'profile.tab.security': {{ 'profile.tab.security'|trans|json_encode|raw }},
+                    'profile.details.title': {{ 'profile.details.title'|trans|json_encode|raw }},
+                    'profile.details.description': {{ 'profile.details.description'|trans|json_encode|raw }},
+                    'profile.field.name': {{ 'profile.field.name'|trans|json_encode|raw }},
+                    'profile.field.email': {{ 'profile.field.email'|trans|json_encode|raw }},
+                    'profile.field.email_help': {{ 'profile.field.email_help'|trans|json_encode|raw }},
+                    'profile.field.theme': {{ 'profile.field.theme'|trans|json_encode|raw }},
+                    'profile.field.language': {{ 'profile.field.language'|trans|json_encode|raw }},
+                    'profile.field.avatar_help': {{ 'profile.field.avatar_help'|trans|json_encode|raw }},
+                    'profile.flash.updated': {{ 'profile.flash.updated'|trans|json_encode|raw }},
+                    
+                    // Password
+                    'password.title': {{ 'password.title'|trans|json_encode|raw }},
+                    'password.description': {{ 'password.description'|trans|json_encode|raw }},
+                    'password.current': {{ 'password.current'|trans|json_encode|raw }},
+                    'password.new': {{ 'password.new'|trans|json_encode|raw }},
+                    'password.confirm': {{ 'password.confirm'|trans|json_encode|raw }},
+                    'password.flash.updated': {{ 'password.flash.updated'|trans|json_encode|raw }},
+                    'password.error.mismatch': {{ 'password.error.mismatch'|trans|json_encode|raw }},
+
+                    // Auth
+                    'auth.login.title': {{ 'auth.login.title'|trans|json_encode|raw }},
+                    'auth.register.title': {{ 'auth.register.title'|trans|json_encode|raw }},
+                    'auth.register.submit': {{ 'auth.register.submit'|trans|json_encode|raw }},
+                    'auth.welcome_back': {{ 'auth.welcome_back'|trans|json_encode|raw }},
+                    'auth.sign_in_desc': {{ 'auth.sign_in_desc'|trans|json_encode|raw }},
+                    'auth.email': {{ 'auth.email'|trans|json_encode|raw }},
+                    'auth.password': {{ 'auth.password'|trans|json_encode|raw }},
+                    'auth.forgot_password': {{ 'auth.forgot_password'|trans|json_encode|raw }},
+                    'auth.remember_me': {{ 'auth.remember_me'|trans|json_encode|raw }},
+                    'auth.sign_in_btn': {{ 'auth.sign_in_btn'|trans|json_encode|raw }},
+                    'auth.or_continue': {{ 'auth.or_continue'|trans|json_encode|raw }},
+                    'auth.no_account': {{ 'auth.no_account'|trans|json_encode|raw }},
+                    'auth.sign_up_link': {{ 'auth.sign_up_link'|trans|json_encode|raw }},
+                    'auth.start_desc': {{ 'auth.start_desc'|trans|json_encode|raw }},
+                    'auth.full_name': {{ 'auth.full_name'|trans|json_encode|raw }},
+                    'auth.confirm_password': {{ 'auth.confirm_password'|trans|json_encode|raw }},
+                    'auth.i_agree': {{ 'auth.i_agree'|trans|json_encode|raw }},
+                    'auth.terms': {{ 'auth.terms'|trans|json_encode|raw }},
+                    'auth.privacy': {{ 'auth.privacy'|trans|json_encode|raw }},
+                    'auth.already_account': {{ 'auth.already_account'|trans|json_encode|raw }},
+                    'auth.sign_in_link': {{ 'auth.sign_in_link'|trans|json_encode|raw }},
+
+                    // Validation
+                    'val.email_required': {{ 'val.email_required'|trans|json_encode|raw }},
+                    'val.email_invalid': {{ 'val.email_invalid'|trans|json_encode|raw }},
+                    'val.password_required': {{ 'val.password_required'|trans|json_encode|raw }},
+                    'val.name_required': {{ 'val.name_required'|trans|json_encode|raw }},
+                    'val.name_min': {{ 'val.name_min'|trans|json_encode|raw }},
+                    'val.password_min': {{ 'val.password_min'|trans|json_encode|raw }},
+                    'val.password_lower': {{ 'val.password_lower'|trans|json_encode|raw }},
+                    'val.password_upper': {{ 'val.password_upper'|trans|json_encode|raw }},
+                    'val.password_number': {{ 'val.password_number'|trans|json_encode|raw }},
+                    'val.confirm_required': {{ 'val.confirm_required'|trans|json_encode|raw }},
+                    'val.password_mismatch': {{ 'val.password_mismatch'|trans|json_encode|raw }},
+                    'val.terms_required': {{ 'val.terms_required'|trans|json_encode|raw }},
+                    'val.password_min_6': {{ 'val.password_min_6'|trans|json_encode|raw }},
+                    'val.email_enter': {{ 'val.email_enter'|trans|json_encode|raw }},
+
+                    // Password Strength
+                    'pw.chars': {{ 'pw.chars'|trans|json_encode|raw }},
+                    'pw.lower': {{ 'pw.lower'|trans|json_encode|raw }},
+                    'pw.upper': {{ 'pw.upper'|trans|json_encode|raw }},
+                    'pw.number': {{ 'pw.number'|trans|json_encode|raw }},
+
+                    // Reset Password Flow
+                    'reset.forgot.title': {{ 'reset.forgot.title'|trans|json_encode|raw }},
+                    'reset.forgot.desc': {{ 'reset.forgot.desc'|trans|json_encode|raw }},
+                    'reset.forgot.btn': {{ 'reset.forgot.btn'|trans|json_encode|raw }},
+                    'reset.forgot.back': {{ 'reset.forgot.back'|trans|json_encode|raw }},
+                    'reset.check.title': {{ 'reset.check.title'|trans|json_encode|raw }},
+                    'reset.check.desc': {{ 'reset.check.desc'|trans|json_encode|raw }},
+                    'reset.check.spam': {{ 'reset.check.spam'|trans|json_encode|raw }},
+                    'reset.check.expire': {{ 'reset.check.expire'|trans|json_encode|raw }},
+                    'reset.check.return': {{ 'reset.check.return'|trans|json_encode|raw }},
+                    'reset.new.title': {{ 'reset.new.title'|trans|json_encode|raw }},
+                    'reset.new.desc': {{ 'reset.new.desc'|trans|json_encode|raw }},
+                    'reset.new.strength': {{ 'reset.new.strength'|trans|json_encode|raw }},
+                    'reset.new.weak': {{ 'reset.new.weak'|trans|json_encode|raw }},
+                    'reset.new.medium': {{ 'reset.new.medium'|trans|json_encode|raw }},
+                    'reset.new.strong': {{ 'reset.new.strong'|trans|json_encode|raw }},
+                    'reset.new.process': {{ 'reset.new.process'|trans|json_encode|raw }},
+                    'reset.new.btn': {{ 'reset.new.btn'|trans|json_encode|raw }},
+
+                    // Footer
+                    'footer.tagline': {{ 'footer.tagline'|trans|json_encode|raw }},
+                    'footer.product': {{ 'footer.product'|trans|json_encode|raw }},
+                    'footer.features': {{ 'footer.features'|trans|json_encode|raw }},
+                    'footer.pricing': {{ 'footer.pricing'|trans|json_encode|raw }},
+                    'footer.docs': {{ 'footer.docs'|trans|json_encode|raw }},
+                    'footer.company': {{ 'footer.company'|trans|json_encode|raw }},
+                    'footer.about': {{ 'footer.about'|trans|json_encode|raw }},
+                    'footer.blog': {{ 'footer.blog'|trans|json_encode|raw }},
+                    'footer.careers': {{ 'footer.careers'|trans|json_encode|raw }},
+                    'footer.legal': {{ 'footer.legal'|trans|json_encode|raw }},
+                    'footer.privacy': {{ 'footer.privacy'|trans|json_encode|raw }},
+                    'footer.terms': {{ 'footer.terms'|trans|json_encode|raw }},
+                    'footer.rights': {{ 'footer.rights'|trans|json_encode|raw }},
+                    'footer.built_with': {{ 'footer.built_with'|trans|json_encode|raw }},
+                    'footer.contact': {{ 'footer.contact'|trans|json_encode|raw }}
+                };
+            </script>
+
             {# Fallback header #}
             <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur h-14">
                 <div class="container mx-auto flex h-14 items-center px-4">

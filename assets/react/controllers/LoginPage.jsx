@@ -8,7 +8,9 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
-export default function LoginPage({ lastUsername = '', error = null, csrfToken, loginPath, registerPath, forgotPasswordPath, googlePath, facebookPath, translations = {} }) {
+import { t } from '@/lib/i18n';
+
+export default function LoginPage({ lastUsername = '', error = null, csrfToken, loginPath, registerPath, forgotPasswordPath, googlePath, facebookPath }) {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -18,19 +20,17 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
     });
     const [errors, setErrors] = useState({});
 
-    const t = (key, fallback) => translations[key] || fallback;
-
     const validateForm = () => {
         const newErrors = {};
         
         if (!formData.email) {
-            newErrors.email = t('email_required', 'Email is required');
+            newErrors.email = t('val.email_required', 'Email is required');
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = t('email_invalid', 'Please enter a valid email address');
+            newErrors.email = t('val.email_invalid', 'Please enter a valid email address');
         }
         
         if (!formData.password) {
-            newErrors.password = t('password_required', 'Password is required');
+            newErrors.password = t('val.password_required', 'Password is required');
         }
         
         setErrors(newErrors);
@@ -56,8 +56,8 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
         <div className="container mx-auto px-4 py-8 min-h-[calc(100vh-8rem)] flex items-center justify-center">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">{t('welcome_back', 'Welcome back')}</CardTitle>
-                    <CardDescription>{t('sign_in_desc', 'Sign in to your account')}</CardDescription>
+                    <CardTitle className="text-2xl">{t('auth.welcome_back', 'Welcome back')}</CardTitle>
+                    <CardDescription>{t('auth.sign_in_desc', 'Sign in to your account')}</CardDescription>
                 </CardHeader>
                 
                 <CardContent>
@@ -71,7 +71,7 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
                         <input type="hidden" name="_csrf_token" value={csrfToken} />
                         
                         <div className="space-y-2">
-                            <Label htmlFor="username">{t('email', 'Email')}</Label>
+                            <Label htmlFor="username">{t('auth.email', 'Email')}</Label>
                             <Input
                                 id="username"
                                 name="_username"
@@ -90,12 +90,12 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password">{t('password', 'Password')}</Label>
+                                <Label htmlFor="password">{t('auth.password', 'Password')}</Label>
                                 <a 
                                     href={forgotPasswordPath} 
                                     className="text-sm text-primary hover:underline"
                                 >
-                                    {t('forgot_password', 'Forgot password?')}
+                                    {t('auth.forgot_password', 'Forgot password?')}
                                 </a>
                             </div>
                             <div className="relative">
@@ -130,20 +130,20 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
                                 onCheckedChange={(checked) => handleInputChange('rememberMe', checked)}
                             />
                             <Label htmlFor="remember_me" className="text-sm font-normal cursor-pointer">
-                                {t('remember_me', 'Remember me')}
+                                {t('auth.remember_me', 'Remember me')}
                             </Label>
                         </div>
 
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {t('sign_in_btn', 'Sign In')}
+                            {t('auth.sign_in_btn', 'Sign In')}
                         </Button>
                     </form>
 
                     <div className="relative my-6">
                         <Separator />
                         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs uppercase text-muted-foreground">
-                            {t('or_continue', 'Or continue with')}
+                            {t('auth.or_continue', 'Or continue with')}
                         </span>
                     </div>
 
@@ -172,9 +172,9 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
 
                 <CardFooter className="justify-center">
                     <p className="text-sm text-muted-foreground">
-                        Don't have an account?{' '}
+                        {t('auth.no_account', "Don't have an account?")}{' '}
                         <a href={registerPath} className="text-primary hover:underline font-medium">
-                            Sign up
+                            {t('auth.sign_up_link', 'Sign up')}
                         </a>
                     </p>
                 </CardFooter>

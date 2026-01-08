@@ -9,7 +9,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Eye, EyeOff, Loader2, Check, X } from 'lucide-react';
 
-export default function RegisterPage({ csrfToken, registerPath, loginPath, googlePath, facebookPath, errors: serverErrors = {}, translations = {} }) {
+import { t } from '@/lib/i18n';
+
+export default function RegisterPage({ csrfToken, registerPath, loginPath, googlePath, facebookPath, errors: serverErrors = {} }) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -22,8 +24,6 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
     });
     const [errors, setErrors] = useState(serverErrors);
     const [touched, setTouched] = useState({});
-
-    const t = (key, fallback) => translations[key] || fallback;
 
     // Password strength calculation
     const getPasswordStrength = (password) => {
@@ -38,35 +38,35 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
     const passwordStrength = getPasswordStrength(formData.password);
     
     const passwordRequirements = [
-        { label: t('pw_chars', 'At least 8 characters'), met: formData.password.length >= 8 },
-        { label: t('pw_lower', 'One lowercase letter'), met: /[a-z]/.test(formData.password) },
-        { label: t('pw_upper', 'One uppercase letter'), met: /[A-Z]/.test(formData.password) },
-        { label: t('pw_number', 'One number'), met: /\d/.test(formData.password) },
+        { label: t('pw.chars', 'At least 8 characters'), met: formData.password.length >= 8 },
+        { label: t('pw.lower', 'One lowercase letter'), met: /[a-z]/.test(formData.password) },
+        { label: t('pw.upper', 'One uppercase letter'), met: /[A-Z]/.test(formData.password) },
+        { label: t('pw.number', 'One number'), met: /\d/.test(formData.password) },
     ];
 
     const validateField = (field, value) => {
         switch (field) {
             case 'name':
-                if (!value) return t('name_required', 'Name is required');
-                if (value.length < 2) return t('name_min', 'Name must be at least 2 characters');
+                if (!value) return t('val.name_required', 'Name is required');
+                if (value.length < 2) return t('val.name_min', 'Name must be at least 2 characters');
                 return null;
             case 'email':
-                if (!value) return t('email_required', 'Email is required');
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('email_invalid', 'Please enter a valid email');
+                if (!value) return t('val.email_required', 'Email is required');
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('val.email_invalid', 'Please enter a valid email');
                 return null;
             case 'password':
-                if (!value) return t('password_required', 'Password is required');
-                if (value.length < 8) return t('password_min', 'Password must be at least 8 characters');
-                if (!/[a-z]/.test(value)) return t('password_lower', 'Password must contain a lowercase letter');
-                if (!/[A-Z]/.test(value)) return t('password_upper', 'Password must contain an uppercase letter');
-                if (!/\d/.test(value)) return t('password_number', 'Password must contain a number');
+                if (!value) return t('val.password_required', 'Password is required');
+                if (value.length < 8) return t('val.password_min', 'Password must be at least 8 characters');
+                if (!/[a-z]/.test(value)) return t('val.password_lower', 'Password must contain a lowercase letter');
+                if (!/[A-Z]/.test(value)) return t('val.password_upper', 'Password must contain an uppercase letter');
+                if (!/\d/.test(value)) return t('val.password_number', 'Password must contain a number');
                 return null;
             case 'confirmPassword':
-                if (!value) return t('confirm_required', 'Please confirm your password');
-                if (value !== formData.password) return t('password_mismatch', 'Passwords do not match');
+                if (!value) return t('val.confirm_required', 'Please confirm your password');
+                if (value !== formData.password) return t('val.password_mismatch', 'Passwords do not match');
                 return null;
             case 'agreeTerms':
-                if (!value) return t('terms_required', 'You must agree to the terms');
+                if (!value) return t('val.terms_required', 'You must agree to the terms');
                 return null;
             default:
                 return null;
@@ -109,8 +109,8 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
         <div className="container mx-auto px-4 py-8 min-h-[calc(100vh-8rem)] flex items-center justify-center">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">{t('create_account', 'Create an account')}</CardTitle>
-                    <CardDescription>{t('start_desc', 'Enter your details to get started')}</CardDescription>
+                    <CardTitle className="text-2xl">{t('auth.register.title', 'Create an account')}</CardTitle>
+                    <CardDescription>{t('auth.start_desc', 'Enter your details to get started')}</CardDescription>
                 </CardHeader>
                 
                 <CardContent>
@@ -124,7 +124,7 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
                         
                         {/* Name Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="name">{t('full_name', 'Full Name')}</Label>
+                            <Label htmlFor="name">{t('auth.full_name', 'Full Name')}</Label>
                             <Input
                                 id="name"
                                 name="registration_form[name]"
@@ -144,7 +144,7 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
 
                         {/* Email Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="email">{t('email', 'Email')}</Label>
+                            <Label htmlFor="email">{t('auth.email', 'Email')}</Label>
                             <Input
                                 id="email"
                                 name="registration_form[email]"
@@ -163,7 +163,7 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
 
                         {/* Password Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="password">{t('password', 'Password')}</Label>
+                            <Label htmlFor="password">{t('auth.password', 'Password')}</Label>
                             <div className="relative">
                                 <Input
                                     id="password"
@@ -212,7 +212,7 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
 
                         {/* Confirm Password Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">{t('confirm_password', 'Confirm Password')}</Label>
+                            <Label htmlFor="confirmPassword">{t('auth.confirm_password', 'Confirm Password')}</Label>
                             <div className="relative">
                                 <Input
                                     id="confirmPassword"
@@ -248,10 +248,10 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
                                 className="mt-0.5"
                             />
                             <Label htmlFor="agreeTerms" className="text-sm font-normal leading-tight cursor-pointer">
-                                {t('i_agree', 'I agree to the')}{' '}
-                                <a href="#" className="text-primary hover:underline">{t('terms', 'Terms of Service')}</a>
+                                {t('auth.i_agree', 'I agree to the')}{' '}
+                                <a href="#" className="text-primary hover:underline">{t('auth.terms', 'Terms of Service')}</a>
                                 {' '}and{' '}
-                                <a href="#" className="text-primary hover:underline">{t('privacy', 'Privacy Policy')}</a>
+                                <a href="#" className="text-primary hover:underline">{t('auth.privacy', 'Privacy Policy')}</a>
                             </Label>
                         </div>
                         {errors.agreeTerms && (
@@ -260,14 +260,14 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
 
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {t('create_account_btn', 'Create Account')}
+                            {t('auth.register.submit', 'Create Account')}
                         </Button>
                     </form>
 
                     <div className="relative my-6">
                         <Separator />
                         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs uppercase text-muted-foreground">
-                            {t('or_continue', 'Or continue with')}
+                            {t('auth.or_continue', 'Or continue with')}
                         </span>
                     </div>
 
@@ -296,9 +296,9 @@ export default function RegisterPage({ csrfToken, registerPath, loginPath, googl
 
                 <CardFooter className="justify-center">
                     <p className="text-sm text-muted-foreground">
-                        Already have an account?{' '}
+                        {t('auth.already_account', 'Already have an account?')}{' '}
                         <a href={loginPath} className="text-primary hover:underline font-medium">
-                            Sign in
+                            {t('auth.sign_in_link', 'Sign in')}
                         </a>
                     </p>
                 </CardFooter>

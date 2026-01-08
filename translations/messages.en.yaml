@@ -9,6 +9,12 @@ action.upload_avatar: Change Avatar
 
 # Navigation
 nav.dashboard: Dashboard
+nav.home: Home
+nav.settings: Settings
+nav.admin: Admin Panel
+nav.search: Search inventories...
+nav.dark_mode: Dark Mode
+nav.language: Language
 nav.inventory: Inventory
 nav.profile: Profile
 nav.logout: Logout
@@ -101,3 +107,20 @@ reset.new.process: Processing...
 reset.new.btn: Reset Password
 val.password_min_6: Password must be at least 6 characters long.
 val.email_enter: Please enter your email address.
+
+# Footer
+footer.tagline: Smart inventory management for everyone.
+footer.product: Product
+footer.features: Features
+footer.pricing: Pricing
+footer.docs: Documentation
+footer.company: Company
+footer.about: About
+footer.blog: Blog
+footer.careers: Careers
+footer.legal: Legal
+footer.privacy: Privacy Policy
+footer.terms: Terms of Service
+footer.rights: All rights reserved.
+footer.built_with: Built with Symfony + React + shadcn/ui
+footer.contact: Contact

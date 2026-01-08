@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, ArrowRight } from 'lucide-react';
 
-export default function CheckEmailPage({ loginPath, resetToken, translations = {} }) {
-    const t = (key, fallback) => translations[key] || fallback;
+import { t } from '@/lib/i18n';
+
+export default function CheckEmailPage({ loginPath, resetToken }) {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12">
@@ -13,17 +14,17 @@ export default function CheckEmailPage({ loginPath, resetToken, translations = {
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                         <Mail className="h-8 w-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl font-bold">{t('title', 'Check your email')}</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{t('reset.check.title', 'Check your email')}</CardTitle>
                     <CardDescription className="text-base">
-                        {t('desc', 'We have sent a password reset link to your email address.')}
+                        {t('reset.check.desc', 'We have sent a password reset link to your email address.')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
                     <p className="mb-4">
-                        {t('spam', "If you don't receive the email within a few minutes, please check your spam folder.")}
+                        {t('reset.check.spam', "If you don't receive the email within a few minutes, please check your spam folder.")}
                     </p>
                     <p>
-                        {t('expire', 'The link will expire in 1 hour.')}
+                        {t('reset.check.expire', 'The link will expire in 1 hour.')}
                     </p>
                     
                     {/* For demo purposes only - in production removing this */}
@@ -34,7 +35,7 @@ export default function CheckEmailPage({ loginPath, resetToken, translations = {
                 <CardFooter className="justify-center">
                     <Button asChild>
                         <a href={loginPath}>
-                            {t('return', 'Return to Login')}
+                            {t('reset.check.return', 'Return to Login')}
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </a>
                     </Button>

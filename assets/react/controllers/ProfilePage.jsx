@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, User, Lock, Upload } from 'lucide-react';
 
+import { t } from '@/lib/i18n';
+
 export default function ProfilePage({ 
     user, 
     updateProfilePath, 
@@ -18,13 +20,12 @@ export default function ProfilePage({
     profileErrors = {},
     passwordErrors = {},
     activeTab = 'general',
-    hasPassword = true,
-    translations = {}
+    hasPassword = true
 }) {
     const [currentTheme, setCurrentTheme] = useState(user.theme);
     const [isLoading, setIsLoading] = useState(false);
 
-    const t = (key, fallback) => translations[key] || fallback;
+
 
     const handleThemeChange = (value) => {
         setCurrentTheme(value);
@@ -43,17 +44,17 @@ export default function ProfilePage({
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-8">{t('account_settings', 'Account Settings')}</h1>
+            <h1 className="text-3xl font-bold mb-8">{t('profile.title', 'Account Settings')}</h1>
 
             <Tabs defaultValue={initialTab} className="w-full space-y-6">
                 <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
                     <TabsTrigger value="general" className="gap-2">
                         <User className="h-4 w-4" />
-                        {t('general', 'General')}
+                        {t('profile.tab.general', 'General')}
                     </TabsTrigger>
                     <TabsTrigger value="password" className="gap-2" disabled={!hasPassword}>
                         <Lock className="h-4 w-4" />
-                        {t('security', 'Security')}
+                        {t('profile.tab.security', 'Security')}
                     </TabsTrigger>
                 </TabsList>
 
@@ -61,9 +62,9 @@ export default function ProfilePage({
                 <TabsContent value="general">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('profile_details', 'Profile Details')}</CardTitle>
+                            <CardTitle>{t('profile.details.title', 'Profile Details')}</CardTitle>
                             <CardDescription>
-                                {t('profile_description', 'Manage your public profile and preferences.')}
+                                {t('profile.details.description', 'Manage your public profile and preferences.')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -86,17 +87,17 @@ export default function ProfilePage({
                                         <div>
                                             <Button type="button" variant="outline" size="sm" className="gap-2">
                                                 <Upload className="h-4 w-4" />
-                                                {t('change_avatar', 'Change Avatar')}
+                                                {t('action.upload_avatar', 'Change Avatar')}
                                             </Button>
                                             <p className="text-sm text-muted-foreground mt-2">
-                                                {t('avatar_help', 'JPG, GIF or PNG. Max 1MB.')}
+                                                {t('profile.field.avatar_help', 'JPG, GIF or PNG. Max 1MB.')}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name">{t('full_name', 'Full Name')}</Label>
+                                            <Label htmlFor="name">{t('profile.field.name', 'Full Name')}</Label>
                                             <Input 
                                                 id="name" 
                                                 name="profile_form[name]"
@@ -106,43 +107,43 @@ export default function ProfilePage({
                                             {profileErrors.name && <p className="text-sm text-destructive">{profileErrors.name}</p>}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="email">{t('email', 'Email')}</Label>
+                                            <Label htmlFor="email">{t('profile.field.email', 'Email')}</Label>
                                             <Input 
                                                 id="email" 
                                                 value={user.email} 
                                                 disabled 
                                                 className="bg-muted"
                                             />
-                                            <p className="text-xs text-muted-foreground">{t('email_help', 'Email cannot be changed.')}</p>
+                                            <p className="text-xs text-muted-foreground">{t('profile.field.email_help', 'Email cannot be changed.')}</p>
                                         </div>
                                     </div>
 
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="theme">{t('theme', 'Theme')}</Label>
+                                            <Label htmlFor="theme">{t('profile.field.theme', 'Theme')}</Label>
                                             <Select 
                                                 name="profile_form[theme]" 
                                                 value={currentTheme} 
                                                 onValueChange={handleThemeChange}
                                             >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder={t('select_theme', 'Select theme')} />
+                                                    <SelectValue placeholder={t('profile.field.theme', 'Select theme')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="light">{t('light', 'Light')}</SelectItem>
-                                                    <SelectItem value="dark">{t('dark', 'Dark')}</SelectItem>
+                                                    <SelectItem value="light">Light</SelectItem>
+                                                    <SelectItem value="dark">Dark</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="locale">{t('language', 'Language')}</Label>
+                                            <Label htmlFor="locale">{t('profile.field.language', 'Language')}</Label>
                                             <Select name="profile_form[locale]" defaultValue={user.locale}>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder={t('select_language', 'Select language')} />
+                                                    <SelectValue placeholder={t('profile.field.language', 'Select language')} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="en">{t('english', 'English (US)')}</SelectItem>
-                                                    <SelectItem value="bn">{t('bengali', 'Bengali')}</SelectItem>
+                                                    <SelectItem value="en">English (US)</SelectItem>
+                                                    <SelectItem value="bn">Bengali</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -153,7 +154,7 @@ export default function ProfilePage({
                         <CardFooter className="justify-end border-t pt-6">
                             <Button type="submit" form="profile-form" disabled={isLoading}>
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {t('save_changes', 'Save Changes')}
+                                {t('action.save', 'Save Changes')}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -163,9 +164,9 @@ export default function ProfilePage({
                 <TabsContent value="password">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('change_password', 'Change Password')}</CardTitle>
+                            <CardTitle>{t('password.title', 'Change Password')}</CardTitle>
                             <CardDescription>
-                                {t('password_description', 'Update your password to keep your account secure.')}
+                                {t('password.description', 'Update your password to keep your account secure.')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -180,7 +181,7 @@ export default function ProfilePage({
                                 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="currentPassword">{t('current_password', 'Current Password')}</Label>
+                                        <Label htmlFor="currentPassword">{t('password.current', 'Current Password')}</Label>
                                         <Input 
                                             id="currentPassword" 
                                             name="change_password_form[currentPassword]"
@@ -191,7 +192,7 @@ export default function ProfilePage({
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="newPassword">{t('new_password', 'New Password')}</Label>
+                                        <Label htmlFor="newPassword">{t('password.new', 'New Password')}</Label>
                                         <Input 
                                             id="newPassword" 
                                             name="change_password_form[newPassword][first]"
@@ -202,7 +203,7 @@ export default function ProfilePage({
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword">{t('confirm_password', 'Confirm New Password')}</Label>
+                                        <Label htmlFor="confirmPassword">{t('password.confirm', 'Confirm New Password')}</Label>
                                         <Input 
                                             id="confirmPassword" 
                                             name="change_password_form[newPassword][second]"
@@ -217,7 +218,7 @@ export default function ProfilePage({
                         <CardFooter className="justify-end border-t pt-6">
                             <Button type="submit" form="password-form" disabled={isLoading}>
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {t('update_password', 'Update Password')}
+                                {t('action.update', 'Update Password')}
                             </Button>
                         </CardFooter>
                     </Card>
