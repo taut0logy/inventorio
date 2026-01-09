@@ -249,7 +249,11 @@ class ItemController extends AbstractController
             }
         }
 
-        $entityManager->flush();
+        try {
+            $entityManager->flush();
+        } catch (\Doctrine\ORM\OptimisticLockException $e) {
+            return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
+        }
 
         return $this->json(['message' => 'Item updated successfully']);
     }
@@ -269,7 +273,11 @@ class ItemController extends AbstractController
         // For now, standard remove() which triggers soft delete if configured, or hard delete.
         // User requested soft delete in Phase 4. Using remove() for now.
         $entityManager->remove($item);
-        $entityManager->flush();
+        try {
+            $entityManager->flush();
+        } catch (\Doctrine\ORM\OptimisticLockException $e) {
+            return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
+        }
 
         return $this->json(['message' => 'Item deleted successfully']);
     }

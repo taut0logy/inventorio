@@ -54,7 +54,8 @@ class InventoryController extends AbstractController
         }
 
         return $this->render('inventory/index.html.twig', [
-            'inventories' => $inventories,
+            'inventories' => $inventories, // Owned
+            'sharedInventories' => [], // TODO: query where user has access once ACL is implemented
             'categories' => $categoryRepository->findAllOrdered(),
             'showDeleted' => $showDeleted,
         ]);
@@ -169,7 +170,11 @@ class InventoryController extends AbstractController
              }
         }
 
-        $entityManager->flush();
+        try {
+            $entityManager->flush();
+        } catch (\Doctrine\ORM\OptimisticLockException $e) {
+            return $this->json(['error' => 'Conflict detected. The inventory has been modified by another user.'], 409);
+        }
 
         return $this->json([
             'id' => $inventory->getId()->toRfc4122(),
@@ -220,7 +225,11 @@ class InventoryController extends AbstractController
             $inventory->setIdGenerationConfig($data['idGenerationConfig']);
         }
 
-        $entityManager->flush();
+        try {
+            $entityManager->flush();
+        } catch (\Doctrine\ORM\OptimisticLockException $e) {
+            return $this->json(['error' => 'Conflict detected. The settings have been modified by another user.'], 409);
+        }
 
         return $this->json(['message' => 'Settings updated successfully']);
     }

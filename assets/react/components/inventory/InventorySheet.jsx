@@ -78,6 +78,12 @@ export default function InventorySheet({
 
             const data = await response.json();
 
+            if (response.status === 409) {
+                alert(t('error.conflict', 'Conflict detected: This inventory has been modified by another user. The page will reload.'));
+                window.location.reload();
+                return;
+            }
+
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to save inventory');
             }

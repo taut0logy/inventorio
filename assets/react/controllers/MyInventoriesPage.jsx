@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { 
     Package, 
@@ -32,12 +33,14 @@ import { useConfirm } from '@/components/common/useConfirm';
 
 export default function MyInventoriesPage({ 
     inventories = [], 
+    sharedInventories = [],
     categories = [],
     createEndpoint,
     showEndpoint,
     showDeleted = false
 }) {
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+    const [activeTab, setActiveTab] = useState('owned'); // 'owned' or 'shared'
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
     const [ConfirmDialog, confirm] = useConfirm();
@@ -88,7 +91,9 @@ export default function MyInventoriesPage({
         }
     };
 
-    const filteredInventories = inventories.filter(inv => 
+    const sourceInventories = showDeleted ? inventories : (activeTab === 'owned' ? inventories : sharedInventories);
+
+    const filteredInventories = sourceInventories.filter(inv => 
         inv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         inv.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -134,6 +139,12 @@ export default function MyInventoriesPage({
         }
     };
 
+    const handleTabChange = (val) => {
+        setActiveTab(val);
+        setSelectedIds([]);
+        setSearchQuery('');
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -169,43 +180,56 @@ export default function MyInventoriesPage({
                         {selectedIds.length} {t('inventory.selected', 'selected')}
                     </span>
                     <div className="flex gap-2">
-                        <Button variant="destructive" size="sm" onClick={handleBatchDelete}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {t('action.delete', 'Delete')}
-                        </Button>
+                        {activeTab === 'owned' && (
+                            <Button variant="destructive" size="sm" onClick={handleBatchDelete}>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t('action.delete', 'Delete')}
+                            </Button>
+                        )}
                     </div>
                 </div>
             )}
 
             <Card className="mb-8">
                 <CardHeader className="pb-3">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="relative w-full sm:w-96">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder={t('nav.search', 'Search...')}
-                                className="pl-9"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex items-center border rounded-md p-1">
-                            <Button 
-                                variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
-                                size="sm" 
-                                className="h-8 px-2"
-                                onClick={() => setViewMode('list')}
-                            >
-                                <ListIcon className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                                variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
-                                size="sm" 
-                                className="h-8 px-2"
-                                onClick={() => setViewMode('grid')}
-                            >
-                                <Grid className="h-4 w-4" />
-                            </Button>
+                    <div className="flex flex-col gap-4">
+                        {!showDeleted && (
+                            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                                <TabsList>
+                                    <TabsTrigger value="owned">{t('my_inv.owned', 'Owned by Me')}</TabsTrigger>
+                                    <TabsTrigger value="shared">{t('my_inv.shared', 'Shared with Me')}</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                        )}
+                        
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="relative w-full sm:w-96">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder={t('nav.search', 'Search...')}
+                                    className="pl-9"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex items-center border rounded-md p-1">
+                                <Button 
+                                    variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
+                                    size="sm" 
+                                    className="h-8 px-2"
+                                    onClick={() => setViewMode('list')}
+                                >
+                                    <ListIcon className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
+                                    size="sm" 
+                                    className="h-8 px-2"
+                                    onClick={() => setViewMode('grid')}
+                                >
+                                    <Grid className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
@@ -217,10 +241,12 @@ export default function MyInventoriesPage({
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-[50px]">
-                                                <Checkbox 
-                                                    checked={selectedIds.length === filteredInventories.length && filteredInventories.length > 0}
-                                                    onCheckedChange={toggleSelectAll}
-                                                />
+                                                {activeTab === 'owned' && (
+                                                    <Checkbox 
+                                                        checked={filteredInventories.length > 0 && selectedIds.length === filteredInventories.length}
+                                                        onCheckedChange={toggleSelectAll}
+                                                    />
+                                                )}
                                             </TableHead>
                                             <TableHead>{t('table.title', 'Title')}</TableHead>
                                             <TableHead className="hidden md:table-cell">{t('table.category', 'Category')}</TableHead>
@@ -234,10 +260,12 @@ export default function MyInventoriesPage({
                                         {filteredInventories.map((inventory) => (
                                             <TableRow key={inventory.id} className="group" data-state={selectedIds.includes(inventory.id) ? "selected" : undefined}>
                                                 <TableCell>
-                                                    <Checkbox 
-                                                        checked={selectedIds.includes(inventory.id)}
-                                                        onCheckedChange={() => toggleSelectOne(inventory.id)}
-                                                    />
+                                                    {activeTab === 'owned' && (
+                                                        <Checkbox 
+                                                            checked={selectedIds.includes(inventory.id)}
+                                                            onCheckedChange={() => toggleSelectOne(inventory.id)}
+                                                        />
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="font-medium">
                                                     <a href={showEndpoint.replace('__id__', inventory.id)} className="hover:underline">
@@ -287,15 +315,19 @@ export default function MyInventoriesPage({
                                                                             View
                                                                         </a>
                                                                     </DropdownMenuItem>
-                                                                    <DropdownMenuItem onSelect={() => setEditingInventory(inventory)}>
-                                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                                        Edit
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem className="text-destructive" onClick={() => handleBatchDelete([inventory.id])}>
-                                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                                        Delete
-                                                                    </DropdownMenuItem>
+                                                                    {activeTab === 'owned' && (
+                                                                        <>
+                                                                            <DropdownMenuItem onSelect={() => setEditingInventory(inventory)}>
+                                                                                <Pencil className="mr-2 h-4 w-4" />
+                                                                                Edit
+                                                                            </DropdownMenuItem>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className="text-destructive" onClick={() => handleBatchDelete([inventory.id])}>
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Delete
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    )}
                                                                 </>
                                                             )}
                                                         </DropdownMenuContent>
@@ -340,11 +372,16 @@ export default function MyInventoriesPage({
                             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Package className="h-8 w-8 text-muted-foreground/50" />
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">{t('home.no_inventories', 'No inventories yet')}</h3>
+                            <h3 className="text-lg font-semibold mb-2">{t('home.no_inventories', 'No inventories found')}</h3>
                             <p className="text-muted-foreground max-w-sm mx-auto mb-6">
-                                {t('inventory.empty_description', 'Start by adding your first inventory.')}
+                                {activeTab === 'shared' 
+                                    ? t('my_inv.no_shared', 'No inventories have been shared with you.')
+                                    : t('inventory.empty_description', 'Start by adding your first inventory.')
+                                }
                             </p>
-                            <CreateInventorySheet categories={categories} />
+                            {activeTab === 'owned' && !showDeleted && (
+                                <CreateInventorySheet categories={categories} />
+                            )}
                         </div>
                     )}
                 </CardContent>
