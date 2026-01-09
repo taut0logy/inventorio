@@ -125,7 +125,7 @@ export default function InventorySettingsSheet({
                     </Button>
                 )}
             </SheetTrigger>
-            <SheetContent className="sm:max-w-[640px] overflow-y-auto">
+            <SheetContent className="sm:max-w-[640px] overflow-y-auto px-4">
                 <form onSubmit={handleSubmit}>
                     <SheetHeader>
                         <SheetTitle>{t('settings.title', 'Inventory Settings')}</SheetTitle>

@@ -132,7 +132,7 @@ export default function InventorySheet({
                     </SheetDescription>
                 </SheetHeader>
                 
-                <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+                <form onSubmit={handleSubmit} className="space-y-6 mt-6 px-4">
                     <div className="space-y-2">
                         <Label htmlFor="title">
                             {t('inventory.form.title', 'Title')} <span className="text-destructive">*</span>

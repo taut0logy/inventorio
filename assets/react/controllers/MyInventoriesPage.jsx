@@ -380,7 +380,7 @@ export default function MyInventoriesPage({
                                 }
                             </p>
                             {activeTab === 'owned' && !showDeleted && (
-                                <CreateInventorySheet categories={categories} />
+                                <InventorySheet categories={categories} />
                             )}
                         </div>
                     )}

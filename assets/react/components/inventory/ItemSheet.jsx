@@ -277,7 +277,7 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
                     </Button>
                 )}
             </SheetTrigger>
-            <SheetContent className="sm:max-w-[540px] overflow-y-auto">
+            <SheetContent className="sm:max-w-[540px] overflow-y-auto px-4">
                 <form onSubmit={handleSubmit}>
                     <SheetHeader>
                         <SheetTitle>{isEditMode ? t('item.edit_title', 'Edit Item') : t('item.create_title', 'Add New Item')}</SheetTitle>
