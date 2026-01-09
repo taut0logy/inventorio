@@ -52,6 +52,7 @@
             customBool3Value: item.customBool3Value,
             tags: item.tags|map(t => ({ id: t.id ~ '', name: t.name }))
         }),
-        showDeleted: showDeleted
+        showDeleted: showDeleted,
+        likedItemIds: likedItemIds|map(id => id ~ '')
     }) }}></div>
 {% endblock %}
