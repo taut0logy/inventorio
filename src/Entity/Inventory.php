@@ -60,6 +60,10 @@ class Inventory
     #[ORM\Column(nullable: true)]
     private ?array $idGenerationConfig = null;
 
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\JoinTable(name: 'inventory_shared_users')]
+    private Collection $sharedWith;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -75,6 +79,7 @@ class Inventory
         $this->items = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->sharedWith = new ArrayCollection();
         // Default ID Config
         $this->idGenerationConfig = [
             'type' => 'manual', // manual, auto
@@ -295,6 +300,30 @@ class Inventory
     public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getSharedWith(): Collection
+    {
+        return $this->sharedWith;
+    }
+
+    public function addSharedWith(User $user): static
+    {
+        if (!$this->sharedWith->contains($user)) {
+            $this->sharedWith->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeSharedWith(User $user): static
+    {
+        $this->sharedWith->removeElement($user);
 
         return $this;
     }

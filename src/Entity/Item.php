@@ -25,6 +25,10 @@ class Item
     #[ORM\JoinColumn(nullable: false)]
     private ?Inventory $inventory = null;
 
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\JoinTable(name: 'item_likes')]
+    private Collection $likedBy;
+
     #[ORM\Column(length: 255)]
     private ?string $customId = null;
 
@@ -124,6 +128,7 @@ class Item
     {
         $this->id = Uuid::v7();
         $this->tags = new ArrayCollection();
+        $this->likedBy = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -352,4 +357,38 @@ class Item
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getLikedBy(): Collection
+    {
+        return $this->likedBy;
+    }
+
+    public function addLikedBy(User $user): static
+    {
+        if (!$this->likedBy->contains($user)) {
+            $this->likedBy->add($user);
+            $this->likeCount++;
+        }
+
+        return $this;
+    }
+
+    public function removeLikedBy(User $user): static
+    {
+        if ($this->likedBy->removeElement($user)) {
+             $this->likeCount = max(0, $this->likeCount - 1);
+        }
+
+        return $this;
+    }
+
+    public function isLikedBy(User $user): bool
+    {
+        return $this->likedBy->contains($user);
+    }
+
+
 }

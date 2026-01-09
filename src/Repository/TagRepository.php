@@ -90,4 +90,16 @@ class TagRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function countItems(Tag $tag): int
+    {
+        return (int) $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(i.id)')
+            ->from('App\Entity\Item', 'i')
+            ->join('i.tags', 't')
+            ->where('t.id = :tagId')
+            ->setParameter('tagId', $tag->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

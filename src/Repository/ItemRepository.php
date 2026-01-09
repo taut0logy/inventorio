@@ -159,4 +159,22 @@ class ItemRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    /**
+     * Get IDs of items liked by user in this inventory
+     * @return string[]
+     */
+    public function findLikedItemIds(Inventory $inventory, \App\Entity\User $user): array
+    {
+        $rows = $this->createQueryBuilder('i')
+            ->select('i.id')
+            ->join('i.likedBy', 'u')
+            ->where('i.inventory = :inventory')
+            ->andWhere('u.id = :user')
+            ->setParameter('inventory', $inventory)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($rows, 'id');
+    }
 }

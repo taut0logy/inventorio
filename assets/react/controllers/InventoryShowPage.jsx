@@ -37,6 +37,7 @@ import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
 import CommentsSection from '@/components/inventory/CommentsSection';
+import AccessControlModal from '@/components/inventory/AccessControlModal';
 import { useConfirm } from '@/components/common/useConfirm';
 
 // Default order includes all fields
@@ -61,12 +62,53 @@ export default function InventoryShowPage({
     inventory, 
     currentUser,
     isCreator,
+    canAddItem = false,
+    canEditInventory = false,
     items = [],
-    showDeleted = false
+    showDeleted = false,
+    likedItemIds = []
 }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
     const [ConfirmDialog, confirm] = useConfirm();
+    const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
+
+    // Likes state
+    const [likes, setLikes] = useState(() => {
+        const initialLikes = {};
+        if (likedItemIds) {
+            likedItemIds.forEach(id => { initialLikes[id] = true; });
+        }
+        return initialLikes;
+    });
+    const [localCounts, setLocalCounts] = useState(() => {
+        const counts = {};
+        items.forEach(item => { counts[item.id] = item.likeCount || 0; });
+        return counts;
+    });
+
+    const handleToggleLike = async (itemId) => {
+        const isLiked = !likes[itemId];
+        setLikes(prev => ({ ...prev, [itemId]: isLiked }));
+        setLocalCounts(prev => ({ 
+            ...prev, 
+            [itemId]: isLiked ? (prev[itemId] || 0) + 1 : Math.max(0, (prev[itemId] || 0) - 1)
+        }));
+
+        try {
+            const res = await fetch(`/api/items/${itemId}/like`, { method: 'POST' });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            setLikes(prev => ({ ...prev, [itemId]: data.isLiked }));
+            setLocalCounts(prev => ({ ...prev, [itemId]: data.likeCount }));
+        } catch (e) {
+            setLikes(prev => ({ ...prev, [itemId]: !isLiked }));
+            setLocalCounts(prev => ({ 
+                ...prev, 
+                [itemId]: !isLiked ? (prev[itemId] || 0) + 1 : Math.max(0, (prev[itemId] || 0) - 1)
+            }));
+        }
+    };
 
     const toggleDeletedMode = () => {
         const url = new URL(window.location);
@@ -368,14 +410,19 @@ export default function InventoryShowPage({
                     </div>
                     
                     <div className="flex items-center gap-2">
-                        {isCreator && (
+                        {canAddItem && (
                             <ItemSheet 
                                 inventoryId={inventory.id} 
                                 fieldConfig={fieldsConfig}
                                 idConfig={idConfig}
                             />
                         )}
-                        {isCreator && (
+                        {canEditInventory && (
+                            <Button variant="outline" size="icon" onClick={() => setIsAccessModalOpen(true)} title={t('action.share', 'Share')}>
+                                <Share2 className="h-4 w-4" />
+                            </Button>
+                        )}
+                        {canEditInventory && (
                             <InventorySettingsSheet 
                                 inventory={inventory} 
                                 currentFieldsConfig={fieldsConfig}
@@ -386,7 +433,7 @@ export default function InventoryShowPage({
                                 }}
                             />
                         )}
-                        {isCreator && (
+                        {canEditInventory && (
                             <TrashToggle showDeleted={showDeleted} onToggle={toggleDeletedMode} />
                         )}
                     </div>
@@ -424,8 +471,9 @@ export default function InventoryShowPage({
                                 </Button>
                             </div>
 
+                            
                             {/* Batch Actions Toolbar */}
-                            {selectedIds.length > 0 && isCreator && (
+                            {selectedIds.length > 0 && canAddItem && (
                                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-md border animate-in fade-in slide-in-from-right-4">
                                     <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
                                         {selectedIds.length} {t('inventory.selected', 'selected')}
@@ -491,7 +539,34 @@ export default function InventoryShowPage({
                                                         onCheckedChange={() => toggleSelectOne(item.id)}
                                                     />
                                                 </TableCell>
-                                                <TableCell className="font-medium font-mono">{item.customId}</TableCell>
+                                                <TableCell className="font-medium font-mono">
+                                                    <div className="flex items-center gap-2">
+                                                        {item.customId}
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className={`h-6 w-6 ${likes[item.id] ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
+                                                            onClick={(e) => { e.stopPropagation(); handleToggleLike(item.id); }}
+                                                            title={likes[item.id] ? "Unlike" : "Like"}
+                                                        >
+                                                            <span className={`text-[10px] mr-1 ${likes[item.id] ? 'font-bold' : ''}`}>
+                                                                {localCounts[item.id] > 0 ? localCounts[item.id] : ''}
+                                                            </span>
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                fill={likes[item.id] ? "currentColor" : "none"}
+                                                                stroke="currentColor"
+                                                                strokeWidth="2"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                className="h-3.5 w-3.5"
+                                                            >
+                                                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 1.5l.25.15c.12.07.24.15.34.23a4.9 4.9 0 0 0 .58.55L12 8l-2.17-2.57a4.9 4.9 0 0 0-.58-.55l-.34-.23c-1.5-1-2.74-1.5-4.5-1.5A5.5 5.5 0 0 0 2.5 8.5c0 2.28 1.5 4.04 3 5.5l6.5 6.5 6.5-6.5z" />
+                                                            </svg>
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
                                                 {tableColumns.map(col => (
                                                     <TableCell key={col.key}>
                                                         {getItemValue(item, col.key) ?? '-'}
@@ -505,44 +580,41 @@ export default function InventoryShowPage({
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            {isCreator && (
+                                                            {(showDeleted && canEditInventory) && (
                                                                 <>
-                                                                    {showDeleted ? (
-                                                                        <>
-                                                                            <DropdownMenuItem onClick={() => handleRestore(item.id)}>
-                                                                                <RefreshCcw className="mr-2 h-4 w-4" />
-                                                                                {t('action.restore', 'Restore')}
-                                                                            </DropdownMenuItem>
-                                                                            <DropdownMenuSeparator />
-                                                                            <DropdownMenuItem className="text-destructive" onClick={() => handlePermanentDelete(item.id)}>
-                                                                                <XCircle className="mr-2 h-4 w-4" />
-                                                                                {t('action.permanent_delete', 'Delete Forever')}
-                                                                            </DropdownMenuItem>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <ItemSheet 
-                                                                                inventoryId={inventory.id} 
-                                                                                item={item}
-                                                                                fieldConfig={fieldsConfig}
-                                                                                idConfig={idConfig} 
-                                                                                trigger={
-                                                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                                                        Edit
-                                                                                    </DropdownMenuItem>
-                                                                                }
-                                                                            />
-                                                                            <DropdownMenuSeparator />
-                                                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                Delete
-                                                                            </DropdownMenuItem>
-                                                                        </>
-                                                                    )}
+                                                                    <DropdownMenuItem onClick={() => handleRestore(item.id)}>
+                                                                        <RefreshCcw className="mr-2 h-4 w-4" />
+                                                                        {t('action.restore', 'Restore')}
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => handlePermanentDelete(item.id)}>
+                                                                        <XCircle className="mr-2 h-4 w-4" />
+                                                                        {t('action.permanent_delete', 'Delete Forever')}
+                                                                    </DropdownMenuItem>
                                                                 </>
                                                             )}
-                                                            {!isCreator && (
+                                                            {(!showDeleted && canAddItem) && (
+                                                                <>
+                                                                    <ItemSheet 
+                                                                        inventoryId={inventory.id} 
+                                                                        item={item}
+                                                                        fieldConfig={fieldsConfig}
+                                                                        idConfig={idConfig} 
+                                                                        trigger={
+                                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                                                <Pencil className="mr-2 h-4 w-4" />
+                                                                                Edit
+                                                                            </DropdownMenuItem>
+                                                                        }
+                                                                    />
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                            {!canAddItem && (
                                                                 <DropdownMenuItem>
                                                                     <MoreHorizontal className="mr-2 h-4 w-4" />
                                                                     View Details
@@ -579,6 +651,12 @@ export default function InventoryShowPage({
                 </Tabs>
             </main>
             <ConfirmDialog />
+            <AccessControlModal 
+                inventoryId={inventory.id}
+                initialSharedUsers={inventory.sharedWith || []}
+                open={isAccessModalOpen}
+                onOpenChange={setIsAccessModalOpen}
+            />
         </div>
     );
 }

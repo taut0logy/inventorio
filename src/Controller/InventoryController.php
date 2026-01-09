@@ -7,6 +7,8 @@ use App\Repository\InventoryRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\TagRepository;
 use App\Repository\ItemRepository;
+use App\Repository\UserRepository;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,9 +55,15 @@ class InventoryController extends AbstractController
              $inventories = array_filter($inventories, fn($i) => $i->getDeletedAt() !== null);
         }
 
+        if ($user = $this->getUser()) {
+            $sharedInventories = $inventoryRepository->findSharedWithUser($user);
+        } else {
+            $sharedInventories = [];
+        }
+
         return $this->render('inventory/index.html.twig', [
             'inventories' => $inventories, // Owned
-            'sharedInventories' => [], // TODO: query where user has access once ACL is implemented
+            'sharedInventories' => $sharedInventories,
             'categories' => $categoryRepository->findAllOrdered(),
             'showDeleted' => $showDeleted,
         ]);
@@ -130,9 +138,10 @@ class InventoryController extends AbstractController
     ): Response {
         $inventory = $inventoryRepository->find($id);
 
-        if (!$inventory || $inventory->getCreator() !== $this->getUser()) {
-            throw $this->createNotFoundException('Inventory not found');
+        if (!$inventory) {
+             throw $this->createNotFoundException('Inventory not found');
         }
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
 
         $data = json_decode($request->getContent(), true);
 
@@ -211,9 +220,7 @@ class InventoryController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($inventory->getCreator() !== $this->getUser()) {
-             return $this->json(['error' => 'Access denied'], 403);
-        }
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
 
         $data = json_decode($request->getContent(), true);
         
@@ -237,6 +244,8 @@ class InventoryController extends AbstractController
     #[Route('/{id}', name: 'app_inventory_show', methods: ['GET'])]
     public function show(Inventory $inventory, Request $request, EntityManagerInterface $em, ItemRepository $itemRepo): Response
     {
+        $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
+        
         $showDeleted = $request->query->getBoolean('deleted');
         $items = [];
 
@@ -256,8 +265,11 @@ class InventoryController extends AbstractController
         return $this->render('inventory/show.html.twig', [
             'inventory' => $inventory,
             'isCreator' => $this->getUser() === $inventory->getCreator(),
+            'canAddItem' => $this->isGranted('ITEM_ADD', $inventory),
+            'canEditInventory' => $this->isGranted('INVENTORY_EDIT', $inventory),
             'showDeleted' => $showDeleted,
-            'deletedItems' => $showDeleted ? $items : []
+            'deletedItems' => $showDeleted ? $items : [],
+            'likedItemIds' => $this->getUser() ? $itemRepo->findLikedItemIds($inventory, $this->getUser()) : []
         ]);
     }
     #[Route('/{id}/restore', name: 'app_inventory_restore', methods: ['POST'])]
@@ -319,5 +331,56 @@ class InventoryController extends AbstractController
         }
 
         return $this->json(['message' => 'Permanently deleted']);
+    }
+
+    #[Route('/{id}/access', name: 'app_inventory_access_add', methods: ['POST'])]
+    public function addAccess(
+        Inventory $inventory, 
+        Request $request, 
+        UserRepository $userRepo, 
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+        
+        $data = json_decode($request->getContent(), true);
+        $userId = $data['userId'] ?? null;
+        
+        if (!$userId) {
+            return $this->json(['error' => 'User ID required'], 400);
+        }
+
+        $user = $userRepo->find($userId);
+        if (!$user) {
+            return $this->json(['error' => 'User not found'], 404);
+        }
+
+        if ($inventory->getCreator() === $user) {
+            return $this->json(['error' => 'Cannot share with yourself'], 400);
+        }
+
+        $inventory->addSharedWith($user);
+        $em->flush();
+
+        return $this->json(['message' => 'User access granted']);
+    }
+
+    #[Route('/{id}/access/{userId}', name: 'app_inventory_access_remove', methods: ['DELETE'])]
+    public function removeAccess(
+        Inventory $inventory, 
+        string $userId, 
+        UserRepository $userRepo, 
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+        
+        $user = $userRepo->find($userId);
+        if (!$user) {
+             return $this->json(['error' => 'User not found'], 404);
+        }
+
+        $inventory->removeSharedWith($user);
+        $em->flush();
+
+        return $this->json(['message' => 'User access removed']);
     }
 }

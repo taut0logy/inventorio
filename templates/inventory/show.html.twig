@@ -16,7 +16,13 @@
             },
             tags: inventory.tags|map(t => ({ id: t.id ~ '', name: t.name })),
             customFieldsConfig: inventory.customFieldsConfig,
-            idGenerationConfig: inventory.idGenerationConfig
+            idGenerationConfig: inventory.idGenerationConfig,
+            sharedWith: inventory.sharedWith|map(u => ({
+                id: u.id ~ '',
+                name: u.fullName,
+                email: u.email,
+                avatarUrl: u.avatarUrl
+            }))
         },
         currentUser: app.user ? {
             id: app.user.id ~ '',
@@ -24,6 +30,8 @@
             avatarUrl: app.user.avatarUrl
         } : null,
         isCreator: isCreator,
+        canAddItem: canAddItem,
+        canEditInventory: canEditInventory,
         items: (showDeleted ? deletedItems : inventory.items)|map(item => {
             id: item.id ~ '',
             customId: item.customId,

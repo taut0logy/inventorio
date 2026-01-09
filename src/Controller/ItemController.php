@@ -110,10 +110,8 @@ class ItemController extends AbstractController
         TagRepository $tagRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        // Security check: Only creator can add items (for now)
-        if ($inventory->getCreator() !== $this->getUser()) {
-             return $this->json(['error' => 'Access denied'], 403);
-        }
+        // Security check
+        $this->denyAccessUnlessGranted('ITEM_ADD', $inventory);
 
         $data = json_decode($request->getContent(), true);
         
@@ -197,9 +195,7 @@ class ItemController extends AbstractController
         TagRepository $tagRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($item->getInventory()->getCreator() !== $this->getUser()) {
-             return $this->json(['error' => 'Access denied'], 403);
-        }
+        $this->denyAccessUnlessGranted('ITEM_EDIT', $item->getInventory());
 
         $data = json_decode($request->getContent(), true);
         
@@ -264,9 +260,7 @@ class ItemController extends AbstractController
         Item $item,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($item->getInventory()->getCreator() !== $this->getUser()) {
-             return $this->json(['error' => 'Access denied'], 403);
-        }
+        $this->denyAccessUnlessGranted('ITEM_DELETE', $item->getInventory());
 
         // Soft delete logic handled by Gedmo or manual? 
         // Entity has SoftDeletable trait usually, but let's check. 
@@ -300,7 +294,7 @@ class ItemController extends AbstractController
         // Optimization: Could use DQL DELETE for speed, but standard loop is safer for listeners
         foreach ($ids as $id) {
             $item = $itemRepository->find($id);
-            if ($item && $item->getInventory()->getCreator() === $this->getUser()) {
+            if ($item && $this->isGranted('ITEM_DELETE', $item->getInventory())) {
                 $entityManager->remove($item);
             }
         }
@@ -367,5 +361,38 @@ class ItemController extends AbstractController
         }
 
         return $this->json(['message' => 'Permanently deleted']);
+    }
+
+    #[Route('/{id}/like', name: 'app_item_like', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function toggleLike(
+        Item $item, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        // Check if user is fully authenticated (should be covered by IsGranted)
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $isLiked = false;
+        if ($item->isLikedBy($user)) {
+            $item->removeLikedBy($user);
+            $isLiked = false;
+        } else {
+            $item->addLikedBy($user);
+            $isLiked = true;
+        }
+
+        try {
+            $entityManager->flush();
+        } catch (\Exception $e) {
+             return $this->json(['error' => 'Error updating like status'], 500);
+        }
+
+        return $this->json([
+            'isLiked' => $isLiked,
+            'likeCount' => $item->getLikeCount()
+        ]);
     }
 }
