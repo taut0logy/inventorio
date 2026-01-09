@@ -22,10 +22,29 @@ nav.login: Login
 nav.register: Register
 
 # Home
+home.hero.badge: Schema-Driven Inventory Management
 home.hero.title: Manage Your Inventory
-home.hero.subtitle: Create custom inventories with flexible fields, unique ID formats, and powerful organization tools.
+home.hero.highlight: Effortlessly
+home.hero.subtitle: Create custom inventories with flexible fields, unique ID formats, and powerful organization tools. Built for teams who need control over their data.
 home.hero.create: Create Inventory
 home.hero.my_inventories: My Inventories
+home.hero.feature1: Multi-language support
+home.hero.feature2: Secure by design
+home.hero.feature3: Team collaboration
+home.features.title: Everything you need to manage inventory
+home.features.subtitle: Powerful features designed for flexibility and control.
+home.feature.custom_id.title: Custom ID Generation
+home.feature.custom_id.desc: "Create unique item identifiers with composable elements: sequences, dates, random codes, and fixed text."
+home.feature.custom_fields.title: Flexible Custom Fields
+home.feature.custom_fields.desc: "Define up to 15 custom fields per inventory: text, numbers, links, and boolean values."
+home.feature.access.title: Access Control
+home.feature.access.desc: Share private inventories with specific users. Control who can view and edit your data.
+home.feature.discussion.title: Real-time Discussion
+home.feature.discussion.desc: Collaborate with your team through per-inventory discussion threads with instant updates.
+home.feature.search.title: Full-text Search
+home.feature.search.desc: Find any inventory or item instantly with powerful full-text search across all fields.
+home.feature.security.title: Concurrent Editing
+home.feature.security.desc: Optimistic locking prevents data conflicts when multiple users edit simultaneously.
 home.latest.title: Latest Inventories
 home.popular.title: Top 5 Popular
 home.categories.title: Categories
@@ -34,6 +53,9 @@ home.no_inventories: No inventories yet. Be the first to create one!
 home.no_popular: No popular inventories yet.
 home.no_tags: No tags available.
 home.view_all: View All
+home.cta.title: Ready to get started?
+home.cta.subtitle: Create your first inventory in minutes. No credit card required.
+home.cta.button: Create Free Account
 
 # Common
 table.title: Title

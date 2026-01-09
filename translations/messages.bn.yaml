@@ -22,18 +22,40 @@ nav.login: লগইন
 nav.register: নিবন্ধন
 
 # Home
+home.hero.badge: স্কিমা-ভিত্তিক ইনভেন্টরি ব্যবস্থাপনা
 home.hero.title: আপনার ইনভেন্টরি পরিচালনা করুন
-home.hero.subtitle: নমনীয় ফিল্ড, অনন্য আইডি ফরম্যাট এবং শক্তিশালী সাংগঠনিক সরঞ্জাম দিয়ে কাস্টম ইনভেন্টরি তৈরি করুন।
+home.hero.highlight: অনায়াসে
+home.hero.subtitle: নমনীয় ফিল্ড, অনন্য আইডি ফরম্যাট এবং শক্তিশালী সাংগঠনিক সরঞ্জাম দিয়ে কাস্টম ইনভেন্টরি তৈরি করুন। যারা তাদের ডেটার উপর নিয়ন্ত্রণ চান তাদের জন্য তৈরি।
 home.hero.create: ইনভেন্টরি তৈরি করুন
 home.hero.my_inventories: আমার ইনভেন্টরি
+home.hero.feature1: বহু-ভাষা সমর্থন
+home.hero.feature2: নিরাপত্তা-কেন্দ্রিক নকশা
+home.hero.feature3: টিম সহযোগিতা
+home.features.title: ইনভেন্টরি পরিচালনার জন্য প্রয়োজনীয় সব কিছু
+home.features.subtitle: নমনীয়তা এবং নিয়ন্ত্রণের জন্য ডিজাইন করা শক্তিশালী বৈশিষ্ট্য।
+home.feature.custom_id.title: কাস্টম আইডি জেনারেশন
+home.feature.custom_id.desc: "সিকোয়েন্স, তারিখ, র‍্যান্ডম কোড এবং নির্দিষ্ট টেক্সট দিয়ে অনন্য আইটেম আইডেন্টিফায়ার তৈরি করুন।"
+home.feature.custom_fields.title: নমনীয় কাস্টম ফিল্ড
+home.feature.custom_fields.desc: "প্রতি ইনভেন্টরিতে ১৫টি পর্যন্ত কাস্টম ফিল্ড সংজ্ঞায়িত করুন: টেক্সট, সংখ্যা, লিংক এবং বুলিয়ান মান।"
+home.feature.access.title: অ্যাক্সেস নিয়ন্ত্রণ
+home.feature.access.desc: নির্দিষ্ট ব্যবহারকারীদের সাথে প্রাইভেট ইনভেন্টরি শেয়ার করুন। কে দেখতে এবং সম্পাদনা করতে পারবে তা নিয়ন্ত্রণ করুন।
+home.feature.discussion.title: রিয়েল-টাইম আলোচনা
+home.feature.discussion.desc: প্রতি-ইনভেন্টরি আলোচনা থ্রেডের মাধ্যমে আপনার টিমের সাথে তাৎক্ষণিক আপডেট পান।
+home.feature.search.title: ফুল-টেক্সট সার্চ
+home.feature.search.desc: সমস্ত ফিল্ড জুড়ে শক্তিশালী ফুল-টেক্সট সার্চ দিয়ে যেকোনো ইনভেন্টরি বা আইটেম তাৎক্ষণিক খুঁজে পান।
+home.feature.security.title: সমসাময়িক সম্পাদনা
+home.feature.security.desc: অপ্টিমিস্টিক লকিং একাধিক ব্যবহারকারী একসাথে সম্পাদনা করলে ডেটা দ্বন্দ্ব প্রতিরোধ করে।
 home.latest.title: সর্বশেষ ইনভেন্টরি
 home.popular.title: সেরা ৫ জনপ্রিয়
 home.categories.title: ক্যাটাগরি
-home.browse_tags: ট্যাগ দ্বারা ব্রাউজ করুন
-home.no_inventories: এখনো কোন ইনভেন্টরি নেই। প্রথমটি তৈরি করুন!
-home.no_popular: কোন জনপ্রিয় ইনভেন্টরি নেই।
-home.no_tags: কোন ট্যাগ নেই।
+home.browse_tags: ট্যাগ দিয়ে ব্রাউজ করুন
+home.no_inventories: এখনো কোনো ইনভেন্টরি নেই। প্রথমটি তৈরি করুন!
+home.no_popular: এখনো কোনো জনপ্রিয় ইনভেন্টরি নেই।
+home.no_tags: কোনো ট্যাগ পাওয়া যায়নি।
 home.view_all: সব দেখুন
+home.cta.title: শুরু করতে প্রস্তুত?
+home.cta.subtitle: কয়েক মিনিটেই আপনার প্রথম ইনভেন্টরি তৈরি করুন। কোনো ক্রেডিট কার্ড লাগবে না।
+home.cta.button: বিনামূল্যে অ্যাকাউন্ট তৈরি করুন
 
 # Common
 table.title: শিরোনাম

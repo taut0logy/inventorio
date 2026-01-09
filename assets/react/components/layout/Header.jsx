@@ -136,9 +136,9 @@ export default function Header({
                     </Button>
 
                     {/* Language Toggle */}
-                    <Button variant="ghost" size="icon" onClick={toggleLocale}>
-                        <Globe className="h-5 w-5" />
-                        <span className="sr-only">{currentLocale === 'en' ? 'EN' : 'বাং'}</span>
+                    <Button variant="ghost" size="sm" onClick={toggleLocale} className="gap-1.5">
+                        <Globe className="h-4 w-4" />
+                        <span className="text-xs font-medium">{currentLocale === 'en' ? 'EN' : 'BN'}</span>
                     </Button>
 
                     {/* User Menu */}
