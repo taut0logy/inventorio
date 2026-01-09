@@ -216,7 +216,7 @@ export default function Header({
                                 <Menu className="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-80">
+                        <SheetContent side="right" className="w-80 px-4 py-6">
                             <div className="flex flex-col space-y-4 mt-6">
                                 {/* Mobile Search */}
                                 <form action={searchPath} method="get" className="relative">
