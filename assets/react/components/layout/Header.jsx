@@ -87,6 +87,15 @@ export default function Header({
                     {t('nav.inventory', 'My Inventories')}
                 </a>
             )}
+            {isAdmin && (
+                <a 
+                    href={adminPath} 
+                    onClick={onClick}
+                    className="transition-colors hover:text-foreground text-foreground/60"
+                >
+                    {t('nav.admin', 'Admin')}
+                </a>
+            )}
         </nav>
     );
 

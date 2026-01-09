@@ -83,7 +83,7 @@ class AdminApiController extends AbstractController
              return $this->json(['message' => 'You cannot block yourself'], 403);
         }
 
-        $user->setIsBlocked(!$user->isBlocked());
+        $user->setBlocked(!$user->isBlocked());
         $this->entityManager->flush();
 
         return $this->json([
@@ -131,5 +131,77 @@ class AdminApiController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json(['message' => 'User deleted successfully']);
+    }
+
+    #[Route('/bulk/block', name: 'api_admin_users_bulk_block', methods: ['POST'])]
+    public function bulkBlock(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        
+        if (empty($ids)) {
+            return $this->json(['message' => 'No users selected'], 400);
+        }
+
+        $count = 0;
+        foreach ($ids as $id) {
+            $user = $this->userRepository->find($id);
+            if ($user && $user !== $this->getUser()) {
+                $user->setBlocked(true);
+                $count++;
+            }
+        }
+        
+        $this->entityManager->flush();
+
+        return $this->json(['message' => "$count users blocked"]);
+    }
+
+    #[Route('/bulk/unblock', name: 'api_admin_users_bulk_unblock', methods: ['POST'])]
+    public function bulkUnblock(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        
+        if (empty($ids)) {
+            return $this->json(['message' => 'No users selected'], 400);
+        }
+
+        $count = 0;
+        foreach ($ids as $id) {
+            $user = $this->userRepository->find($id);
+            if ($user) {
+                $user->setBlocked(false);
+                $count++;
+            }
+        }
+        
+        $this->entityManager->flush();
+
+        return $this->json(['message' => "$count users unblocked"]);
+    }
+
+    #[Route('/bulk/delete', name: 'api_admin_users_bulk_delete', methods: ['POST'])]
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        
+        if (empty($ids)) {
+            return $this->json(['message' => 'No users selected'], 400);
+        }
+
+        $count = 0;
+        foreach ($ids as $id) {
+            $user = $this->userRepository->find($id);
+            if ($user && $user !== $this->getUser()) {
+                $user->setDeletedAt(new \DateTime());
+                $count++;
+            }
+        }
+        
+        $this->entityManager->flush();
+
+        return $this->json(['message' => "$count users deleted"]);
     }
 }

@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block body %}
+    <div {{ react_component('AdminPage', { 
+        currentUser: app.user ? {
+            id: app.user.id,
+            email: app.user.email
+        } : null
+    }) }}></div>
+{% endblock %}

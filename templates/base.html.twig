@@ -30,7 +30,7 @@
             registerPath: path('app_register'),
             logoutPath: path('app_logout'),
             profilePath: path('app_profile'),
-            adminPath: '#',
+            adminPath: is_granted('ROLE_ADMIN') ? path('app_admin') : '#',
             myInventoriesPath: app.user ? path('app_inventory_index') : '#',
             searchPath: '#'
         }) }}>
@@ -248,7 +248,43 @@
                     'search.view_all': {{ 'search.view_all'|trans|json_encode|raw }},
                     'search.loading': {{ 'search.loading'|trans|json_encode|raw }},
                     'search.min_chars': {{ 'search.min_chars'|trans|json_encode|raw }},
-                    'search.in_inventory': {{ 'search.in_inventory'|trans|json_encode|raw }}
+                    'search.in_inventory': {{ 'search.in_inventory'|trans|json_encode|raw }},
+                    
+                    // Admin
+                    'admin.title': {{ 'admin.title'|trans|json_encode|raw }},
+                    'admin.users_count': {{ 'admin.users_count'|trans|json_encode|raw }},
+                    'admin.search_placeholder': {{ 'admin.search_placeholder'|trans|json_encode|raw }},
+                    'admin.table.user': {{ 'admin.table.user'|trans|json_encode|raw }},
+                    'admin.table.role': {{ 'admin.table.role'|trans|json_encode|raw }},
+                    'admin.table.status': {{ 'admin.table.status'|trans|json_encode|raw }},
+                    'admin.table.created': {{ 'admin.table.created'|trans|json_encode|raw }},
+                    'admin.table.actions': {{ 'admin.table.actions'|trans|json_encode|raw }},
+                    'admin.status.active': {{ 'admin.status.active'|trans|json_encode|raw }},
+                    'admin.status.blocked': {{ 'admin.status.blocked'|trans|json_encode|raw }},
+                    'admin.role.admin': {{ 'admin.role.admin'|trans|json_encode|raw }},
+                    'admin.role.user': {{ 'admin.role.user'|trans|json_encode|raw }},
+                    'admin.action.block': {{ 'admin.action.block'|trans|json_encode|raw }},
+                    'admin.action.unblock': {{ 'admin.action.unblock'|trans|json_encode|raw }},
+                    'admin.action.promote': {{ 'admin.action.promote'|trans|json_encode|raw }},
+                    'admin.action.demote': {{ 'admin.action.demote'|trans|json_encode|raw }},
+                    'admin.action.delete': {{ 'admin.action.delete'|trans|json_encode|raw }},
+                    'admin.confirm.delete': {{ 'admin.confirm.delete'|trans|json_encode|raw }},
+                    'admin.confirm.block': {{ 'admin.confirm.block'|trans|json_encode|raw }},
+                    'admin.success.blocked': {{ 'admin.success.blocked'|trans|json_encode|raw }},
+                    'admin.success.role_updated': {{ 'admin.success.role_updated'|trans|json_encode|raw }},
+                    'admin.success.deleted': {{ 'admin.success.deleted'|trans|json_encode|raw }},
+                    
+                    'admin.bulk.selected': {{ 'admin.bulk.selected'|trans|json_encode|raw }},
+                    'admin.bulk.actions': {{ 'admin.bulk.actions'|trans|json_encode|raw }},
+                    'admin.bulk.block': {{ 'admin.bulk.block'|trans|json_encode|raw }},
+                    'admin.bulk.unblock': {{ 'admin.bulk.unblock'|trans|json_encode|raw }},
+                    'admin.bulk.delete': {{ 'admin.bulk.delete'|trans|json_encode|raw }},
+                    'admin.bulk.confirm.block': {{ 'admin.bulk.confirm.block'|trans|json_encode|raw }},
+                    'admin.bulk.confirm.unblock': {{ 'admin.bulk.confirm.unblock'|trans|json_encode|raw }},
+                    'admin.bulk.confirm.delete': {{ 'admin.bulk.confirm.delete'|trans|json_encode|raw }},
+                    'admin.bulk.success.blocked': {{ 'admin.bulk.success.blocked'|trans|json_encode|raw }},
+                    'admin.bulk.success.unblocked': {{ 'admin.bulk.success.unblocked'|trans|json_encode|raw }},
+                    'admin.bulk.success.deleted': {{ 'admin.bulk.success.deleted'|trans|json_encode|raw }}
                 };
             </script>
         </div>
