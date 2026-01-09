@@ -28,8 +28,11 @@ import {
     Pencil,
     ArrowUp,
     ArrowDown,
-    ArrowUpDown
+    ArrowUpDown,
+    RefreshCcw,
+    XCircle
 } from 'lucide-react';
+import { TrashToggle } from '@/components/common/TrashToggle';
 import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
@@ -57,10 +60,45 @@ export default function InventoryShowPage({
     inventory, 
     currentUser,
     isCreator,
-    items = []
+    items = [],
+    showDeleted = false
 }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const toggleDeletedMode = () => {
+        const url = new URL(window.location);
+        if (showDeleted) {
+            url.searchParams.delete('deleted');
+        } else {
+            url.searchParams.set('deleted', '1');
+        }
+        window.location.href = url.toString();
+    };
+
+    const handleRestore = async (id) => {
+        if (!confirm(t('confirm.restore', 'Are you sure you want to restore this item?'))) return;
+        try {
+            const res = await fetch(`/api/items/${id}/restore`, { method: 'POST' });
+            if (res.ok) window.location.reload();
+            else alert('Failed to restore');
+        } catch (e) {
+            console.error(e);
+            alert('Error restoring item');
+        }
+    };
+
+    const handlePermanentDelete = async (id) => {
+        if (!confirm(t('confirm.permanent_delete', 'Are you sure? This cannot be undone.'))) return;
+        try {
+            const res = await fetch(`/api/items/${id}/permanent`, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
+            else alert('Failed to delete permanently');
+        } catch (e) {
+            console.error(e);
+            alert('Error deleting item');
+        }
+    };
 
     // Stateful config (so settings changes reflect instantly)
     const [fieldsConfig, setFieldsConfig] = useState(() => {
@@ -328,10 +366,8 @@ export default function InventoryShowPage({
                                 }}
                             />
                         )}
-                        {!isCreator && (
-                            <Button variant="outline" size="icon">
-                                <Settings className="h-4 w-4" />
-                            </Button>
+                        {isCreator && (
+                            <TrashToggle showDeleted={showDeleted} onToggle={toggleDeletedMode} />
                         )}
                     </div>
                 </div>
@@ -451,23 +487,39 @@ export default function InventoryShowPage({
                                                         <DropdownMenuContent align="end">
                                                             {isCreator && (
                                                                 <>
-                                                                    <ItemSheet 
-                                                                        inventoryId={inventory.id} 
-                                                                        item={item}
-                                                                        fieldConfig={fieldsConfig}
-                                                                        idConfig={idConfig} 
-                                                                        trigger={
-                                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                                                                <Pencil className="mr-2 h-4 w-4" />
-                                                                                Edit
+                                                                    {showDeleted ? (
+                                                                        <>
+                                                                            <DropdownMenuItem onClick={() => handleRestore(item.id)}>
+                                                                                <RefreshCcw className="mr-2 h-4 w-4" />
+                                                                                {t('action.restore', 'Restore')}
                                                                             </DropdownMenuItem>
-                                                                        }
-                                                                    />
-                                                                    <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-                                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                                        Delete
-                                                                    </DropdownMenuItem>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className="text-destructive" onClick={() => handlePermanentDelete(item.id)}>
+                                                                                <XCircle className="mr-2 h-4 w-4" />
+                                                                                {t('action.permanent_delete', 'Delete Forever')}
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <ItemSheet 
+                                                                                inventoryId={inventory.id} 
+                                                                                item={item}
+                                                                                fieldConfig={fieldsConfig}
+                                                                                idConfig={idConfig} 
+                                                                                trigger={
+                                                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                                                        Edit
+                                                                                    </DropdownMenuItem>
+                                                                                }
+                                                                            />
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Delete
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    )}
                                                                 </>
                                                             )}
                                                             {!isCreator && (

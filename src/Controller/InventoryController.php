@@ -6,6 +6,7 @@ use App\Entity\Inventory;
 use App\Repository\InventoryRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\TagRepository;
+use App\Repository\ItemRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,12 +20,43 @@ class InventoryController extends AbstractController
     #[Route('/', name: 'app_inventory_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(
+        Request $request,
         InventoryRepository $inventoryRepository,
-        CategoryRepository $categoryRepository
+        CategoryRepository $categoryRepository,
+        EntityManagerInterface $entityManager
     ): Response {
+        $showDeleted = $request->query->getBoolean('deleted');
+        
+        if ($showDeleted && $entityManager->getFilters()->isEnabled('softdeleteable')) {
+            $entityManager->getFilters()->disable('softdeleteable');
+        }
+
+        $inventories = $inventoryRepository->findBy(
+            ['creator' => $this->getUser()], 
+            ['createdAt' => 'DESC']
+        );
+
+        if ($showDeleted) {
+             // Re-enable filter for safety if this EM is reused, 
+             // though in Symfony request scope it usually dies.
+             // But good practice.
+             // Re-enable filter for safety
+             if (!$entityManager->getFilters()->isEnabled('softdeleteable')) {
+                 $entityManager->getFilters()->enable('softdeleteable');
+             }
+             
+             // Filter in memory to only return actually deleted ones?
+             // findBy will return ALL (including deleted).
+             // The user might want ONLY deleted items in Trash UI.
+             // If I disable filter, I get both.
+             // I should filter `u.deletedAt IS NOT NULL`.
+             $inventories = array_filter($inventories, fn($i) => $i->getDeletedAt() !== null);
+        }
+
         return $this->render('inventory/index.html.twig', [
-            'inventories' => $inventoryRepository->findBy(['creator' => $this->getUser()], ['createdAt' => 'DESC']),
+            'inventories' => $inventories,
             'categories' => $categoryRepository->findAllOrdered(),
+            'showDeleted' => $showDeleted,
         ]);
     }
 
@@ -135,11 +167,89 @@ class InventoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_inventory_show', methods: ['GET'])]
-    public function show(Inventory $inventory): Response
+    public function show(Inventory $inventory, Request $request, EntityManagerInterface $em, ItemRepository $itemRepo): Response
     {
+        $showDeleted = $request->query->getBoolean('deleted');
+        $items = [];
+
+        if ($showDeleted) {
+            if ($em->getFilters()->isEnabled('softdeleteable')) {
+                $em->getFilters()->disable('softdeleteable');
+            }
+            // Fetch items explicitly including deleted ones
+            $items = $itemRepo->findByInventoryIncludeDeleted($inventory);
+            if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                $em->getFilters()->enable('softdeleteable');
+            }
+               
+             $items = array_filter($items, fn($i) => $i->getDeletedAt() !== null);
+        }
+
         return $this->render('inventory/show.html.twig', [
             'inventory' => $inventory,
             'isCreator' => $this->getUser() === $inventory->getCreator(),
+            'showDeleted' => $showDeleted,
+            'deletedItems' => $showDeleted ? $items : []
         ]);
+    }
+    #[Route('/{id}/restore', name: 'app_inventory_restore', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function restore(
+        string $id, 
+        InventoryRepository $repo, 
+        EntityManagerInterface $em
+    ): Response {
+        if ($em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+        $inventory = $repo->find($id);
+
+        if (!$inventory || $inventory->getCreator() !== $this->getUser()) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+            throw $this->createNotFoundException();
+        }
+
+        $inventory->setDeletedAt(null);
+        $em->flush();
+        if (!$em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $this->json(['message' => 'Inventory restored']);
+    }
+
+    #[Route('/{id}/permanent', name: 'app_inventory_permanent_delete', methods: ['DELETE'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function permanentDelete(
+        string $id, 
+        InventoryRepository $repo, 
+        EntityManagerInterface $em
+    ): Response {
+        if ($em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+        $inventory = $repo->find($id);
+
+        if (!$inventory || $inventory->getCreator() !== $this->getUser()) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+            throw $this->createNotFoundException();
+        }
+
+        // Hard delete using DQL to bypass listeners or standard behavior
+        $em->createQuery('DELETE FROM App\Entity\Inventory i WHERE i.id = :id')
+           ->setParameter('id', $inventory->getId()) // Use getId() specifically for UUID
+           ->execute();
+
+
+
+        if (!$em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $this->json(['message' => 'Permanently deleted']);
     }
 }

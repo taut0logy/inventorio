@@ -24,7 +24,7 @@
             avatarUrl: app.user.avatarUrl
         } : null,
         isCreator: isCreator,
-        items: inventory.items|map(item => {
+        items: (showDeleted ? deletedItems : inventory.items)|map(item => {
             id: item.id ~ '',
             customId: item.customId,
             customString1Value: item.customString1Value,
@@ -43,6 +43,7 @@
             customBool2Value: item.customBool2Value,
             customBool3Value: item.customBool3Value,
             tags: item.tags|map(t => ({ id: t.id ~ '', name: t.name }))
-        })
+        }),
+        showDeleted: showDeleted
     }) }}></div>
 {% endblock %}

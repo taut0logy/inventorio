@@ -13,7 +13,9 @@ import {
     Trash2, 
     Eye,
     Grid,
-    List as ListIcon
+    List as ListIcon,
+    RefreshCcw,
+    XCircle
 } from 'lucide-react';
 import { 
     DropdownMenu, 
@@ -25,16 +27,52 @@ import {
 import { t } from '@/lib/i18n';
 import { Checkbox } from '@/components/ui/checkbox';
 import CreateInventorySheet from '../components/inventory/CreateInventorySheet';
+import { TrashToggle } from '@/components/common/TrashToggle';
 
 export default function MyInventoriesPage({ 
     inventories = [], 
     categories = [],
     createEndpoint,
-    showEndpoint
+    showEndpoint,
+    showDeleted = false
 }) {
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const toggleDeletedMode = () => {
+        const url = new URL(window.location);
+        if (showDeleted) {
+            url.searchParams.delete('deleted');
+        } else {
+            url.searchParams.set('deleted', '1');
+        }
+        window.location.href = url.toString();
+    };
+
+    const handleRestore = async (id) => {
+        if (!confirm(t('confirm.restore', 'Are you sure you want to restore this inventory?'))) return;
+        try {
+            const res = await fetch(`/inventory/${id}/restore`, { method: 'POST' });
+            if (res.ok) window.location.reload();
+            else alert('Failed to restore');
+        } catch (e) {
+            console.error(e);
+            alert('Error restoring item');
+        }
+    };
+
+    const handlePermanentDelete = async (id) => {
+        if (!confirm(t('confirm.permanent_delete', 'Are you sure? This cannot be undone.'))) return;
+        try {
+            const res = await fetch(`/inventory/${id}/permanent`, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
+            else alert('Failed to delete permanently');
+        } catch (e) {
+            console.error(e);
+            alert('Error deleting item');
+        }
+    };
 
     const filteredInventories = inventories.filter(inv => 
         inv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,7 +128,8 @@ export default function MyInventoriesPage({
                     </p>
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto">
-                    <CreateInventorySheet categories={categories} />
+                    <TrashToggle showDeleted={showDeleted} onToggle={toggleDeletedMode} />
+                    {!showDeleted && <CreateInventorySheet categories={categories} />}
                 </div>
             </div>
 
@@ -198,21 +237,37 @@ export default function MyInventoriesPage({
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <a href={showEndpoint.replace('__id__', inventory.id)}>
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    View
-                                                                </a>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem>
-                                                                <Pencil className="mr-2 h-4 w-4" />
-                                                                Edit
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-destructive">
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Delete
-                                                            </DropdownMenuItem>
+                                                            {showDeleted ? (
+                                                                <>
+                                                                    <DropdownMenuItem onClick={() => handleRestore(inventory.id)}>
+                                                                        <RefreshCcw className="mr-2 h-4 w-4" />
+                                                                        {t('action.restore', 'Restore')}
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => handlePermanentDelete(inventory.id)}>
+                                                                        <XCircle className="mr-2 h-4 w-4" />
+                                                                        {t('action.permanent_delete', 'Delete Forever')}
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <DropdownMenuItem asChild>
+                                                                        <a href={showEndpoint.replace('__id__', inventory.id)}>
+                                                                            <Eye className="mr-2 h-4 w-4" />
+                                                                            View
+                                                                        </a>
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem>
+                                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                                        Edit
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem className="text-destructive">
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>

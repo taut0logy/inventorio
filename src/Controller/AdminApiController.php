@@ -32,8 +32,18 @@ class AdminApiController extends AbstractController
         $dir = $request->query->get('dir', 'DESC');
 
         // Create query builder
-        $qb = $this->userRepository->createQueryBuilder('u')
-            ->where('u.deletedAt IS NULL');
+        // Create query builder
+        $qb = $this->userRepository->createQueryBuilder('u');
+
+        $showDeleted = $request->query->getBoolean('deleted');
+        if ($showDeleted) {
+            if ($this->entityManager->getFilters()->isEnabled('softdeleteable')) {
+                $this->entityManager->getFilters()->disable('softdeleteable');
+            }
+            $qb->where('u.deletedAt IS NOT NULL');
+        } else {
+            $qb->where('u.deletedAt IS NULL');
+        }
 
         if ($search) {
             $qb->andWhere('LOWER(u.name) LIKE LOWER(:search) OR LOWER(u.email) LIKE LOWER(:search)')
@@ -75,6 +85,58 @@ class AdminApiController extends AbstractController
                 'pages' => ceil($total / $limit),
             ]
         ]);
+    }
+
+    #[Route('/{id}/restore', name: 'api_admin_users_restore', methods: ['POST'])]
+    public function restore(string $id, UserRepository $repo, EntityManagerInterface $em): JsonResponse
+    {
+        if ($em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+        $user = $repo->find($id);
+
+        if (!$user) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+            throw $this->createNotFoundException();
+        }
+
+        $user->setDeletedAt(null);
+        $em->flush();
+        if (!$em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $this->json(['message' => 'User restored']);
+    }
+
+    #[Route('/{id}/permanent', name: 'api_admin_users_permanent', methods: ['DELETE'])]
+    public function permanentDelete(string $id, UserRepository $repo, EntityManagerInterface $em): JsonResponse
+    {
+        if ($em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+        $user = $repo->find($id);
+
+        if (!$user) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+            throw $this->createNotFoundException();
+        }
+
+        $em->createQuery('DELETE FROM App\Entity\User u WHERE u.id = :id')
+           ->setParameter('id', $user->getId())
+           ->execute();
+
+
+
+        if (!$em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $this->json(['message' => 'User permanently deleted']);
     }
 
     #[Route('/{id}/block', name: 'api_admin_users_block', methods: ['POST'])]

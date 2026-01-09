@@ -301,4 +301,63 @@ class ItemController extends AbstractController
 
         return $this->json(['message' => 'Items deleted successfully']);
     }
+    #[Route('/{id}/restore', name: 'app_item_restore', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function restore(
+        string $id, 
+        ItemRepository $repo, 
+        EntityManagerInterface $em
+    ): Response {
+        if ($em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+        $item = $repo->find($id);
+
+        if (!$item || $item->getInventory()->getCreator() !== $this->getUser()) {
+            if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                $em->getFilters()->enable('softdeleteable');
+            }
+            throw $this->createNotFoundException();
+        }
+
+        $item->setDeletedAt(null);
+        $em->flush();
+        if (!$em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $this->json(['message' => 'Item restored']);
+    }
+
+    #[Route('/{id}/permanent', name: 'app_item_permanent_delete', methods: ['DELETE'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function permanentDelete(
+        string $id, 
+        ItemRepository $repo, 
+        EntityManagerInterface $em
+    ): Response {
+        if ($em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->disable('softdeleteable');
+        }
+        $item = $repo->find($id);
+
+        if (!$item || $item->getInventory()->getCreator() !== $this->getUser()) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+            throw $this->createNotFoundException();
+        }
+
+        $em->createQuery('DELETE FROM App\Entity\Item i WHERE i.id = :id')
+           ->setParameter('id', $item->getId())
+           ->execute();
+
+
+
+        if (!$em->getFilters()->isEnabled('softdeleteable')) {
+            $em->getFilters()->enable('softdeleteable');
+        }
+
+        return $this->json(['message' => 'Permanently deleted']);
+    }
 }

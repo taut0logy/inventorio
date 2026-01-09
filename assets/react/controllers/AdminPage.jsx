@@ -28,8 +28,11 @@ import {
     CheckCircle, 
     Search,
     Loader2,
-    CheckSquare
+    CheckSquare,
+    RefreshCcw,
+    XCircle
 } from 'lucide-react';
+import { TrashToggle } from '@/components/common/TrashToggle';
 import { t } from '@/lib/i18n';
 
 export default function AdminPage({ currentUser }) {
@@ -41,6 +44,7 @@ export default function AdminPage({ currentUser }) {
     const [actionLoading, setActionLoading] = useState(null); // id of user being processed
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkLoading, setBulkLoading] = useState(false);
+    const [showDeleted, setShowDeleted] = useState(false);
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -48,7 +52,10 @@ export default function AdminPage({ currentUser }) {
             const params = new URLSearchParams({
                 page: page,
                 limit: 10,
-                q: search
+                page: page,
+                limit: 10,
+                q: search,
+                deleted: showDeleted ? '1' : '0'
             });
             const response = await fetch(`/api/admin/users?${params}`);
             const data = await response.json();
@@ -60,7 +67,7 @@ export default function AdminPage({ currentUser }) {
         } finally {
             setLoading(false);
         }
-    }, [page, search]);
+    }, [page, search, showDeleted]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -106,6 +113,25 @@ export default function AdminPage({ currentUser }) {
                 confirmMsg = t('admin.bulk.confirm.delete', { count: selectedIds.length }, `Delete ${selectedIds.length} users?`);
                 url = '/api/admin/users/bulk/delete';
                 break;
+            case 'restore':
+                confirmMsg = t('admin.bulk.confirm.restore', { count: selectedIds.length }, `Restore ${selectedIds.length} users?`);
+                // Assume we implement bulk restore or loop
+                // For simplicity, loop here or add bulk endpoint. 
+                // Let's assume loop for now as I didn't add bulk restore.
+                // Actually I should add bulk restore if I want bulk restore.
+                // I'll skip bulk restore for now or just restrict to single action if easier, but user expects bulk.
+                // I'll loop.
+                if (!confirm(confirmMsg)) return;
+                setBulkLoading(true);
+                try {
+                    for (const id of selectedIds) {
+                        await fetch(`/api/admin/users/${id}/restore`, { method: 'POST' });
+                    }
+                    fetchUsers();
+                    setSelectedIds([]);
+                } catch (e) { console.error(e); }
+                setBulkLoading(false);
+                return;
         }
 
         if (!confirm(confirmMsg)) return;
@@ -199,6 +225,33 @@ export default function AdminPage({ currentUser }) {
         }
     };
 
+    const handleRestore = async (user) => {
+        if (!confirm(t('admin.confirm.restore', 'Restore this user?'))) return;
+        setActionLoading(user.id);
+        try {
+            const res = await fetch(`/api/admin/users/${user.id}/restore`, { method: 'POST' });
+            if (res.ok) {
+                // Remove from deleted list
+                setUsers(users.filter(u => u.id !== user.id));
+                setSelectedIds(prev => prev.filter(id => id !== user.id));
+            }
+        } catch (error) { console.error(error); } 
+        finally { setActionLoading(null); }
+    };
+
+    const handlePermanentDelete = async (user) => {
+        if (!confirm(t('admin.confirm.permanent_delete', 'Permanently delete this user? This cannot be undone.'))) return;
+        setActionLoading(user.id);
+        try {
+            const res = await fetch(`/api/admin/users/${user.id}/permanent`, { method: 'DELETE' });
+            if (res.ok) {
+                setUsers(users.filter(u => u.id !== user.id));
+                setSelectedIds(prev => prev.filter(id => id !== user.id));
+            }
+        } catch (error) { console.error(error); }
+        finally { setActionLoading(null); }
+    };
+
     const selectableUsersCount = users.length;
     const isAllSelected = selectableUsersCount > 0 && selectedIds.length === selectableUsersCount;
 
@@ -223,6 +276,10 @@ export default function AdminPage({ currentUser }) {
                         className="pl-9"
                     />
                 </div>
+                
+                <div className="flex items-center gap-2">
+                    <TrashToggle showDeleted={showDeleted} onToggle={() => { setShowDeleted(!showDeleted); setPage(1); }} />
+                </div>
 
                 {selectedIds.length > 0 && (
                     <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg border animate-in fade-in slide-in-from-top-2">
@@ -231,33 +288,50 @@ export default function AdminPage({ currentUser }) {
                         </span>
                         <div className="h-4 w-px bg-border mx-1" />
                         
-                        <Button 
-                            variant="destructive" 
-                            size="sm" 
-                            onClick={() => handleBulkAction('delete')}
-                            disabled={bulkLoading}
-                        >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {t('admin.bulk.delete', 'Delete')}
-                        </Button>
-                        <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            onClick={() => handleBulkAction('block')}
-                            disabled={bulkLoading}
-                        >
-                            <Ban className="h-4 w-4 mr-2" />
-                            {t('admin.bulk.block', 'Block')}
-                        </Button>
-                        <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            onClick={() => handleBulkAction('unblock')}
-                            disabled={bulkLoading}
-                        >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            {t('admin.bulk.unblock', 'Unblock')}
-                        </Button>
+                        {showDeleted ? (
+                            <>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => handleBulkAction('restore')}
+                                    disabled={bulkLoading}
+                                >
+                                    <RefreshCcw className="h-4 w-4 mr-2" />
+                                    {t('action.restore', 'Restore')}
+                                </Button>
+                                {/* Permanent Delete Bulk not implemented yet, or use loop? */}
+                            </>
+                        ) : (
+                            <>
+                                <Button 
+                                    variant="destructive" 
+                                    size="sm" 
+                                    onClick={() => handleBulkAction('delete')}
+                                    disabled={bulkLoading}
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {t('admin.bulk.delete', 'Delete')}
+                                </Button>
+                                <Button 
+                                    variant="secondary" 
+                                    size="sm" 
+                                    onClick={() => handleBulkAction('block')}
+                                    disabled={bulkLoading}
+                                >
+                                    <Ban className="h-4 w-4 mr-2" />
+                                    {t('admin.bulk.block', 'Block')}
+                                </Button>
+                                <Button 
+                                    variant="secondary" 
+                                    size="sm" 
+                                    onClick={() => handleBulkAction('unblock')}
+                                    disabled={bulkLoading}
+                                >
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    {t('admin.bulk.unblock', 'Unblock')}
+                                </Button>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
@@ -340,44 +414,60 @@ export default function AdminPage({ currentUser }) {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem 
-                                                            onClick={() => handleRole(user)}
-                                                            disabled={isSelf && !isAdmin} 
-                                                        >
-                                                            {isAdmin ? (
-                                                                <>
-                                                                    <ShieldOff className="mr-2 h-4 w-4" />
-                                                                    {t('admin.action.demote', 'Remove Admin')}
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Shield className="mr-2 h-4 w-4" />
-                                                                    {t('admin.action.promote', 'Make Admin')}
-                                                                </>
-                                                            )}
-                                                        </DropdownMenuItem>
-                                                        
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onClick={() => handleBlock(user)}>
-                                                            {user.isBlocked ? (
-                                                                <>
-                                                                    <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                                                    {t('admin.action.unblock', 'Unblock User')}
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Ban className="mr-2 h-4 w-4 text-orange-600" />
-                                                                    {t('admin.action.block', 'Block User')}
-                                                                </>
-                                                            )}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem 
-                                                            className="text-destructive focus:text-destructive"
-                                                            onClick={() => handleDelete(user)}
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            {t('admin.action.delete', 'Delete User')}
-                                                        </DropdownMenuItem>
+                                                        {showDeleted ? (
+                                                            <>
+                                                                <DropdownMenuItem onClick={() => handleRestore(user)}>
+                                                                    <RefreshCcw className="mr-2 h-4 w-4" />
+                                                                    {t('action.restore', 'Restore')}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem className="text-destructive" onClick={() => handlePermanentDelete(user)}>
+                                                                    <XCircle className="mr-2 h-4 w-4" />
+                                                                    {t('action.permanent_delete', 'Delete Forever')}
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => handleRole(user)}
+                                                                    disabled={isSelf && !isAdmin} 
+                                                                >
+                                                                    {isAdmin ? (
+                                                                        <>
+                                                                            <ShieldOff className="mr-2 h-4 w-4" />
+                                                                            {t('admin.action.demote', 'Remove Admin')}
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Shield className="mr-2 h-4 w-4" />
+                                                                            {t('admin.action.promote', 'Make Admin')}
+                                                                        </>
+                                                                    )}
+                                                                </DropdownMenuItem>
+                                                                
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem onClick={() => handleBlock(user)}>
+                                                                    {user.isBlocked ? (
+                                                                        <>
+                                                                            <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                                                                            {t('admin.action.unblock', 'Unblock User')}
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Ban className="mr-2 h-4 w-4 text-orange-600" />
+                                                                            {t('admin.action.block', 'Block User')}
+                                                                        </>
+                                                                    )}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem 
+                                                                    className="text-destructive focus:text-destructive"
+                                                                    onClick={() => handleDelete(user)}
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    {t('admin.action.delete', 'Delete User')}
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             )}
