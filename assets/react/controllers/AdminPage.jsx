@@ -71,8 +71,8 @@ export default function AdminPage({ currentUser }) {
 
     const handleSelectAll = (checked) => {
         if (checked) {
-            // Select all users on current page except self
-            const selectable = users.filter(u => u.id !== currentUser?.id).map(u => u.id);
+            // Select all users on current page
+            const selectable = users.map(u => u.id);
             setSelectedIds(selectable);
         } else {
             setSelectedIds([]);
@@ -119,6 +119,13 @@ export default function AdminPage({ currentUser }) {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                
+                if (data.logoutRequired) {
+                    window.location.reload();
+                    return;
+                }
+
                 // Refresh list
                 fetchUsers();
                 setSelectedIds([]);
@@ -138,6 +145,12 @@ export default function AdminPage({ currentUser }) {
             const response = await fetch(`/api/admin/users/${user.id}/block`, { method: 'POST' });
             if (response.ok) {
                 const data = await response.json();
+
+                if (data.logoutRequired) {
+                    window.location.reload();
+                    return;
+                }
+
                 setUsers(users.map(u => u.id === user.id ? { ...u, isBlocked: data.isBlocked } : u));
             }
         } catch (error) {
@@ -169,6 +182,13 @@ export default function AdminPage({ currentUser }) {
         try {
             const response = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
             if (response.ok) {
+                const data = await response.json();
+
+                if (data.logoutRequired) {
+                    window.location.reload();
+                    return;
+                }
+
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
             }
@@ -179,7 +199,7 @@ export default function AdminPage({ currentUser }) {
         }
     };
 
-    const selectableUsersCount = users.filter(u => u.id !== currentUser?.id).length;
+    const selectableUsersCount = users.length;
     const isAllSelected = selectableUsersCount > 0 && selectedIds.length === selectableUsersCount;
 
     return (
@@ -284,7 +304,6 @@ export default function AdminPage({ currentUser }) {
                                             <Checkbox 
                                                 checked={selectedIds.includes(user.id)}
                                                 onCheckedChange={(checked) => handleSelectOne(user.id, checked)}
-                                                disabled={isSelf}
                                             />
                                         </TableCell>
                                         <TableCell className="flex items-center gap-3">
@@ -338,31 +357,27 @@ export default function AdminPage({ currentUser }) {
                                                             )}
                                                         </DropdownMenuItem>
                                                         
-                                                        {!isSelf && (
-                                                            <>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem onClick={() => handleBlock(user)}>
-                                                                    {user.isBlocked ? (
-                                                                        <>
-                                                                            <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                                                            {t('admin.action.unblock', 'Unblock User')}
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <Ban className="mr-2 h-4 w-4 text-orange-600" />
-                                                                            {t('admin.action.block', 'Block User')}
-                                                                        </>
-                                                                    )}
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem 
-                                                                    className="text-destructive focus:text-destructive"
-                                                                    onClick={() => handleDelete(user)}
-                                                                >
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    {t('admin.action.delete', 'Delete User')}
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={() => handleBlock(user)}>
+                                                            {user.isBlocked ? (
+                                                                <>
+                                                                    <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                                                                    {t('admin.action.unblock', 'Unblock User')}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Ban className="mr-2 h-4 w-4 text-orange-600" />
+                                                                    {t('admin.action.block', 'Block User')}
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem 
+                                                            className="text-destructive focus:text-destructive"
+                                                            onClick={() => handleDelete(user)}
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            {t('admin.action.delete', 'Delete User')}
+                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             )}

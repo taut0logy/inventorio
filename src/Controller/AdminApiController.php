@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/admin/users')]
 #[IsGranted('ROLE_ADMIN')]
@@ -17,7 +18,8 @@ class AdminApiController extends AbstractController
 {
     public function __construct(
         private UserRepository $userRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private TokenStorageInterface $tokenStorage
     ) {}
 
     #[Route('', name: 'api_admin_users_list', methods: ['GET'])]
@@ -76,19 +78,22 @@ class AdminApiController extends AbstractController
     }
 
     #[Route('/{id}/block', name: 'api_admin_users_block', methods: ['POST'])]
-    public function toggleBlock(User $user): JsonResponse
+    public function toggleBlock(User $user, Request $request): JsonResponse
     {
-        // Prevent blocking self
-        if ($user === $this->getUser()) {
-             return $this->json(['message' => 'You cannot block yourself'], 403);
-        }
-
         $user->setBlocked(!$user->isBlocked());
         $this->entityManager->flush();
 
+        $logoutRequired = false;
+        if ($user === $this->getUser() && $user->isBlocked()) {
+            $this->tokenStorage->setToken(null);
+            $request->getSession()->invalidate();
+            $logoutRequired = true;
+        }
+
         return $this->json([
             'message' => $user->isBlocked() ? 'User blocked' : 'User unblocked',
-            'isBlocked' => $user->isBlocked()
+            'isBlocked' => $user->isBlocked(),
+            'logoutRequired' => $logoutRequired
         ]);
     }
 
@@ -120,17 +125,22 @@ class AdminApiController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_admin_users_delete', methods: ['DELETE'])]
-    public function delete(User $user): JsonResponse
+    public function delete(User $user, Request $request): JsonResponse
     {
-        // Prevent deleting self
-        if ($user === $this->getUser()) {
-            return $this->json(['message' => 'You cannot delete yourself'], 403);
-        }
-
+        $isSelf = $user === $this->getUser();
+        
         $user->setDeletedAt(new \DateTime());
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'User deleted successfully']);
+        if ($isSelf) {
+            $this->tokenStorage->setToken(null);
+            $request->getSession()->invalidate();
+        }
+
+        return $this->json([
+            'message' => 'User deleted successfully',
+            'logoutRequired' => $isSelf
+        ]);
     }
 
     #[Route('/bulk/block', name: 'api_admin_users_bulk_block', methods: ['POST'])]
@@ -144,17 +154,30 @@ class AdminApiController extends AbstractController
         }
 
         $count = 0;
+        $selfBlocked = false;
+
         foreach ($ids as $id) {
             $user = $this->userRepository->find($id);
-            if ($user && $user !== $this->getUser()) {
+            if ($user) {
                 $user->setBlocked(true);
+                if ($user === $this->getUser()) {
+                    $selfBlocked = true;
+                }
                 $count++;
             }
         }
         
         $this->entityManager->flush();
 
-        return $this->json(['message' => "$count users blocked"]);
+        if ($selfBlocked) {
+            $this->tokenStorage->setToken(null);
+            $request->getSession()->invalidate();
+        }
+
+        return $this->json([
+            'message' => "$count users blocked",
+            'logoutRequired' => $selfBlocked
+        ]);
     }
 
     #[Route('/bulk/unblock', name: 'api_admin_users_bulk_unblock', methods: ['POST'])]
@@ -192,16 +215,29 @@ class AdminApiController extends AbstractController
         }
 
         $count = 0;
+        $selfDeleted = false;
+
         foreach ($ids as $id) {
             $user = $this->userRepository->find($id);
-            if ($user && $user !== $this->getUser()) {
+            if ($user) {
                 $user->setDeletedAt(new \DateTime());
+                if ($user === $this->getUser()) {
+                    $selfDeleted = true;
+                }
                 $count++;
             }
         }
         
         $this->entityManager->flush();
 
-        return $this->json(['message' => "$count users deleted"]);
+        if ($selfDeleted) {
+            $this->tokenStorage->setToken(null);
+            $request->getSession()->invalidate();
+        }
+
+        return $this->json([
+            'message' => "$count users deleted",
+            'logoutRequired' => $selfDeleted
+        ]);
     }
 }

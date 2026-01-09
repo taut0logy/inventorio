@@ -33,6 +33,7 @@ import {
 import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
+import CommentsSection from '@/components/inventory/CommentsSection';
 
 // Default order includes all fields
 const DEFAULT_ORDER = [
@@ -296,6 +297,11 @@ export default function InventoryShowPage({
                                     <Badge variant="outline" className="text-[10px] h-4 px-1 rounded-sm">
                                         {inventory.category.name}
                                     </Badge>
+                                    {inventory.tags && inventory.tags.map(tag => (
+                                        <Badge key={tag.id} variant="secondary" className="text-[10px] h-4 px-1 rounded-sm ml-1">
+                                            #{tag.name}
+                                        </Badge>
+                                    ))}
                                     <span>•</span>
                                     <span>{items.length} items</span>
                                 </div>
@@ -496,11 +502,7 @@ export default function InventoryShowPage({
                     </TabsContent>
 
                     <TabsContent value="discussion">
-                        <Card>
-                            <CardContent className="pt-6">
-                                <p className="text-muted-foreground text-center">Discussion board coming soon.</p>
-                            </CardContent>
-                        </Card>
+                        <CommentsSection inventoryId={inventory.id} currentUser={currentUser} />
                     </TabsContent>
                 </Tabs>
             </main>

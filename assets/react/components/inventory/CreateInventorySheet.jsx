@@ -17,6 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Loader2 } from 'lucide-react';
 import { t } from '@/lib/i18n';
+import TagInput from '@/components/inventory/TagInput';
 
 export default function CreateInventorySheet({ categories = [] }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,8 @@ export default function CreateInventorySheet({ categories = [] }) {
         title: '',
         category: '',
         description: '',
-        isPublic: false
+        isPublic: false,
+        tags: []
     });
 
     const handleSubmit = async (e) => {
@@ -127,6 +129,15 @@ export default function CreateInventorySheet({ categories = [] }) {
                             placeholder="Describe your inventory..."
                             value={formData.description}
                             onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Tags</Label>
+                        <TagInput 
+                            value={formData.tags}
+                            onChange={(tags) => setFormData({...formData, tags})}
+                            placeholder="Add tags (e.g. rare, vintage)"
                         />
                     </div>
 

@@ -45,6 +45,13 @@ class Inventory
     #[ORM\OneToMany(targetEntity: Item::class, mappedBy: 'inventory')]
     private Collection $items;
 
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'inventory', cascade: ['remove'])]
+    private Collection $comments;
+
+    #[ORM\ManyToMany(targetEntity: Tag::class)]
+    #[ORM\JoinTable(name: 'inventory_tags')]
+    private Collection $tags;
+
     #[ORM\Column(nullable: true)]
     private ?array $customFieldsConfig = null;
 
@@ -64,6 +71,8 @@ class Inventory
     {
         $this->id = Uuid::v7();
         $this->items = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+        $this->tags = new ArrayCollection();
         // Default ID Config
         $this->idGenerationConfig = [
             'type' => 'manual', // manual, auto
@@ -231,6 +240,60 @@ class Inventory
     public function setDeletedAt(?\DateTimeInterface $deletedAt): static
     {
         $this->deletedAt = $deletedAt;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setInventory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getInventory() === $this) {
+                $comment->setInventory(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): static
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): static
+    {
+        $this->tags->removeElement($tag);
+
         return $this;
     }
 }

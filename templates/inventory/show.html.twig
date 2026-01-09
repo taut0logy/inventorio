@@ -14,12 +14,14 @@
                 name: inventory.category.name,
                 icon: inventory.category.iconUrl
             },
+            tags: inventory.tags|map(t => ({ id: t.id ~ '', name: t.name })),
             customFieldsConfig: inventory.customFieldsConfig,
             idGenerationConfig: inventory.idGenerationConfig
         },
         currentUser: app.user ? {
             id: app.user.id ~ '',
-            name: app.user.name
+            name: app.user.name,
+            avatarUrl: app.user.avatarUrl
         } : null,
         isCreator: isCreator,
         items: inventory.items|map(item => {
@@ -39,7 +41,8 @@
             customLink3Value: item.customLink3Value,
             customBool1Value: item.customBool1Value,
             customBool2Value: item.customBool2Value,
-            customBool3Value: item.customBool3Value
+            customBool3Value: item.customBool3Value,
+            tags: item.tags|map(t => ({ id: t.id ~ '', name: t.name }))
         })
     }) }}></div>
 {% endblock %}

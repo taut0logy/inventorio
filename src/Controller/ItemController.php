@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Inventory;
 use App\Entity\Item;
 use App\Repository\ItemRepository;
+use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,6 +107,7 @@ class ItemController extends AbstractController
         Inventory $inventory,
         Request $request,
         ItemRepository $itemRepository,
+        TagRepository $tagRepository,
         EntityManagerInterface $entityManager
     ): Response {
         // Security check: Only creator can add items (for now)
@@ -166,6 +168,16 @@ class ItemController extends AbstractController
         if (array_key_exists('customBool2', $data)) $item->setCustomBool2Value($toBool($data['customBool2']));
         if (array_key_exists('customBool3', $data)) $item->setCustomBool3Value($toBool($data['customBool3']));
 
+        // Handle Tags
+        if (isset($data['tags']) && is_array($data['tags'])) {
+            foreach ($data['tags'] as $tagName) {
+                if (trim($tagName) === '') continue;
+                $tag = $tagRepository->findOrCreate($tagName);
+                $entityManager->persist($tag);
+                $item->addTag($tag);
+            }
+        }
+
         $entityManager->persist($item);
         $entityManager->flush();
 
@@ -182,6 +194,7 @@ class ItemController extends AbstractController
         Item $item,
         Request $request,
         ItemRepository $itemRepository,
+        TagRepository $tagRepository,
         EntityManagerInterface $entityManager
     ): Response {
         if ($item->getInventory()->getCreator() !== $this->getUser()) {
@@ -217,7 +230,24 @@ class ItemController extends AbstractController
         if (isset($data['customLink3'])) $item->setCustomLink3Value($toString($data['customLink3']));
         if (array_key_exists('customBool1', $data)) $item->setCustomBool1Value($toBool($data['customBool1']));
         if (array_key_exists('customBool2', $data)) $item->setCustomBool2Value($toBool($data['customBool2']));
+        if (array_key_exists('customBool2', $data)) $item->setCustomBool2Value($toBool($data['customBool2']));
         if (array_key_exists('customBool3', $data)) $item->setCustomBool3Value($toBool($data['customBool3']));
+
+        // Handle Tags (Sync)
+        if (isset($data['tags']) && is_array($data['tags'])) {
+            // Remove existing tags
+            foreach ($item->getTags() as $tag) {
+                $item->removeTag($tag);
+            }
+            
+            // Add new tags
+            foreach ($data['tags'] as $tagName) {
+                if (trim($tagName) === '') continue;
+                $tag = $tagRepository->findOrCreate($tagName);
+                $entityManager->persist($tag);
+                $item->addTag($tag);
+            }
+        }
 
         $entityManager->flush();
 

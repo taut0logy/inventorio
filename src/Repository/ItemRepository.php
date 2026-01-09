@@ -40,6 +40,7 @@ class ItemRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('i')
             ->leftJoin('i.inventory', 'inv')
+            ->leftJoin('i.tags', 't')
             ->where('i.deletedAt IS NULL')
             ->andWhere('inv.deletedAt IS NULL');
 
@@ -51,7 +52,8 @@ class ItemRepository extends ServiceEntityRepository
             $qb->expr()->like('LOWER(i.customString3Value)', 'LOWER(:query)'),
             $qb->expr()->like('LOWER(i.customText1Value)', 'LOWER(:query)'),
             $qb->expr()->like('LOWER(i.customText2Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customText3Value)', 'LOWER(:query)')
+            $qb->expr()->like('LOWER(i.customText3Value)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
         );
         $qb->andWhere($searchCondition);
 

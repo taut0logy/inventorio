@@ -178,7 +178,7 @@ export default function HomePage({
                     {tags.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                             {tags.map((tag, index) => (
-                                <a key={index} href={`#tag-${tag.name}`}>
+                                <a key={index} href={`/search?q=${encodeURIComponent(tag.name)}`}>
                                     <Badge 
                                         variant="secondary" 
                                         className="cursor-pointer hover:bg-secondary/80 transition-colors text-sm py-1 px-3"

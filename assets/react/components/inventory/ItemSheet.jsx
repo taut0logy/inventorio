@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Plus, Loader2, Pencil, HelpCircle } from 'lucide-react';
 import { t } from '@/lib/i18n';
+import TagInput from '@/components/inventory/TagInput';
 
 // All field definitions
 const ALL_FIELDS = [
@@ -99,21 +100,12 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
             
             if (isEditMode && item) {
                 newFormData.customId = item.customId || '';
-                newFormData.customString1 = item.customString1Value || '';
-                newFormData.customString2 = item.customString2Value || '';
-                newFormData.customString3 = item.customString3Value || '';
-                newFormData.customNumber1 = item.customNumber1Value || '';
-                newFormData.customNumber2 = item.customNumber2Value || '';
-                newFormData.customNumber3 = item.customNumber3Value || '';
-                newFormData.customText1 = item.customText1Value || '';
-                newFormData.customText2 = item.customText2Value || '';
-                newFormData.customText3 = item.customText3Value || '';
-                newFormData.customLink1 = item.customLink1Value || '';
-                newFormData.customLink2 = item.customLink2Value || '';
-                newFormData.customLink3 = item.customLink3Value || '';
-                newFormData.customBool1 = item.customBool1Value || false;
-                newFormData.customBool2 = item.customBool2Value || false;
-                newFormData.customBool3 = item.customBool3Value || false;
+                ALL_FIELDS.forEach(f => {
+                    newFormData[f.formKey] = item[f.formKey + 'Value'] ?? '';
+                });
+                newFormData.tags = item.tags ? item.tags.map(t => typeof t === 'string' ? t : t.name) : [];
+            } else {
+                newFormData.tags = [];
             }
             
             setFormData(newFormData);

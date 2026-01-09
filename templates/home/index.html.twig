@@ -16,22 +16,9 @@
         name: c.name,
         icon: c.iconUrl
     }),
-    tags: tags|map(t => {
-        id: t.id ~ '',
-        name: t.name
-    }),
-    latestInventories: latestInventories|map(i => {
-        id: i.id ~ '',
-        title: i.title,
-        category: i.category.name,
-        itemCount: i.items|length,
-        createdAt: i.createdAt|date('M d, Y')
-    }),
-    popularInventories: popularInventories|map(i => {
-        id: i.id ~ '',
-        title: i.title,
-        viewCount: i.viewCount
-    }),
+    tags: tags,
+    latestInventories: latestInventories,
+    popularInventories: popularInventories,
     homePath: path('app_home'),
     loginPath: path('app_login'),
     registerPath: path('app_register'),

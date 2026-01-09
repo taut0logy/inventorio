@@ -32,12 +32,14 @@ class InventoryRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('i')
             ->leftJoin('i.creator', 'u')
             ->leftJoin('i.category', 'c')
+            ->leftJoin('i.tags', 't')
             ->where('i.deletedAt IS NULL');
 
         // Search condition - use ILIKE for case-insensitive partial match
         $searchCondition = $qb->expr()->orX(
             $qb->expr()->like('LOWER(i.title)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.description)', 'LOWER(:query)')
+            $qb->expr()->like('LOWER(i.description)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
         );
         $qb->andWhere($searchCondition);
 

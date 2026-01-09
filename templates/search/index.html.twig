@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'search.title'|trans({}, 'messages') }}{% endblock %}
+
+{% block body %}
+    <div {{ react_component('SearchPage', {
+        'initialQuery': initialQuery
+    }) }}></div>
+{% endblock %}

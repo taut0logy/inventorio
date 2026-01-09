@@ -271,14 +271,19 @@ admin.confirm.block: আপনি কি নিশ্চিত যে আপন�
 admin.success.blocked: ব্যবহারকারীর অবস্থা আপডেট হয়েছে
 admin.success.role_updated: ব্যবহারকারীর রোল আপডেট হয়েছে
 admin.success.deleted: ব্যবহারকারী ডিলিট করা হয়েছে
-admin.bulk.selected: {count} টি নির্বাচিত
+admin.bulk.selected: '{count} টি নির্বাচিত'
 admin.bulk.actions: বাল্ক অ্যাকশন
 admin.bulk.block: নির্বাচিতদের ব্লক করুন
 admin.bulk.unblock: নির্বাচিতদের আনব্লক করুন
 admin.bulk.delete: নির্বাচিতদের ডিলিট করুন
-admin.bulk.confirm.block: {count} জন ব্যবহারকারীকে ব্লক করবেন?
-admin.bulk.confirm.unblock: {count} জন ব্যবহারকারীকে আনব্লক করবেন?
-admin.bulk.confirm.delete: {count} জন ব্যবহারকারীকে ডিলিট করবেন?
+admin.bulk.confirm.block: '{count} জন ব্যবহারকারীকে ব্লক করবেন?'
+admin.bulk.confirm.unblock: '{count} জন ব্যবহারকারীকে আনব্লক করবেন?'
+admin.bulk.confirm.delete: '{count} জন ব্যবহারকারীকে ডিলিট করবেন?'
 admin.bulk.success.blocked: ব্যবহারকারীরা ব্লক হয়েছে
 admin.bulk.success.unblocked: ব্যবহারকারীরা আনব্লক হয়েছে
 admin.bulk.success.deleted: ব্যবহারকারীরা ডিলিট হয়েছে
+
+comments.title: আলোচনা
+comments.empty: কোন মন্তব্য নেই। আলোচনা শুরু করুন!
+comments.placeholder: বার্তা লিখুন...
+comments.login_required: আলোচনায় অংশ নিতে দয়া করে লগ ইন করুন।

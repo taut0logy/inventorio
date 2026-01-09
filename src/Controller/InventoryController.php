@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Inventory;
 use App\Repository\InventoryRepository;
 use App\Repository\CategoryRepository;
+use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +33,8 @@ class InventoryController extends AbstractController
     public function new(
         Request $request, 
         EntityManagerInterface $entityManager, 
-        CategoryRepository $categoryRepository
+        CategoryRepository $categoryRepository,
+        TagRepository $tagRepository
     ): Response {
         // Handle API POST request
         if ($request->isMethod('POST')) {
@@ -56,7 +58,18 @@ class InventoryController extends AbstractController
             $inventory->setDescription($data['description'] ?? null);
             $inventory->setPublic($data['isPublic'] ?? false);
             $inventory->setCategory($category);
+
             $inventory->setCreator($this->getUser());
+
+            // Handle Tags
+            if (isset($data['tags']) && is_array($data['tags'])) {
+                foreach ($data['tags'] as $tagName) {
+                    if (trim($tagName) === '') continue;
+                    $tag = $tagRepository->findOrCreate($tagName);
+                    $entityManager->persist($tag);
+                    $inventory->addTag($tag);
+                }
+            }
 
             $entityManager->persist($inventory);
             $entityManager->flush();
