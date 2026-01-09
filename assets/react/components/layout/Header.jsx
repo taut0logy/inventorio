@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import logo from '@/../images/logo.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import GlobalSearch from '@/components/search/GlobalSearch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
     DropdownMenu, 
@@ -104,16 +104,8 @@ export default function Header({
 
                 {/* Right Side */}
                 <div className="flex flex-1 items-center justify-end space-x-2">
-                    {/* Search */}
-                    <form action={searchPath} method="get" className="hidden lg:flex relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            type="search" 
-                            name="q"
-                            placeholder={t('nav.search', 'Search inventories...')} 
-                            className="pl-9 w-64"
-                        />
-                    </form>
+                    {/* Global Search */}
+                    <GlobalSearch className="hidden lg:block" />
 
                     {/* Mobile Search Toggle */}
                     <Button 

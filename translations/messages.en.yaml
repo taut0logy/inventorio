@@ -237,3 +237,13 @@ my_inv.no_inventories_desc: Create your first inventory to get started.
 my_inv.filter: Filter
 my_inv.public: Public
 my_inv.private: Private
+
+# Search
+search.placeholder: Search inventories and items...
+search.no_results: No results found
+search.inventories: Inventories
+search.items: Items
+search.view_all: View all results
+search.loading: Searching...
+search.min_chars: Type at least 2 characters
+search.in_inventory: in

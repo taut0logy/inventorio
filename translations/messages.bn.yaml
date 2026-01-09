@@ -237,3 +237,13 @@ my_inv.no_inventories_desc: শুরু করতে আপনার প্র�
 my_inv.filter: ফিল্টার
 my_inv.public: পাবলিক
 my_inv.private: প্রাইভেট
+
+# Search
+search.placeholder: ইনভেন্টরি এবং আইটেম অনুসন্ধান করুন...
+search.no_results: কোন ফলাফল পাওয়া যায়নি
+search.inventories: ইনভেন্টরি
+search.items: আইটেম
+search.view_all: সব ফলাফল দেখুন
+search.loading: অনুসন্ধান করা হচ্ছে...
+search.min_chars: অন্তত ২টি অক্ষর লিখুন
+search.in_inventory: এতে

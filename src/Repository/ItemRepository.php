@@ -32,6 +32,47 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
+     * Full-text search across items
+     * Searches custom_id and all string/text fields
+     * Can be scoped to a specific inventory or search globally (public inventories only)
+     */
+    public function searchFullText(string $query, ?Inventory $inventory = null, int $limit = 10): array
+    {
+        $qb = $this->createQueryBuilder('i')
+            ->leftJoin('i.inventory', 'inv')
+            ->where('i.deletedAt IS NULL')
+            ->andWhere('inv.deletedAt IS NULL');
+
+        // Search across multiple fields
+        $searchCondition = $qb->expr()->orX(
+            $qb->expr()->like('LOWER(i.customId)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(i.customString1Value)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(i.customString2Value)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(i.customString3Value)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(i.customText1Value)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(i.customText2Value)', 'LOWER(:query)'),
+            $qb->expr()->like('LOWER(i.customText3Value)', 'LOWER(:query)')
+        );
+        $qb->andWhere($searchCondition);
+
+        if ($inventory) {
+            // Scoped to specific inventory
+            $qb->andWhere('i.inventory = :inventory')
+               ->setParameter('inventory', $inventory);
+        } else {
+            // Global search - only items in public inventories
+            $qb->andWhere('inv.isPublic = :true')
+               ->setParameter('true', true);
+        }
+
+        $qb->setParameter('query', '%' . $query . '%')
+           ->orderBy('i.createdAt', 'DESC')
+           ->setMaxResults($limit);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Find all items including soft-deleted (for admin)
      */
     public function findByInventoryIncludeDeleted(Inventory $inventory): array
