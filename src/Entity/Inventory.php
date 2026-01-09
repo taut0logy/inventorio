@@ -45,6 +45,12 @@ class Inventory
     #[ORM\OneToMany(targetEntity: Item::class, mappedBy: 'inventory')]
     private Collection $items;
 
+    #[ORM\Column(nullable: true)]
+    private ?array $customFieldsConfig = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?array $idGenerationConfig = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -58,6 +64,36 @@ class Inventory
     {
         $this->id = Uuid::v7();
         $this->items = new ArrayCollection();
+        // Default ID Config
+        $this->idGenerationConfig = [
+            'type' => 'manual', // manual, auto
+            'prefix' => '',
+            'separator' => '-',
+            'minDigits' => 4,
+            'nextSequence' => 1
+        ];
+    }
+
+    public function getCustomFieldsConfig(): ?array
+    {
+        return $this->customFieldsConfig;
+    }
+
+    public function setCustomFieldsConfig(?array $customFieldsConfig): static
+    {
+        $this->customFieldsConfig = $customFieldsConfig;
+        return $this;
+    }
+
+    public function getIdGenerationConfig(): ?array
+    {
+        return $this->idGenerationConfig;
+    }
+
+    public function setIdGenerationConfig(?array $idGenerationConfig): static
+    {
+        $this->idGenerationConfig = $idGenerationConfig;
+        return $this;
     }
 
     #[ORM\PrePersist]

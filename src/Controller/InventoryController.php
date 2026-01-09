@@ -95,6 +95,32 @@ class InventoryController extends AbstractController
         return $this->json(['message' => 'Items deleted successfully']);
     }
 
+    #[Route('/{id}/settings', name: 'app_inventory_settings', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function settings(
+        Inventory $inventory,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if ($inventory->getCreator() !== $this->getUser()) {
+             return $this->json(['error' => 'Access denied'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        if (isset($data['customFieldsConfig'])) {
+            $inventory->setCustomFieldsConfig($data['customFieldsConfig']);
+        }
+
+        if (isset($data['idGenerationConfig'])) {
+            $inventory->setIdGenerationConfig($data['idGenerationConfig']);
+        }
+
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Settings updated successfully']);
+    }
+
     #[Route('/{id}', name: 'app_inventory_show', methods: ['GET'])]
     public function show(Inventory $inventory): Response
     {

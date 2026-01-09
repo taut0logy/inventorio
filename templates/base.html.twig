@@ -12,9 +12,9 @@
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
-    <body class="min-h-screen bg-background text-foreground flex flex-col">
-        {# React Header Component #}
-        <div {{ react_component('Header', {
+    <body class="min-h-screen bg-background text-foreground">
+        <div class="flex flex-col min-h-screen">
+        <div class="sticky top-0 z-50" {{ react_component('Header', {
             user: app.user ? {
                 id: app.user.id ~ '',
                 name: app.user.name,
@@ -161,19 +161,86 @@
                     'footer.terms': {{ 'footer.terms'|trans|json_encode|raw }},
                     'footer.rights': {{ 'footer.rights'|trans|json_encode|raw }},
                     'footer.built_with': {{ 'footer.built_with'|trans|json_encode|raw }},
-                    'footer.contact': {{ 'footer.contact'|trans|json_encode|raw }}
+                    'footer.contact': {{ 'footer.contact'|trans|json_encode|raw }},
+                    
+                    // Inventory Page
+                    'inventory.search_items': {{ 'inventory.search_items'|trans|json_encode|raw }},
+                    'inventory.items_count': {{ 'inventory.items_count'|trans|json_encode|raw }},
+                    'inventory.selected': {{ 'inventory.selected'|trans|json_encode|raw }},
+                    'inventory.no_items_title': {{ 'inventory.no_items_title'|trans|json_encode|raw }},
+                    'inventory.no_items_desc': {{ 'inventory.no_items_desc'|trans|json_encode|raw }},
+                    'inventory.back': {{ 'inventory.back'|trans|json_encode|raw }},
+                    'inventory.box': {{ 'inventory.box'|trans|json_encode|raw }},
+                    'inventory.view': {{ 'inventory.view'|trans|json_encode|raw }},
+                    
+                    // Item Form
+                    'item.create_title': {{ 'item.create_title'|trans|json_encode|raw }},
+                    'item.edit_title': {{ 'item.edit_title'|trans|json_encode|raw }},
+                    'item.create_desc': {{ 'item.create_desc'|trans|json_encode|raw }},
+                    'item.edit_desc': {{ 'item.edit_desc'|trans|json_encode|raw }},
+                    'item.id_label': {{ 'item.id_label'|trans|json_encode|raw }},
+                    'item.id_auto': {{ 'item.id_auto'|trans|json_encode|raw }},
+                    'item.create_btn': {{ 'item.create_btn'|trans|json_encode|raw }},
+                    'item.update_btn': {{ 'item.update_btn'|trans|json_encode|raw }},
+                    'item.creating': {{ 'item.creating'|trans|json_encode|raw }},
+                    'item.saving': {{ 'item.saving'|trans|json_encode|raw }},
+                    
+                    // Settings
+                    'settings.title': {{ 'settings.title'|trans|json_encode|raw }},
+                    'settings.desc': {{ 'settings.desc'|trans|json_encode|raw }},
+                    'settings.tab_id': {{ 'settings.tab_id'|trans|json_encode|raw }},
+                    'settings.tab_fields': {{ 'settings.tab_fields'|trans|json_encode|raw }},
+                    'settings.save': {{ 'settings.save'|trans|json_encode|raw }},
+                    'settings.saving': {{ 'settings.saving'|trans|json_encode|raw }},
+                    
+                    // ID Builder
+                    'id_builder.title': {{ 'id_builder.title'|trans|json_encode|raw }},
+                    'id_builder.add': {{ 'id_builder.add'|trans|json_encode|raw }},
+                    'id_builder.preview': {{ 'id_builder.preview'|trans|json_encode|raw }},
+                    'id_builder.empty': {{ 'id_builder.empty'|trans|json_encode|raw }},
+                    'id_builder.fixed': {{ 'id_builder.fixed'|trans|json_encode|raw }},
+                    'id_builder.random20': {{ 'id_builder.random20'|trans|json_encode|raw }},
+                    'id_builder.random32': {{ 'id_builder.random32'|trans|json_encode|raw }},
+                    'id_builder.random6': {{ 'id_builder.random6'|trans|json_encode|raw }},
+                    'id_builder.random9': {{ 'id_builder.random9'|trans|json_encode|raw }},
+                    'id_builder.guid': {{ 'id_builder.guid'|trans|json_encode|raw }},
+                    'id_builder.date': {{ 'id_builder.date'|trans|json_encode|raw }},
+                    'id_builder.sequence': {{ 'id_builder.sequence'|trans|json_encode|raw }},
+                    'id_builder.digits': {{ 'id_builder.digits'|trans|json_encode|raw }},
+                    'id_builder.format_hex': {{ 'id_builder.format_hex'|trans|json_encode|raw }},
+                    'id_builder.format_dec': {{ 'id_builder.format_dec'|trans|json_encode|raw }},
+                    'id_builder.format_year': {{ 'id_builder.format_year'|trans|json_encode|raw }},
+                    'id_builder.format_full': {{ 'id_builder.format_full'|trans|json_encode|raw }},
+                    'id_builder.format_iso': {{ 'id_builder.format_iso'|trans|json_encode|raw }},
+                    
+                    // Fields Editor
+                    'fields.title': {{ 'fields.title'|trans|json_encode|raw }},
+                    'fields.desc': {{ 'fields.desc'|trans|json_encode|raw }},
+                    'fields.show_hidden': {{ 'fields.show_hidden'|trans|json_encode|raw }},
+                    'fields.label': {{ 'fields.label'|trans|json_encode|raw }},
+                    'fields.label_placeholder': {{ 'fields.label_placeholder'|trans|json_encode|raw }},
+                    'fields.description': {{ 'fields.description'|trans|json_encode|raw }},
+                    'fields.desc_placeholder': {{ 'fields.desc_placeholder'|trans|json_encode|raw }},
+                    'fields.visibility': {{ 'fields.visibility'|trans|json_encode|raw }},
+                    'fields.visible': {{ 'fields.visible'|trans|json_encode|raw }},
+                    'fields.hidden': {{ 'fields.hidden'|trans|json_encode|raw }},
+                    'fields.type_string': {{ 'fields.type_string'|trans|json_encode|raw }},
+                    'fields.type_number': {{ 'fields.type_number'|trans|json_encode|raw }},
+                    'fields.type_text': {{ 'fields.type_text'|trans|json_encode|raw }},
+                    'fields.type_link': {{ 'fields.type_link'|trans|json_encode|raw }},
+                    'fields.type_boolean': {{ 'fields.type_boolean'|trans|json_encode|raw }},
+                    
+                    // My Inventories
+                    'my_inv.title': {{ 'my_inv.title'|trans|json_encode|raw }},
+                    'my_inv.create': {{ 'my_inv.create'|trans|json_encode|raw }},
+                    'my_inv.search': {{ 'my_inv.search'|trans|json_encode|raw }},
+                    'my_inv.no_inventories': {{ 'my_inv.no_inventories'|trans|json_encode|raw }},
+                    'my_inv.no_inventories_desc': {{ 'my_inv.no_inventories_desc'|trans|json_encode|raw }},
+                    'my_inv.filter': {{ 'my_inv.filter'|trans|json_encode|raw }},
+                    'my_inv.public': {{ 'my_inv.public'|trans|json_encode|raw }},
+                    'my_inv.private': {{ 'my_inv.private'|trans|json_encode|raw }}
                 };
             </script>
-
-            {# Fallback header #}
-            <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur h-14">
-                <div class="container mx-auto flex h-14 items-center px-4">
-                    <a href="{{ path('app_home') }}" class="flex items-center space-x-2">
-                        <img src="{{ asset('build/images/logo.png') }}" alt="Inventorio" class="h-8 w-8">
-                        <span class="font-bold">Inventorio</span>
-                    </a>
-                </div>
-            </header>
         </div>
 
         {# React Flash Messages & Toaster #}
@@ -183,20 +250,14 @@
         <main class="flex-1">
             {% block body %}{% endblock %}
         </main>
+        </div>
 
-        {# React Footer Component #}
         <div {{ react_component('Footer', {
             locale: app.request.locale,
             translations: {
                 app_name: 'app_name'|trans
             }
         }) }}>
-            {# Fallback footer #}
-            <footer class="border-t py-6">
-                <div class="container mx-auto text-center text-sm text-muted-foreground px-4">
-                    Built with Symfony + React + shadcn/ui
-                </div>
-            </footer>
         </div>
     </body>
 </html>

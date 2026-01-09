@@ -160,3 +160,80 @@ footer.terms: পরিষেবার শর্তাবলী
 footer.rights: সর্বস্বত্ব সংরক্ষিত।
 footer.built_with: Symfony + React + shadcn/ui দিয়ে তৈরি
 footer.contact: যোগাযোগ
+
+# Inventory Page
+inventory.search_items: আইটেম অনুসন্ধান...
+inventory.items_count: আইটেম
+inventory.selected: নির্বাচিত
+inventory.no_items_title: এখনো কোন আইটেম নেই
+inventory.no_items_desc: এই ইনভেন্টরিতে আপনার প্রথম আইটেম যোগ করে শুরু করুন।
+inventory.back: ফিরে
+inventory.box: বক্স
+inventory.view: দেখুন
+
+# Item Form
+item.create_title: নতুন আইটেম যোগ করুন
+item.edit_title: আইটেম সম্পাদনা
+item.create_desc: নিচে আইটেমের বিবরণ লিখুন।
+item.edit_desc: আইটেমের তথ্য হালনাগাদ করুন।
+item.id_label: আইটেম আইডি
+item.id_auto: সংরক্ষণের সময় স্বয়ংক্রিয়ভাবে তৈরি হবে
+item.create_btn: আইটেম তৈরি করুন
+item.update_btn: পরিবর্তন সংরক্ষণ করুন
+item.creating: তৈরি হচ্ছে...
+item.saving: সংরক্ষণ হচ্ছে...
+
+# Settings
+settings.title: ইনভেন্টরি সেটিংস
+settings.desc: আপনার ইনভেন্টরি কীভাবে কাজ করবে তা কনফিগার করুন।
+settings.tab_id: কাস্টম আইডি
+settings.tab_fields: কাস্টম ফিল্ড
+settings.save: সেটিংস সংরক্ষণ করুন
+settings.saving: সংরক্ষণ হচ্ছে...
+
+# Custom ID Builder
+id_builder.title: আইডি এলিমেন্ট
+id_builder.add: এলিমেন্ট যোগ করুন
+id_builder.preview: লাইভ প্রিভিউ
+id_builder.empty: কোন এলিমেন্ট নেই। আপনার আইডি ফরম্যাট তৈরি করতে একটি যোগ করুন।
+id_builder.fixed: ফিক্সড টেক্সট
+id_builder.random20: ২০-বিট র‍্যান্ডম
+id_builder.random32: ৩২-বিট র‍্যান্ডম
+id_builder.random6: ৬-সংখ্যা র‍্যান্ডম
+id_builder.random9: ৯-সংখ্যা র‍্যান্ডম
+id_builder.guid: GUID
+id_builder.date: তারিখ/সময়
+id_builder.sequence: সিকুয়েন্স
+id_builder.digits: সংখ্যা
+id_builder.format_hex: হেক্স
+id_builder.format_dec: দশমিক
+id_builder.format_year: বছর
+id_builder.format_full: সম্পূর্ণ
+id_builder.format_iso: ISO
+
+# Custom Fields Editor
+fields.title: কাস্টম ফিল্ড
+fields.desc: আপনার আইটেম ফিল্ডের লেবেল, বিবরণ এবং দৃশ্যমানতা কনফিগার করুন।
+fields.show_hidden: লুকানো ফিল্ড দেখান
+fields.label: লেবেল
+fields.label_placeholder: কাস্টম লেবেল...
+fields.description: বিবরণ
+fields.desc_placeholder: ফিল্ড বিবরণ (টুলটিপ হিসেবে দেখানো হয়)...
+fields.visibility: দৃশ্যমানতা
+fields.visible: দৃশ্যমান
+fields.hidden: লুকানো
+fields.type_string: স্ট্রিং
+fields.type_number: সংখ্যা
+fields.type_text: টেক্সট
+fields.type_link: লিঙ্ক
+fields.type_boolean: বুলিয়ান
+
+# My Inventories Page
+my_inv.title: আমার ইনভেন্টরি
+my_inv.create: ইনভেন্টরি তৈরি করুন
+my_inv.search: আপনার ইনভেন্টরি অনুসন্ধান করুন...
+my_inv.no_inventories: এখনো কোন ইনভেন্টরি নেই
+my_inv.no_inventories_desc: শুরু করতে আপনার প্রথম ইনভেন্টরি তৈরি করুন।
+my_inv.filter: ফিল্টার
+my_inv.public: পাবলিক
+my_inv.private: প্রাইভেট

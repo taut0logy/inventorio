@@ -160,3 +160,80 @@ footer.terms: Terms of Service
 footer.rights: All rights reserved.
 footer.built_with: Built with Symfony + React + shadcn/ui
 footer.contact: Contact
+
+# Inventory Page
+inventory.search_items: Search items...
+inventory.items_count: items
+inventory.selected: selected
+inventory.no_items_title: No items yet
+inventory.no_items_desc: Start by adding your first item to this inventory.
+inventory.back: Back
+inventory.box: Box
+inventory.view: View
+
+# Item Form
+item.create_title: Add New Item
+item.edit_title: Edit Item
+item.create_desc: Enter item details below.
+item.edit_desc: Update item information.
+item.id_label: Item ID
+item.id_auto: Auto-generated on save
+item.create_btn: Create Item
+item.update_btn: Save Changes
+item.creating: Creating...
+item.saving: Saving...
+
+# Settings
+settings.title: Inventory Settings
+settings.desc: Configure how your inventory works.
+settings.tab_id: Custom ID
+settings.tab_fields: Custom Fields
+settings.save: Save Settings
+settings.saving: Saving...
+
+# Custom ID Builder
+id_builder.title: ID Elements
+id_builder.add: Add Element
+id_builder.preview: Live Preview
+id_builder.empty: No elements. Add one to build your ID format.
+id_builder.fixed: Fixed Text
+id_builder.random20: 20-bit Random
+id_builder.random32: 32-bit Random
+id_builder.random6: 6-digit Random
+id_builder.random9: 9-digit Random
+id_builder.guid: GUID
+id_builder.date: Date/Time
+id_builder.sequence: Sequence
+id_builder.digits: Digits
+id_builder.format_hex: Hex
+id_builder.format_dec: Decimal
+id_builder.format_year: Year
+id_builder.format_full: Full
+id_builder.format_iso: ISO
+
+# Custom Fields Editor
+fields.title: Custom Fields
+fields.desc: Configure labels, descriptions, and visibility for your item fields.
+fields.show_hidden: Show hidden fields
+fields.label: Label
+fields.label_placeholder: Custom label...
+fields.description: Description
+fields.desc_placeholder: Field description (shown as tooltip)...
+fields.visibility: Visibility
+fields.visible: Visible
+fields.hidden: Hidden
+fields.type_string: String
+fields.type_number: Number
+fields.type_text: Text
+fields.type_link: Link
+fields.type_boolean: Boolean
+
+# My Inventories Page
+my_inv.title: My Inventories
+my_inv.create: Create Inventory
+my_inv.search: Search your inventories...
+my_inv.no_inventories: No inventories yet
+my_inv.no_inventories_desc: Create your first inventory to get started.
+my_inv.filter: Filter
+my_inv.public: Public
+my_inv.private: Private

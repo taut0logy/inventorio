@@ -83,10 +83,10 @@ export default function MyInventoriesPage({
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-2">
-                        {t('home.hero.my_inventories', 'My Inventories')}
+                        {t('my_inv.title', 'My Inventories')}
                     </h1>
                     <p className="text-muted-foreground">
-                        Manage and organize your collections.
+                        {t('my_inv.no_inventories_desc', 'Create your first inventory to get started.')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto">
@@ -97,12 +97,12 @@ export default function MyInventoriesPage({
             {selectedIds.length > 0 && (
                 <div className="bg-muted/50 border rounded-md p-2 mb-4 flex items-center justify-between">
                     <span className="text-sm font-medium ml-2">
-                        {selectedIds.length} selected
+                        {selectedIds.length} {t('inventory.selected', 'selected')}
                     </span>
                     <div className="flex gap-2">
                         <Button variant="destructive" size="sm" onClick={handleBatchDelete}>
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
+                            {t('action.delete', 'Delete')}
                         </Button>
                     </div>
                 </div>
