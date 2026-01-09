@@ -71,6 +71,12 @@ export default function GlobalSearch({ className = '' }) {
         if (e.key === 'Escape') {
             setIsOpen(false);
             inputRef.current?.blur();
+        } else if (e.key === 'Enter') {
+            // Navigate to search page on enter
+            if (query.trim()) {
+                setIsOpen(false);
+                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            }
         }
     };
 
@@ -196,6 +202,21 @@ export default function GlobalSearch({ className = '' }) {
                                 </div>
                             )}
                         </>
+                    )}
+                    
+                    {/* View All Link */}
+                    {query.length >= 2 && (
+                        <div className="p-2 border-t bg-muted/20">
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                                }}
+                                className="w-full text-center text-sm text-primary hover:underline py-1"
+                            >
+                                {t('search.view_all', 'View all results')}
+                            </button>
+                        </div>
                     )}
                 </div>
             )}

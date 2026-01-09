@@ -37,6 +37,7 @@ import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
 import CommentsSection from '@/components/inventory/CommentsSection';
+import { useConfirm } from '@/components/common/useConfirm';
 
 // Default order includes all fields
 const DEFAULT_ORDER = [
@@ -65,6 +66,7 @@ export default function InventoryShowPage({
 }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
+    const [ConfirmDialog, confirm] = useConfirm();
 
     const toggleDeletedMode = () => {
         const url = new URL(window.location);
@@ -77,7 +79,12 @@ export default function InventoryShowPage({
     };
 
     const handleRestore = async (id) => {
-        if (!confirm(t('confirm.restore', 'Are you sure you want to restore this item?'))) return;
+        if (!await confirm({
+            title: t('confirm.restore', 'Restore Item?'),
+            description: t('confirm.restore_desc', 'Are you sure you want to restore this item?'),
+            confirmText: t('action.restore', 'Restore'),
+            variant: 'default'
+        })) return;
         try {
             const res = await fetch(`/api/items/${id}/restore`, { method: 'POST' });
             if (res.ok) window.location.reload();
@@ -89,7 +96,12 @@ export default function InventoryShowPage({
     };
 
     const handlePermanentDelete = async (id) => {
-        if (!confirm(t('confirm.permanent_delete', 'Are you sure? This cannot be undone.'))) return;
+        if (!await confirm({
+            title: t('confirm.permanent_delete', 'Delete Forever?'),
+            description: t('confirm.permanent_delete_desc', 'This action cannot be undone.'),
+            confirmText: t('action.permanent_delete', 'Delete Forever'),
+            variant: 'destructive'
+        })) return;
         try {
             const res = await fetch(`/api/items/${id}/permanent`, { method: 'DELETE' });
             if (res.ok) window.location.reload();
@@ -272,7 +284,11 @@ export default function InventoryShowPage({
     };
 
     const handleBatchDelete = async () => {
-        if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} items?`)) return;
+        if (!await confirm({
+            title: t('confirm.batch_delete', 'Delete Items?'),
+            description: t('confirm.batch_delete_desc', `Are you sure you want to delete ${selectedIds.length} items?`),
+            confirmText: t('action.delete', 'Delete')
+        })) return;
 
         try {
             const response = await fetch('/api/items/batch-delete', {
@@ -293,7 +309,11 @@ export default function InventoryShowPage({
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this item?')) return;
+        if (!await confirm({
+            title: t('confirm.delete', 'Delete Item?'),
+            description: t('confirm.delete_desc', 'Are you sure you want to delete this item?'),
+            confirmText: t('action.delete', 'Delete')
+        })) return;
 
         try {
             const response = await fetch(`/api/items/${id}`, {
@@ -558,6 +578,7 @@ export default function InventoryShowPage({
                     </TabsContent>
                 </Tabs>
             </main>
+            <ConfirmDialog />
         </div>
     );
 }

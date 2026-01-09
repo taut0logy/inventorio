@@ -7,6 +7,7 @@ export default function TagInput({ value = [], onChange, placeholder = "Add tags
     const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [open, setOpen] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(0); // Track selected suggestion index
     const inputRef = useRef(null);
     const containerRef = useRef(null);
 
@@ -34,6 +35,7 @@ export default function TagInput({ value = [], onChange, placeholder = "Add tags
                 if (response.ok) {
                     const data = await response.json();
                     setSuggestions(data);
+                    setSelectedIndex(0); // Reset selection on new suggestions
                 }
             } catch (error) {
                 console.error("Failed to fetch tags", error);
@@ -43,19 +45,39 @@ export default function TagInput({ value = [], onChange, placeholder = "Add tags
         return () => clearTimeout(timer);
     }, [inputValue]);
 
+    // Use a derived list of suggestions that aren't already selected for easier index math
+    const availableSuggestions = suggestions.filter(s => !value.includes(s.name));
+
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && inputValue.trim()) {
+        if (e.key === 'ArrowDown') {
             e.preventDefault();
-            // Add current input as tag
-            const newTag = inputValue.trim();
-            if (!value.includes(newTag)) {
-                onChange([...value, newTag]);
+            if (availableSuggestions.length > 0) {
+                setSelectedIndex(prev => (prev + 1) % availableSuggestions.length);
             }
-            setInputValue("");
-            setOpen(false);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (availableSuggestions.length > 0) {
+                setSelectedIndex(prev => (prev - 1 + availableSuggestions.length) % availableSuggestions.length);
+            }
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (open && availableSuggestions.length > 0) {
+                // Select from suggestions
+                handleSelect(availableSuggestions[selectedIndex].name);
+            } else if (inputValue.trim()) {
+                // Add current input as new tag
+                const newTag = inputValue.trim();
+                if (!value.includes(newTag)) {
+                    onChange([...value, newTag]);
+                }
+                setInputValue("");
+                setOpen(false);
+            }
         } else if (e.key === 'Backspace' && !inputValue && value.length > 0) {
             // Remove last tag
             onChange(value.slice(0, -1));
+        } else if (e.key === 'Escape') {
+            setOpen(false);
         }
     };
 
@@ -107,26 +129,25 @@ export default function TagInput({ value = [], onChange, placeholder = "Add tags
                 <div className="absolute top-full left-0 w-full mt-1 bg-popover text-popover-foreground rounded-md border shadow-md z-50 overflow-hidden">
                     <Command className="h-full">
                         <CommandList>
-                            <CommandEmpty className="px-2 py-1.5 text-xs text-muted-foreground">
-                                Press Enter to create "{inputValue}"
-                            </CommandEmpty>
-                            {suggestions.length > 0 && (
+                            {availableSuggestions.length === 0 ? (
+                                <CommandEmpty className="px-2 py-1.5 text-xs text-muted-foreground">
+                                    Press Enter to create "{inputValue}"
+                                </CommandEmpty>
+                            ) : (
                                 <CommandGroup heading="Suggestions">
-                                    {suggestions
-                                        .filter(s => !value.includes(s.name))
-                                        .map(suggestion => (
-                                            <CommandItem
-                                                key={suggestion.id}
-                                                onSelect={() => handleSelect(suggestion.name)}
-                                                className="cursor-pointer"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <Check className={value.includes(suggestion.name) ? "opacity-100" : "opacity-0"} />
-                                                    {suggestion.name}
-                                                </div>
-                                            </CommandItem>
-                                        ))
-                                    }
+                                    {availableSuggestions.map((suggestion, index) => (
+                                        <CommandItem
+                                            key={suggestion.id}
+                                            value={suggestion.name}
+                                            onSelect={() => handleSelect(suggestion.name)}
+                                            className={`cursor-pointer ${index === selectedIndex ? "bg-accent text-accent-foreground" : ""}`}
+                                        >
+                                            <div className="flex items-center gap-2 w-full">
+                                                <Check className={value.includes(suggestion.name) ? "opacity-100" : "opacity-0"} />
+                                                {suggestion.name}
+                                            </div>
+                                        </CommandItem>
+                                    ))}
                                 </CommandGroup>
                             )}
                         </CommandList>

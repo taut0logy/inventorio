@@ -117,7 +117,66 @@ class InventoryController extends AbstractController
         return $this->render('inventory/new.html.twig');
     }
 
-    #[Route('/batch-delete', name: 'app_inventory_batch_delete', methods: ['POST'])]
+    #[Route('/{id}/edit', name: 'app_inventory_edit', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function edit(
+        string $id,
+        Request $request,
+        InventoryRepository $inventoryRepository,
+        CategoryRepository $categoryRepository,
+        TagRepository $tagRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $inventory = $inventoryRepository->find($id);
+
+        if (!$inventory || $inventory->getCreator() !== $this->getUser()) {
+            throw $this->createNotFoundException('Inventory not found');
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!$title = $data['title'] ?? null) {
+            return $this->json(['error' => 'Title is required'], 400);
+        }
+
+        if (!$categoryId = $data['category'] ?? null) {
+             return $this->json(['error' => 'Category is required'], 400);
+        }
+
+        $category = $categoryRepository->find($categoryId);
+        if (!$category) {
+            return $this->json(['error' => 'Invalid category'], 400);
+        }
+
+        $inventory->setTitle($title);
+        $inventory->setDescription($data['description'] ?? null);
+        $inventory->setPublic($data['isPublic'] ?? false);
+        $inventory->setCategory($category);
+
+        // Update Tags if provided
+        if (isset($data['tags']) && is_array($data['tags'])) {
+             // Remove existing tags
+             foreach ($inventory->getTags() as $tag) {
+                 $inventory->removeTag($tag);
+             }
+             
+             // Add new tags
+             foreach ($data['tags'] as $tagName) {
+                 if (trim($tagName) === '') continue;
+                 $tag = $tagRepository->findOrCreate($tagName);
+                 $entityManager->persist($tag);
+                 $inventory->addTag($tag);
+             }
+        }
+
+        $entityManager->flush();
+
+        return $this->json([
+            'id' => $inventory->getId()->toRfc4122(),
+            'message' => 'Inventory updated successfully'
+        ]);
+    }
+
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function batchDelete(Request $request, InventoryRepository $inventoryRepository, EntityManagerInterface $entityManager): Response
     {

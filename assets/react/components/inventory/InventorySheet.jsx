@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,11 +15,18 @@ import {
     SheetClose 
 } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Pencil } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import TagInput from '@/components/inventory/TagInput';
 
-export default function CreateInventorySheet({ categories = [] }) {
+export default function InventorySheet({ 
+    categories = [], 
+    inventory = null, 
+    trigger = null, 
+    open, 
+    onOpenChange 
+}) {
+    const isEdit = !!inventory;
     const [isLoading, setIsLoading] = useState(false);
     
     // Form state
@@ -31,12 +38,37 @@ export default function CreateInventorySheet({ categories = [] }) {
         tags: []
     });
 
+    useEffect(() => {
+        if (inventory) {
+            setFormData({
+                title: inventory.title || '',
+                // If inventory.category is just a string name, we might need to find ID. 
+                // But usually we need ID. Assuming parent passes generic object.
+                // If inventory.category is object/string, we need to map to ID.
+                category: typeof inventory.categoryId === 'string' ? inventory.categoryId : 
+                          categories.find(c => c.name === inventory.category)?.id || '', 
+                description: inventory.description || '',
+                isPublic: inventory.isPublic || false,
+                tags: inventory.tags ? inventory.tags.map(t => t.name || t) : []
+            });
+        } else {
+            setFormData({
+                title: '',
+                category: '',
+                description: '',
+                isPublic: false,
+                tags: []
+            });
+        }
+    }, [inventory, categories, open]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         
         try {
-            const response = await fetch('/inventory/new', {
+            const url = isEdit ? `/inventory/${inventory.id}/edit` : '/inventory/new';
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,7 +79,7 @@ export default function CreateInventorySheet({ categories = [] }) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to create inventory');
+                throw new Error(data.error || 'Failed to save inventory');
             }
 
             // Success
@@ -57,26 +89,40 @@ export default function CreateInventorySheet({ categories = [] }) {
                 window.location.reload();
             }
         } catch (error) {
-            console.error('Error creating inventory:', error);
-            // In a real app we'd show a toast here
+            console.error('Error saving inventory:', error);
             alert(error.message); 
             setIsLoading(false);
         }
     };
 
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('home.hero.create', 'Create Inventory')}
-                </Button>
-            </SheetTrigger>
+        <Sheet open={open} onOpenChange={onOpenChange}>
+            {/* If managed externally (open prop), we might not need trigger. But if provided... */}
+            {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
+            
+            {/* Default Trigger for Create Mode if no trigger provided & controlled externally */}
+            {!trigger && !isEdit && !onOpenChange && (
+                <SheetTrigger asChild>
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {t('home.hero.create', 'Create Inventory')}
+                    </Button>
+                </SheetTrigger>
+            )}
+
             <SheetContent side="right" className="sm:max-w-[540px] w-full overflow-y-auto">
                 <SheetHeader>
-                    <SheetTitle>{t('inventory.create_title', 'Create New Inventory')}</SheetTitle>
+                    <SheetTitle>
+                        {isEdit 
+                            ? t('inventory.edit_title', 'Edit Inventory') 
+                            : t('inventory.create_title', 'Create New Inventory')
+                        }
+                    </SheetTitle>
                     <SheetDescription>
-                        {t('inventory.create_desc', 'Fill in the details below to create a new inventory space.')}
+                        {isEdit
+                            ? t('inventory.edit_desc', 'Update your inventory details.')
+                            : t('inventory.create_desc', 'Fill in the details below to create a new inventory space.')
+                        }
                     </SheetDescription>
                 </SheetHeader>
                 
@@ -165,7 +211,7 @@ export default function CreateInventorySheet({ categories = [] }) {
                         </SheetClose>
                         <Button type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {t('inventory.form.submit', 'Create Inventory')}
+                            {isEdit ? t('action.save', 'Save Changes') : t('inventory.form.submit', 'Create Inventory')}
                         </Button>
                     </SheetFooter>
                 </form>

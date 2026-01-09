@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { t } from '@/lib/i18n';
+import { useConfirm } from '@/components/common/useConfirm';
 
 export default function AdminPage({ currentUser }) {
     const [users, setUsers] = useState([]);
@@ -45,6 +46,7 @@ export default function AdminPage({ currentUser }) {
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkLoading, setBulkLoading] = useState(false);
     const [showDeleted, setShowDeleted] = useState(false);
+    const [ConfirmDialog, confirm] = useConfirm();
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -121,7 +123,11 @@ export default function AdminPage({ currentUser }) {
                 // Actually I should add bulk restore if I want bulk restore.
                 // I'll skip bulk restore for now or just restrict to single action if easier, but user expects bulk.
                 // I'll loop.
-                if (!confirm(confirmMsg)) return;
+                if (!await confirm({
+                    description: confirmMsg,
+                    confirmText: t('action.restore', 'Restore'),
+                    variant: 'default'
+                })) return;
                 setBulkLoading(true);
                 try {
                     for (const id of selectedIds) {
@@ -134,7 +140,11 @@ export default function AdminPage({ currentUser }) {
                 return;
         }
 
-        if (!confirm(confirmMsg)) return;
+        if (!await confirm({
+            description: confirmMsg,
+            confirmText: 'Yes',
+            variant: action === 'delete' ? 'destructive' : 'default'
+        })) return;
 
         setBulkLoading(true);
         try {
@@ -164,7 +174,11 @@ export default function AdminPage({ currentUser }) {
     };
 
     const handleBlock = async (user) => {
-        if (!confirm(t('admin.confirm.block', 'Are you sure?'))) return;
+        if (!await confirm({
+            description: t('admin.confirm.block', 'Are you sure?'),
+            confirmText: user.isBlocked ? 'Unblock' : 'Block',
+            variant: user.isBlocked ? 'default' : 'destructive'
+        })) return;
         
         setActionLoading(user.id);
         try {
@@ -202,7 +216,12 @@ export default function AdminPage({ currentUser }) {
     };
 
     const handleDelete = async (user) => {
-        if (!confirm(t('admin.confirm.delete', 'Are you sure you want to delete this user?'))) return;
+        if (!await confirm({
+            title: t('admin.confirm.delete', 'Delete User?'),
+            description: t('admin.confirm.delete_desc', 'Are you sure you want to delete this user?'),
+            confirmText: t('action.delete', 'Delete'),
+            variant: 'destructive'
+        })) return;
 
         setActionLoading(user.id);
         try {
@@ -226,7 +245,12 @@ export default function AdminPage({ currentUser }) {
     };
 
     const handleRestore = async (user) => {
-        if (!confirm(t('admin.confirm.restore', 'Restore this user?'))) return;
+        if (!await confirm({
+            title: t('admin.confirm.restore', 'Restore User?'),
+            description: t('admin.confirm.restore_desc', 'Restore this user?'),
+            confirmText: t('action.restore', 'Restore'),
+            variant: 'default'
+        })) return;
         setActionLoading(user.id);
         try {
             const res = await fetch(`/api/admin/users/${user.id}/restore`, { method: 'POST' });
@@ -240,7 +264,12 @@ export default function AdminPage({ currentUser }) {
     };
 
     const handlePermanentDelete = async (user) => {
-        if (!confirm(t('admin.confirm.permanent_delete', 'Permanently delete this user? This cannot be undone.'))) return;
+        if (!await confirm({
+            title: t('admin.confirm.permanent_delete', 'Delete Forever?'),
+            description: t('admin.confirm.permanent_delete_desc', 'Permanently delete this user? This cannot be undone.'),
+            confirmText: t('action.permanent_delete', 'Delete Forever'),
+            variant: 'destructive'
+        })) return;
         setActionLoading(user.id);
         try {
             const res = await fetch(`/api/admin/users/${user.id}/permanent`, { method: 'DELETE' });
@@ -504,6 +533,7 @@ export default function AdminPage({ currentUser }) {
                     </Button>
                 </div>
             )}
+            <ConfirmDialog />
         </div>
     );
 }

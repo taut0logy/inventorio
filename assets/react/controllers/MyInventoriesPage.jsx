@@ -26,8 +26,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { t } from '@/lib/i18n';
 import { Checkbox } from '@/components/ui/checkbox';
-import CreateInventorySheet from '../components/inventory/CreateInventorySheet';
+import InventorySheet from '@/components/inventory/InventorySheet';
 import { TrashToggle } from '@/components/common/TrashToggle';
+import { useConfirm } from '@/components/common/useConfirm';
 
 export default function MyInventoriesPage({ 
     inventories = [], 
@@ -39,6 +40,9 @@ export default function MyInventoriesPage({
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
+    const [ConfirmDialog, confirm] = useConfirm();
+    const [editingInventory, setEditingInventory] = useState(null);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const toggleDeletedMode = () => {
         const url = new URL(window.location);
@@ -51,7 +55,12 @@ export default function MyInventoriesPage({
     };
 
     const handleRestore = async (id) => {
-        if (!confirm(t('confirm.restore', 'Are you sure you want to restore this inventory?'))) return;
+        if (!await confirm({
+            title: t('confirm.restore', 'Restore Inventory?'),
+            description: t('confirm.restore_desc', 'Are you sure you want to restore this inventory?'),
+            confirmText: t('action.restore', 'Restore'),
+            variant: 'default'
+        })) return;
         try {
             const res = await fetch(`/inventory/${id}/restore`, { method: 'POST' });
             if (res.ok) window.location.reload();
@@ -63,7 +72,12 @@ export default function MyInventoriesPage({
     };
 
     const handlePermanentDelete = async (id) => {
-        if (!confirm(t('confirm.permanent_delete', 'Are you sure? This cannot be undone.'))) return;
+        if (!await confirm({
+            title: t('confirm.permanent_delete', 'Delete Forever?'),
+            description: t('confirm.permanent_delete_desc', 'This action cannot be undone.'),
+            confirmText: t('action.permanent_delete', 'Delete Forever'),
+            variant: 'destructive'
+        })) return;
         try {
             const res = await fetch(`/inventory/${id}/permanent`, { method: 'DELETE' });
             if (res.ok) window.location.reload();
@@ -96,7 +110,11 @@ export default function MyInventoriesPage({
     };
 
     const handleBatchDelete = async () => {
-        if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} items?`)) return;
+        if (!await confirm({
+            title: t('confirm.batch_delete', 'Delete Items?'),
+            description: t('confirm.batch_delete_desc', `Are you sure you want to delete ${selectedIds.length} items?`),
+            confirmText: t('action.delete', 'Delete')
+        })) return;
 
         try {
             const response = await fetch('/inventory/batch-delete', {
@@ -129,7 +147,19 @@ export default function MyInventoriesPage({
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <TrashToggle showDeleted={showDeleted} onToggle={toggleDeletedMode} />
-                    {!showDeleted && <CreateInventorySheet categories={categories} />}
+                    {!showDeleted && (
+                        <InventorySheet 
+                            categories={categories} 
+                            open={isCreateOpen} 
+                            onOpenChange={setIsCreateOpen}
+                            trigger={
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {t('home.hero.create', 'Create Inventory')}
+                                </Button>
+                            } 
+                        />
+                    )}
                 </div>
             </div>
 
@@ -257,12 +287,12 @@ export default function MyInventoriesPage({
                                                                             View
                                                                         </a>
                                                                     </DropdownMenuItem>
-                                                                    <DropdownMenuItem>
+                                                                    <DropdownMenuItem onSelect={() => setEditingInventory(inventory)}>
                                                                         <Pencil className="mr-2 h-4 w-4" />
                                                                         Edit
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem className="text-destructive">
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => handleBatchDelete([inventory.id])}>
                                                                         <Trash2 className="mr-2 h-4 w-4" />
                                                                         Delete
                                                                     </DropdownMenuItem>
@@ -319,6 +349,17 @@ export default function MyInventoriesPage({
                     )}
                 </CardContent>
             </Card>
+            <ConfirmDialog />
+            
+            {/* Edit Sheet */}
+            {editingInventory && (
+                <InventorySheet 
+                    categories={categories}
+                    inventory={editingInventory}
+                    open={!!editingInventory}
+                    onOpenChange={(open) => !open && setEditingInventory(null)}
+                />
+            )}
         </div>
     );
 }

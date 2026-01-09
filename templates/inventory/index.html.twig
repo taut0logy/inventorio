@@ -10,7 +10,8 @@
             category: i.category.name,
             itemCount: i.items|length,
             isPublic: i.isPublic,
-            createdAt: i.createdAt|date('M d, Y')
+            createdAt: i.createdAt|date('M d, Y'),
+            tags: i.tags|map(t => ({ id: t.id ~ '', name: t.name }))
         }),
         categories: categories|map(c => {
             id: c.id ~ '',
