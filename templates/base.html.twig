@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}" class="{{ app.user ? app.user.theme : 'light' }}">
+{% set current_theme = app.request.cookies.get('THEME') ?? (app.user.theme ?? 'light') %}
+<html lang="{{ app.request.locale }}" class="{{ current_theme }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
                 roles: app.user.roles
             } : null,
             locale: app.request.locale,
-            theme: app.user ? app.user.theme : 'light',
+            theme: current_theme,
             translations: {},
             homePath: path('app_home'),
             loginPath: path('app_login'),

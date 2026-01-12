@@ -55,12 +55,11 @@ export default function Header({
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         setCurrentTheme(newTheme);
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
-        // TODO: Save to user preferences via API
+        document.cookie = `THEME=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
     };
 
     const toggleLocale = () => {
         const newLocale = currentLocale === 'en' ? 'bn' : 'en';
-        // Redirect to the backend controller to update preference and session
         window.location.href = `/switch-locale/${newLocale}`;
     };
 

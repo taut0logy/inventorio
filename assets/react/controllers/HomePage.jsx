@@ -87,7 +87,7 @@ export default function HomePage({
     }));
 
     return (
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <div>
             {/* ===== HERO SECTION with Spotlight ===== */}
             <section 
                 className="relative overflow-hidden flex items-center justify-center bg-background"
@@ -97,7 +97,7 @@ export default function HomePage({
                 <Spotlight />
                 
                 {/* Grid pattern overlay */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--muted)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-30" />
+                {/* <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--muted)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-30" /> */}
                 
                 <div className="relative z-10">
                     <div className="text-center max-w-4xl mx-auto">
@@ -201,7 +201,7 @@ export default function HomePage({
             </section>
 
             {/* ===== FEATURES with Card Hover Effect ===== */}
-            <section className="py-16 md:py-24 bg-muted/30">
+            <section className="py-16 md:py-24 bg-muted/30 container mx-auto px-4 md:px-6 lg:px-8">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
@@ -218,7 +218,7 @@ export default function HomePage({
 
             {/* ===== POPULAR INVENTORIES with Infinite Moving Cards ===== */}
             {popularInventories.length > 0 && (
-                <section className="py-16 md:py-24">
+                <section className="py-16 md:py-24 container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="container mx-auto px-4 mb-8">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
@@ -239,7 +239,7 @@ export default function HomePage({
                 </section>
             )}
 
-            <div className="container mx-auto px-4 py-16">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16">
                 {/* ===== LATEST INVENTORIES (Table - Required) ===== */}
                 <section className="mb-16">
                     <div className="flex items-center justify-between mb-6">

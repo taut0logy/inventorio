@@ -32,6 +32,7 @@ export default function ProfilePage({
         setCurrentTheme(value);
         document.documentElement.classList.remove('light', 'dark');
         document.documentElement.classList.add(value);
+        document.cookie = `THEME=${value}; path=/; max-age=31536000; SameSite=Lax`;
     };
     
     // Check if we have errors to decide initial tab, but props override
