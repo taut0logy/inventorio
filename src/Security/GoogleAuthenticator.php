@@ -60,6 +60,7 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
                     // Link Google account to existing user
                     $existingUser->setOauthProvider('google');
                     $existingUser->setOauthId($googleId);
+                    $existingUser->setEmailVerified(true);
                     if (!$existingUser->getAvatarUrl()) {
                         $existingUser->setAvatarUrl($googleUser->getAvatar());
                     }
@@ -75,7 +76,7 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
                 $user->setAvatarUrl($googleUser->getAvatar());
                 $user->setOauthProvider('google');
                 $user->setOauthId($googleId);
-                $user->setEmailVerified(true); // Google emails are verified
+                $user->setEmailVerified(true);
 
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();

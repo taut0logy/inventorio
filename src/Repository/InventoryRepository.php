@@ -27,7 +27,7 @@ class InventoryRepository extends ServiceEntityRepository
      * Searches title and description using PostgreSQL ILIKE for simplicity
      * Returns public inventories OR inventories owned by the user
      */
-    public function searchFullText(string $query, ?User $user = null, int $limit = 10): array
+    public function searchFullText(string $query, ?User $user = null, int $limit = 10, ?string $category = null): array
     {
         $qb = $this->createQueryBuilder('i')
             ->leftJoin('i.creator', 'u')
@@ -36,12 +36,21 @@ class InventoryRepository extends ServiceEntityRepository
             ->where('i.deletedAt IS NULL');
 
         // Search condition - use ILIKE for case-insensitive partial match
-        $searchCondition = $qb->expr()->orX(
-            $qb->expr()->like('LOWER(i.title)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.description)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
-        );
-        $qb->andWhere($searchCondition);
+        if (!empty($query)) {
+            $searchCondition = $qb->expr()->orX(
+                $qb->expr()->like('LOWER(i.title)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.description)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
+            );
+            $qb->andWhere($searchCondition)
+               ->setParameter('query', '%' . $query . '%');
+        }
+
+        // Category filter
+        if ($category) {
+            $qb->andWhere('c.name = :category')
+               ->setParameter('category', $category);
+        }
 
         // Visibility: public OR owned by user
         if ($user) {
@@ -57,8 +66,7 @@ class InventoryRepository extends ServiceEntityRepository
                ->setParameter('true', true);
         }
 
-        $qb->setParameter('query', '%' . $query . '%')
-           ->orderBy('i.createdAt', 'DESC')
+        $qb->orderBy('i.createdAt', 'DESC')
            ->setMaxResults($limit);
 
         return $qb->getQuery()->getResult();

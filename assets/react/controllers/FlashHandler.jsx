@@ -23,7 +23,7 @@ export default function FlashHandler({ messages = {} }) {
                             toast.warning(message);
                             break;
                         default:
-                            toast.info(message); // info or default
+                            toast.info(message);
                     }
                 });
             }

@@ -144,6 +144,15 @@ val.email_invalid: Please enter a valid email address
 val.password_required: Password is required
 val.name_required: Name is required
 val.name_min: Name must be at least 2 characters
+
+# Auth - Verification
+auth.verify.pending.title: Verify your email
+auth.verify.pending.message: We have sent a verification link to %email%. Please check your inbox.
+auth.verify.pending.quote: Security is our top priority. Please verify your email to continue using all features of Inventorio.
+auth.verify.pending.spam_check: Check your spam folder if you do not see it.
+auth.verify.resend.btn: Resend Verification Email
+auth.or: Or
+auth.logout: Logout
 val.password_min: Password must be at least 8 characters
 val.password_lower: Password must contain a lowercase letter
 val.password_upper: Password must contain an uppercase letter
@@ -287,6 +296,8 @@ search.view_all: View all results
 search.loading: Searching...
 search.min_chars: Type at least 2 characters
 search.in_inventory: in
+search.category: Category
+search.results_count: "Found %count% results"
 
 # Admin
 admin.title: User Management

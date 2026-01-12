@@ -65,6 +65,7 @@ class FacebookAuthenticator extends OAuth2Authenticator implements Authenticatio
                     // Link Facebook account to existing user
                     $existingUser->setOauthProvider('facebook');
                     $existingUser->setOauthId($facebookId);
+                    $existingUser->setEmailVerified(true);
                     if (!$existingUser->getAvatarUrl()) {
                         $existingUser->setAvatarUrl($facebookUser->getPictureUrl());
                     }

@@ -128,6 +128,56 @@ class SecurityController extends AbstractController
         return $errors;
     }
 
+    #[Route('/verify/pending', name: 'app_verify_pending')]
+    public function verifyPending(): Response
+    {
+        /** @var User|null $user */
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($user->isVerified()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        return $this->render('security/verify_pending.html.twig');
+    }
+
+    #[Route('/verify/resend', name: 'app_verify_resend', methods: ['POST'])]
+    public function resendVerifyEmail(Request $request, UserRepository $userRepository): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            $id = $request->request->get('id');
+            if ($id) {
+                $user = $userRepository->find($id);
+            }
+        }
+
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($user->isVerified()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+            (new TemplatedEmail())
+                ->from(new Address('noreply@inventorio.com', 'Inventorio'))
+                ->to($user->getEmail())
+                ->subject('Please Confirm your Email')
+                ->htmlTemplate('registration/confirmation_email.html.twig')
+        );
+
+        $this->addFlash('success', 'A new verification email has been sent.');
+        
+        return $this->redirectToRoute('app_verify_pending');
+    }
+
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, UserRepository $userRepository): Response
     {
@@ -143,13 +193,16 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_register');
         }
 
-        // Validate email confirmation link, sets User::isVerified=true and persists
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $user);
         } catch (VerifyEmailExceptionInterface $exception) {
             $this->addFlash('error', $exception->getReason());
 
-            return $this->redirectToRoute('app_register');
+            if ($this->getUser()) {
+                 return $this->redirectToRoute('app_verify_pending');
+            }
+
+            return $this->redirectToRoute('app_login');
         }
 
         $this->addFlash('success', 'Your email address has been verified.');

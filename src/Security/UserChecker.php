@@ -16,7 +16,6 @@ class UserChecker implements UserCheckerInterface
         }
 
         if ($user->isBlocked()) {
-            // the message passed to this exception is meant to be displayed to the user
             throw new CustomUserMessageAccountStatusException('Your account has been blocked by an administrator.');
         }
         
@@ -31,9 +30,8 @@ class UserChecker implements UserCheckerInterface
             return;
         }
 
-        // Check again post-auth just in case
         if ($user->isBlocked()) {
-             throw new CustomUserMessageAccountStatusException('Your account has been blocked by an administrator.');
+            throw new CustomUserMessageAccountStatusException('Your account has been blocked by an administrator.');
         }
     }
 }

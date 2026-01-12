@@ -10,17 +10,17 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use App\Entity\User;
 
-/**
- * Enforces password setup for OAuth users who don't have a password set.
- * Redirects them to the set-password page until they create one.
- */
+
 class PasswordEnforcementSubscriber implements EventSubscriberInterface
 {
-    // Routes that should be accessible without a password
     private const ALLOWED_ROUTES = [
+        'app_home',
         'app_set_password',
         'app_set_password_save',
         'app_switch_locale',
+        'app_verify_pending',
+        'app_verify_resend',
+        'app_verify_email',
         'app_logout',
         'app_login',
         'app_register',

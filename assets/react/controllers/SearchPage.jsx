@@ -6,24 +6,34 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Loader2, Package, Box, ArrowRight } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
-export default function SearchPage({ initialQuery = '' }) {
+    export default function SearchPage({ initialQuery = '' }) {
     const [query, setQuery] = useState(initialQuery);
     const [results, setResults] = useState({ inventories: [], items: [], total: 0 });
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
+    const [activeCategory, setActiveCategory] = useState(null);
 
-    const performSearch = async (q) => {
-        if (!q || q.length < 2) return;
+    const performSearch = async (q, category = null) => {
+        if ((!q || q.length < 2) && !category) return;
         setLoading(true);
         try {
-            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=50`);
+            let url = `/api/search?limit=50`;
+            if (q) url += `&q=${encodeURIComponent(q)}`;
+            if (category) url += `&category=${encodeURIComponent(category)}`;
+
+            const res = await fetch(url);
             const data = await res.json();
             setResults(data);
             setSearched(true);
             
-            const url = new URL(window.location);
-            url.searchParams.set('q', q);
-            window.history.pushState({}, '', url);
+            const browserUrl = new URL(window.location);
+            if (q) browserUrl.searchParams.set('q', q);
+            else browserUrl.searchParams.delete('q');
+            
+            if (category) browserUrl.searchParams.set('category', category);
+            else browserUrl.searchParams.delete('category');
+
+            window.history.pushState({}, '', browserUrl);
         } catch (error) {
             console.error('Search failed:', error);
         } finally {
@@ -32,14 +42,23 @@ export default function SearchPage({ initialQuery = '' }) {
     };
 
     useEffect(() => {
-        if (initialQuery) {
-            performSearch(initialQuery);
+        const params = new URLSearchParams(window.location.search);
+        const category = params.get('category');
+        if (category) setActiveCategory(category);
+
+        if (initialQuery || category) {
+            performSearch(initialQuery, category);
         }
     }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        performSearch(query);
+        performSearch(query, activeCategory);
+    };
+
+    const clearCategory = () => {
+        setActiveCategory(null);
+        performSearch(query, null);
     };
 
     return (
@@ -58,6 +77,15 @@ export default function SearchPage({ initialQuery = '' }) {
                         autoFocus
                     />
                 </div>
+                {activeCategory && (
+                     <div className="flex items-center gap-2 px-3 py-1 bg-secondary rounded-md h-12">
+                        <span className="text-sm font-medium whitespace-nowrap">{t('search.category', 'Category')}: {activeCategory}</span>
+                        <button type="button" onClick={clearCategory} className="text-muted-foreground hover:text-foreground">
+                            <span className="sr-only">Remove filter</span>
+                             ✕
+                        </button>
+                    </div>
+                )}
                 <Button type="submit" size="lg" disabled={loading || query.length < 2}>
                     {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('search.submit', 'Search')}
                 </Button>
@@ -73,8 +101,11 @@ export default function SearchPage({ initialQuery = '' }) {
                      <div className="flex items-center justify-between border-b pb-4">
                         <h2 className="text-xl font-semibold text-muted-foreground">
                             {results.total === 0 
-                                ? t('search.no_results_for', { query }, `No results for "${query}"`)
-                                : t('search.results_for', { count: results.total, query }, `Found ${results.total} results for "${query}"`)
+                                ? t('search.no_results', 'No results found')
+                                : (query 
+                                    ? t('search.results_for', { count: results.total, query }, `Found ${results.total} results for "${query}"`)
+                                    : t('search.results_count', { count: results.total }, `Found ${results.total} results`)
+                                  )
                             }
                         </h2>
                     </div>

@@ -144,6 +144,15 @@ val.email_invalid: একটি বৈধ ইমেল ঠিকানা লি
 val.password_required: পাসওয়ার্ড প্রয়োজন
 val.name_required: নাম প্রয়োজন
 val.name_min: নাম অন্তত ২ অক্ষরের হতে হবে
+
+# Auth - Verification
+auth.verify.pending.title: আপনার ইমেল যাচাই করুন
+auth.verify.pending.message: আমরা %email%-এ একটি যাচাইকরণ লিঙ্ক পাঠিয়েছি। অনুগ্রহ করে আপনার ইনবক্স চেক করুন।
+auth.verify.pending.quote: নিরাপত্তা আমাদের সর্বোচ্চ অগ্রাধিকার। Inventorio-র সমস্ত বৈশিষ্ট্য ব্যবহার করা চালিয়ে যেতে অনুগ্রহ করে আপনার ইমেল যাচাই করুন।
+auth.verify.pending.spam_check: আপনি যদি এটি না দেখেন তবে আপনার স্প্যাম ফোল্ডারটি চেক করুন।
+auth.verify.resend.btn: যাচাইকরণ ইমেল পুনরায় পাঠান
+auth.or: অথবা
+auth.logout: লগআউট
 val.password_min: পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে
 val.password_lower: পাসওয়ার্ডে একটি ছোট হাতের অক্ষর থাকতে হবে
 val.password_upper: পাসওয়ার্ডে একটি বড় হাতের অক্ষর থাকতে হবে
@@ -287,6 +296,8 @@ search.view_all: সব ফলাফল দেখুন
 search.loading: অনুসন্ধান করা হচ্ছে...
 search.min_chars: অন্তত ২টি অক্ষর লিখুন
 search.in_inventory: এতে
+search.category: বিভাগ
+search.results_count: "%count% টি ফলাফল পাওয়া গেছে"
 
 # Admin
 admin.title: ব্যবহারকারী ব্যবস্থাপনা

@@ -262,6 +262,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function isVerified(): bool
+    {
+        return $this->isEmailVerified();
+    }
+
     public function isEmailVerified(): bool
     {
         return $this->isEmailVerified;
@@ -270,6 +275,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailVerified(bool $isEmailVerified): static
     {
         $this->isEmailVerified = $isEmailVerified;
+
         return $this;
     }
 
