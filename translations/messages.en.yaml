@@ -24,6 +24,8 @@ nav.register: Register
 # Home
 home.hero.badge: Schema-Driven Inventory Management
 home.hero.title: Manage Your Inventory
+home.hero.title_line1: Manage Your Inventory
+home.hero.title_highlight: Effortlessly
 home.hero.highlight: Effortlessly
 home.hero.subtitle: Create custom inventories with flexible fields, unique ID formats, and powerful organization tools. Built for teams who need control over their data.
 home.hero.create: Create Inventory
@@ -102,7 +104,18 @@ password.confirm: Confirm New Password
 password.flash.updated: Password changed successfully.
 password.error.mismatch: The password fields must match.
 
-# Auth
+# Set Password
+set_password.title: Secure Your Account
+set_password.description: Please set a password to secure your account. You'll be able to use it along with your email to sign in.
+set_password.requirements: Password Requirements
+set_password.passwords_match: Passwords match
+set_password.button: Set Password
+set_password.why: This helps keep your account secure and allows password login.
+
+# Avatar Upload
+avatar.error.type: Please select a JPG, PNG, GIF, or WebP image.
+avatar.error.size: Image must be smaller than 1MB.
+avatar.error.read: Failed to read image file.
 auth.login.title: Sign in to your account
 auth.register.title: Create an account
 auth.register.submit: Create Account
@@ -189,9 +202,14 @@ inventory.items_count: items
 inventory.selected: selected
 inventory.no_items_title: No items yet
 inventory.no_items_desc: Start by adding your first item to this inventory.
+inventory.no_items_can_add: Start by adding your first item to this inventory.
+inventory.no_items_view_only: This inventory has no items yet.
+inventory.by: by
+inventory.items: items
 inventory.back: Back
 inventory.box: Box
 inventory.view: View
+action.add_item: Add Item
 
 # Item Form
 item.create_title: Add New Item

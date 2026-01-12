@@ -24,7 +24,7 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12">
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-muted/40 px-4 py-12">
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold">{t('reset.forgot.title', 'Reset password')}</CardTitle>
@@ -56,7 +56,7 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
                             />
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col space-y-4">
+                    <CardFooter className="flex flex-col space-y-4 mt-4">
                         <Button className="w-full" type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {t('reset.forgot.btn', 'Send Reset Link')}

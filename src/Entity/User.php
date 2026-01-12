@@ -164,6 +164,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return in_array('ROLE_ADMIN', $this->roles, true);
     }
 
+    public function hasPassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
+    }
+
     public function setAdmin(bool $isAdmin): static
     {
         if ($isAdmin && !in_array('ROLE_ADMIN', $this->roles, true)) {
@@ -186,11 +191,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->password = $password;
         return $this;
-    }
-
-    public function hasPassword(): bool
-    {
-        return $this->password !== null;
     }
 
     /**

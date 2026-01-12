@@ -17,13 +17,19 @@ class TagRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all tags ordered by usage count (for tag cloud)
+     * Find popular tags ordered by usage count (for tag cloud)
+     * Returns array of [0 => Tag, 'inventoryCount' => int]
      */
     public function findPopular(int $limit = 50): array
     {
-        // This will be updated when Inventory entity is created
-        return $this->createQueryBuilder('t')
-            ->orderBy('t.name', 'ASC')
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('t', 'COUNT(i.id) as inventoryCount')
+            ->from(Tag::class, 't')
+            ->leftJoin('App\Entity\Inventory', 'i', 'WITH', 't MEMBER OF i.tags AND i.deletedAt IS NULL AND i.isPublic = true')
+            ->where('t.deletedAt IS NULL')
+            ->groupBy('t.id')
+            ->orderBy('inventoryCount', 'DESC')
+            ->addOrderBy('t.name', 'ASC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

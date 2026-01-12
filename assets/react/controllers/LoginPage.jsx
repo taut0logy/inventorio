@@ -53,7 +53,7 @@ export default function LoginPage({ lastUsername = '', error = null, csrfToken, 
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 min-h-[calc(100vh-8rem)] flex items-center justify-center">
+        <div className="container mx-auto px-4 py-8 min-h-[calc(100vh-4rem)] flex items-center justify-center">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">{t('auth.welcome_back', 'Welcome back')}</CardTitle>

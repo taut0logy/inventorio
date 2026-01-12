@@ -102,6 +102,19 @@ password.confirm: নতুন পাসওয়ার্ড নিশ্চি
 password.flash.updated: পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।
 password.error.mismatch: পাসওয়ার্ড ক্ষেত্রগুলি মিলতে হবে।
 
+# Set Password
+set_password.title: আপনার অ্যাকাউন্ট সুরক্ষিত করুন
+set_password.description: আপনার অ্যাকাউন্ট সুরক্ষিত করতে অনুগ্রহ করে একটি পাসওয়ার্ড সেট করুন। আপনি এটি আপনার ইমেলের সাথে সাইন ইন করতে ব্যবহার করতে পারবেন।
+set_password.requirements: পাসওয়ার্ড প্রয়োজনীয়তা
+set_password.passwords_match: পাসওয়ার্ড মিলেছে
+set_password.button: পাসওয়ার্ড সেট করুন
+set_password.why: এটি আপনার অ্যাকাউন্ট সুরক্ষিত রাখতে এবং পাসওয়ার্ড লগইন সক্ষম করতে সাহায্য করে।
+
+# Avatar Upload
+avatar.error.type: অনুগ্রহ করে JPG, PNG, GIF বা WebP ছবি নির্বাচন করুন।
+avatar.error.size: ছবির আকার 1MB এর কম হতে হবে।
+avatar.error.read: ছবি ফাইল পড়তে ব্যর্থ হয়েছে।
+
 # Auth
 auth.login.title: আপনার অ্যাকাউন্টে সাইন ইন করুন
 auth.register.title: একটি অ্যাকাউন্ট তৈরি করুন
@@ -189,9 +202,14 @@ inventory.items_count: আইটেম
 inventory.selected: নির্বাচিত
 inventory.no_items_title: এখনো কোন আইটেম নেই
 inventory.no_items_desc: এই ইনভেন্টরিতে আপনার প্রথম আইটেম যোগ করে শুরু করুন।
+inventory.no_items_can_add: এই ইনভেন্টরিতে আপনার প্রথম আইটেম যোগ করে শুরু করুন।
+inventory.no_items_view_only: এই ইনভেন্টরিতে এখনো কোন আইটেম নেই।
+inventory.by: তৈরিকারী
+inventory.items: আইটেম
 inventory.back: ফিরে
 inventory.box: বক্স
 inventory.view: দেখুন
+action.add_item: আইটেম যোগ করুন
 
 # Item Form
 item.create_title: নতুন আইটেম যোগ করুন

@@ -20,17 +20,32 @@ class HomeController extends AbstractController
         $categories = $categoryRepository->findAllOrdered();
         $tags = $tagRepository->findPopular(30);
         $latestInventories = $inventoryRepository->findLatestPublic(6);
+        $popularInventories = $inventoryRepository->findPopular(5);
 
         return $this->render('home/index.html.twig', [
             'categories' => $categories,
-            'tags' => array_map(fn($tag) => ['name' => $tag->getName()], $tags),
+            'tags' => array_map(fn($row) => [
+                'name' => $row[0]->getName(),
+                'count' => (int) $row['inventoryCount'],
+            ], $tags),
             'latestInventories' => array_map(fn($inv) => [
+                'id' => $inv->getId()->toRfc4122(),
                 'title' => $inv->getTitle(),
+                'description' => mb_substr($inv->getDescription() ?? '', 0, 100),
                 'category' => $inv->getCategory()?->getName(),
                 'itemCount' => $inv->getItems()->count(),
                 'createdAt' => $inv->getCreatedAt()->format('Y-m-d'),
             ], $latestInventories),
-            'popularInventories' => [], // TODO: Implement view counts
+            'popularInventories' => array_map(fn($inv) => [
+                'id' => $inv->getId()->toRfc4122(),
+                'title' => $inv->getTitle(),
+                'description' => mb_substr($inv->getDescription() ?? '', 0, 100),
+                'category' => $inv->getCategory()?->getName(),
+                'itemCount' => $inv->getItems()->count(),
+                'viewCount' => $inv->getViewCount(),
+                'likeCount' => $inv->getLikeCount(),
+            ], $popularInventories),
         ]);
     }
 }
+

@@ -107,4 +107,22 @@ class InventoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findPopular(int $limit = 5): array
+    {
+        $inventories = $this->createQueryBuilder('i')
+            ->leftJoin('i.likedBy', 'likes')
+            ->addSelect('COUNT(likes.id) as HIDDEN likeCount')
+            ->andWhere('i.isPublic = :true')
+            ->andWhere('i.deletedAt IS NULL')
+            ->setParameter('true', true)
+            ->groupBy('i.id')
+            ->orderBy('(COUNT(likes.id) * 3) + i.viewCount', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $inventories;
+    }
 }
+

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,7 +31,11 @@ import {
     ArrowDown,
     ArrowUpDown,
     RefreshCcw,
-    XCircle
+    XCircle,
+    Heart,
+    Eye,
+    User,
+    Package
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { t } from '@/lib/i18n';
@@ -66,14 +71,43 @@ export default function InventoryShowPage({
     canEditInventory = false,
     items = [],
     showDeleted = false,
-    likedItemIds = []
+    likedItemIds = [],
+    inventoryLiked = false,
+    inventoryLikeCount = 0,
+    inventoryViewCount = 0
 }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
     const [ConfirmDialog, confirm] = useConfirm();
     const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
 
-    // Likes state
+    // Inventory like state
+    const [isInventoryLiked, setIsInventoryLiked] = useState(inventoryLiked);
+    const [invLikeCount, setInvLikeCount] = useState(inventoryLikeCount);
+
+    const handleToggleInventoryLike = async () => {
+        if (!currentUser) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const wasLiked = isInventoryLiked;
+        setIsInventoryLiked(!wasLiked);
+        setInvLikeCount(prev => wasLiked ? prev - 1 : prev + 1);
+
+        try {
+            const res = await fetch(`/inventory/${inventory.id}/like`, { method: 'POST' });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            setIsInventoryLiked(data.liked);
+            setInvLikeCount(data.likeCount);
+        } catch {
+            setIsInventoryLiked(wasLiked);
+            setInvLikeCount(prev => wasLiked ? prev + 1 : prev - 1);
+        }
+    };
+
+    // Item likes state
     const [likes, setLikes] = useState(() => {
         const initialLikes = {};
         if (likedItemIds) {
@@ -386,25 +420,56 @@ export default function InventoryShowPage({
                         </Button>
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                {/* We could use inventory.category.icon here */}
                                 <span className="text-xl">📦</span>
                             </div>
                             <div>
                                 <h1 className="text-lg font-semibold leading-none mb-1">
                                     {inventory.title}
                                 </h1>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                                     <Badge variant="outline" className="text-[10px] h-4 px-1 rounded-sm">
                                         {inventory.category.name}
                                     </Badge>
-                                    {inventory.tags && inventory.tags.map(tag => (
-                                        <Badge key={tag.id} variant="secondary" className="text-[10px] h-4 px-1 rounded-sm ml-1">
+                                    {inventory.tags && inventory.tags.slice(0, 2).map(tag => (
+                                        <Badge key={tag.id} variant="secondary" className="text-[10px] h-4 px-1 rounded-sm">
                                             #{tag.name}
                                         </Badge>
                                     ))}
                                     <span>•</span>
-                                    <span>{items.length} items</span>
+                                    <span>{items.length} {t('inventory.items', 'items')}</span>
+                                    {!isCreator && inventory.creator && (
+                                        <>
+                                            <span>•</span>
+                                            <span className="flex items-center gap-1">
+                                                {t('inventory.by', 'by')}
+                                                <Avatar className="h-4 w-4">
+                                                    <AvatarImage src={inventory.creator.avatarUrl} alt={inventory.creator.name} />
+                                                    <AvatarFallback className="text-[8px]">
+                                                        {inventory.creator.name?.charAt(0)?.toUpperCase() || 'U'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-medium">{inventory.creator.name}</span>
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
+                            </div>
+                        </div>
+                        
+                        {/* Likes and Views */}
+                        <div className="hidden sm:flex items-center gap-3 ml-4 pl-4 border-l">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className={`gap-1.5 ${isInventoryLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground'}`}
+                                onClick={handleToggleInventoryLike}
+                            >
+                                <Heart className={`h-4 w-4 ${isInventoryLiked ? 'fill-current' : ''}`} />
+                                <span className="font-medium">{invLikeCount}</span>
+                            </Button>
+                            <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                                <Eye className="h-4 w-4" />
+                                <span>{inventoryViewCount.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -627,8 +692,29 @@ export default function InventoryShowPage({
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                                {t('inventory.no_items_desc', 'Start by adding your first item to this inventory.')}
+                                            <TableCell colSpan={tableColumns.length + 3} className="h-32 text-center">
+                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                    <Package className="h-10 w-10 text-muted-foreground/30" />
+                                                    <p className="text-muted-foreground">
+                                                        {canAddItem 
+                                                            ? t('inventory.no_items_can_add', 'Start by adding your first item to this inventory.')
+                                                            : t('inventory.no_items_view_only', 'This inventory has no items yet.')
+                                                        }
+                                                    </p>
+                                                    {canAddItem && (
+                                                        <ItemSheet 
+                                                            inventoryId={inventory.id} 
+                                                            fieldConfig={fieldsConfig}
+                                                            idConfig={idConfig}
+                                                            trigger={
+                                                                <Button size="sm">
+                                                                    <Plus className="h-4 w-4 mr-1" />
+                                                                    {t('action.add_item', 'Add Item')}
+                                                                </Button>
+                                                            }
+                                                        />
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     )}

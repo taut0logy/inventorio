@@ -146,7 +146,7 @@ export default function MyInventoriesPage({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-2">
@@ -368,7 +368,7 @@ export default function MyInventoriesPage({
                             </div>
                         )
                     ) : (
-                        <div className="text-center py-20">
+                        <div className="text-center py-10">
                             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Package className="h-8 w-8 text-muted-foreground/50" />
                             </div>

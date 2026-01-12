@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, User, Lock, Upload } from 'lucide-react';
+import { Loader2, User, Lock } from 'lucide-react';
+import AvatarUpload from '@/components/profile/AvatarUpload';
 
 import { t } from '@/lib/i18n';
 
@@ -23,13 +23,13 @@ export default function ProfilePage({
     hasPassword = true
 }) {
     const [currentTheme, setCurrentTheme] = useState(user.theme);
+    const [currentLocale, setCurrentLocale] = useState(user.locale);
     const [isLoading, setIsLoading] = useState(false);
-
-
+    const [avatarPreview, setAvatarPreview] = useState(user.avatarUrl);
+    const fileInputRef = useRef(null);
 
     const handleThemeChange = (value) => {
         setCurrentTheme(value);
-        document.documentElement.classList.toggle('dark', value === 'dark');
         document.documentElement.classList.remove('light', 'dark');
         document.documentElement.classList.add(value);
     };
@@ -43,10 +43,10 @@ export default function ProfilePage({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-8">{t('profile.title', 'Account Settings')}</h1>
+        <div className="container mx-auto px-4 py-4 max-w-4xl">
+            <h1 className="text-3xl font-bold mb-4">{t('profile.title', 'Account Settings')}</h1>
 
-            <Tabs defaultValue={initialTab} className="w-full space-y-6">
+            <Tabs defaultValue={initialTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
                     <TabsTrigger value="general" className="gap-2">
                         <User className="h-4 w-4" />
@@ -58,7 +58,6 @@ export default function ProfilePage({
                     </TabsTrigger>
                 </TabsList>
 
-                {/* General Tab */}
                 <TabsContent value="general">
                     <Card>
                         <CardHeader>
@@ -74,26 +73,17 @@ export default function ProfilePage({
                                 </Alert>
                             )}
                             
-                            <form id="profile-form" method="post" action={updateProfilePath} onSubmit={() => setIsLoading(true)}>
+                            <form id="profile-form" method="post" action={updateProfilePath} encType="multipart/form-data" onSubmit={() => setIsLoading(true)}>
                                 <input type="hidden" name="profile_form[_token]" value={csrfToken} />
                                 
                                 <div className="space-y-6">
-                                    {/* Avatar Section - Placeholder for now */}
-                                    <div className="flex items-center gap-6">
-                                        <Avatar className="h-24 w-24">
-                                            <AvatarImage src={user.avatarUrl} />
-                                            <AvatarFallback className="text-xl">{getInitials(user.name)}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <Button type="button" variant="outline" size="sm" className="gap-2">
-                                                <Upload className="h-4 w-4" />
-                                                {t('action.upload_avatar', 'Change Avatar')}
-                                            </Button>
-                                            <p className="text-sm text-muted-foreground mt-2">
-                                                {t('profile.field.avatar_help', 'JPG, GIF or PNG. Max 1MB.')}
-                                            </p>
-                                        </div>
-                                    </div>
+                                    {/* Avatar Section */}
+                                    <AvatarUpload 
+                                        currentAvatarUrl={user.avatarUrl}
+                                        userName={user.name}
+                                        name="profile_form[avatar]"
+                                        onPreviewChange={(preview) => setAvatarPreview(preview)}
+                                    />
 
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
@@ -121,8 +111,8 @@ export default function ProfilePage({
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label htmlFor="theme">{t('profile.field.theme', 'Theme')}</Label>
+                                            <input type="hidden" name="profile_form[theme]" value={currentTheme} />
                                             <Select 
-                                                name="profile_form[theme]" 
                                                 value={currentTheme} 
                                                 onValueChange={handleThemeChange}
                                             >
@@ -137,7 +127,11 @@ export default function ProfilePage({
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="locale">{t('profile.field.language', 'Language')}</Label>
-                                            <Select name="profile_form[locale]" defaultValue={user.locale}>
+                                            <input type="hidden" name="profile_form[locale]" value={currentLocale} />
+                                            <Select 
+                                                value={currentLocale} 
+                                                onValueChange={setCurrentLocale}
+                                            >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder={t('profile.field.language', 'Select language')} />
                                                 </SelectTrigger>
@@ -160,7 +154,6 @@ export default function ProfilePage({
                     </Card>
                 </TabsContent>
 
-                {/* Password Tab */}
                 <TabsContent value="password">
                     <Card>
                         <CardHeader>
@@ -215,7 +208,7 @@ export default function ProfilePage({
                                 </div>
                             </form>
                         </CardContent>
-                        <CardFooter className="justify-end border-t pt-6">
+                        <CardFooter className="justify-end border-t pt-4">
                             <Button type="submit" form="password-form" disabled={isLoading}>
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {t('action.update', 'Update Password')}

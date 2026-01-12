@@ -246,6 +246,13 @@ class InventoryController extends AbstractController
     {
         $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
         
+        $sessionKey = 'viewed_inventory_' . $inventory->getId()->toRfc4122();
+        if (!$request->getSession()->has($sessionKey)) {
+            $inventory->incrementViewCount();
+            $em->flush();
+            $request->getSession()->set($sessionKey, true);
+        }
+        
         $showDeleted = $request->query->getBoolean('deleted');
         $items = [];
 
@@ -269,7 +276,9 @@ class InventoryController extends AbstractController
             'canEditInventory' => $this->isGranted('INVENTORY_EDIT', $inventory),
             'showDeleted' => $showDeleted,
             'deletedItems' => $showDeleted ? $items : [],
-            'likedItemIds' => $this->getUser() ? $itemRepo->findLikedItemIds($inventory, $this->getUser()) : []
+            'likedItemIds' => $this->getUser() ? $itemRepo->findLikedItemIds($inventory, $this->getUser()) : [],
+            'inventoryLiked' => $inventory->isLikedByUser($this->getUser()),
+            'inventoryLikeCount' => $inventory->getLikeCount(),
         ]);
     }
     #[Route('/{id}/restore', name: 'app_inventory_restore', methods: ['POST'])]
@@ -383,4 +392,23 @@ class InventoryController extends AbstractController
 
         return $this->json(['message' => 'User access removed']);
     }
+
+    #[Route('/{id}/like', name: 'app_inventory_toggle_like', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function toggleLike(
+        Inventory $inventory,
+        EntityManagerInterface $em
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        $liked = $inventory->toggleLike($user);
+        $em->flush();
+
+        return $this->json([
+            'liked' => $liked,
+            'likeCount' => $inventory->getLikeCount(),
+        ]);
+    }
 }
+

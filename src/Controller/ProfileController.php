@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ChangePasswordFormType;
 use App\Form\ProfileFormType;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -17,6 +19,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/profile')]
 class ProfileController extends AbstractController
 {
+    public function __construct(
+        private ?CloudinaryService $cloudinaryService = null
+    ) {}
+
     #[Route('', name: 'app_profile')]
     public function index(): Response
     {
@@ -28,34 +34,41 @@ class ProfileController extends AbstractController
     #[Route('/update', name: 'app_profile_update', methods: ['POST'])]
     public function update(Request $request, EntityManagerInterface $entityManager): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
         $form = $this->createForm(ProfileFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle avatar upload if present (it's not mapped to entity)
+            $avatarFile = $form->get('avatar')->getData();
+            if ($avatarFile) {
+                try {
+                    if ($this->cloudinaryService) {
+                        // Upload to Cloudinary with user ID as public_id for easy overwrites
+                        $result = $this->cloudinaryService->upload(
+                            $avatarFile,
+                            'inventorio/avatars',
+                            'user_' . $user->getId()->toRfc4122()
+                        );
+                        $user->setAvatarUrl($result['url']);
+                    }
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Failed to upload avatar: ' . $e->getMessage());
+                }
+            }
+
             $entityManager->flush();
             $this->addFlash('success', 'Profile updated successfully.');
-            // Refresh user in session/token if needed, but entity update usually reflects immediately
-        } else {
-            foreach ($this->getErrorsFromForm($form) as $field => $error) {
-                // Flash generic error, but ideally we return JSON or render with errors
-                // For simplified React handling, let's use Flash for success and redirect
-                // But for validation errors, we need to pass them back.
-                // Since we are doing a full page reload style submission (form action), 
-                // we should render the page with errors.
-                // But the page is at /profile, and this posts to /profile/update.
-                // If we return render('profile/index'), the URL stays /profile/update. Correct.
-                
-                // However, ProfilePage React component needs to receive these errors.
-                return $this->render('profile/index.html.twig', [
-                    'user' => $user,
-                    'profile_errors' => $this->getErrorsFromForm($form),
-                    'active_tab' => 'general',
-                ]);
-            }
+            return $this->redirectToRoute('app_profile');
         }
 
-        return $this->redirectToRoute('app_profile');
+        // Form has errors
+        return $this->render('profile/index.html.twig', [
+            'user' => $user,
+            'profile_errors' => $this->getErrorsFromForm($form),
+            'active_tab' => 'general',
+        ]);
     }
 
     #[Route('/change-password', name: 'app_profile_change_password', methods: ['POST'])]
@@ -63,7 +76,6 @@ class ProfileController extends AbstractController
     {
         $user = $this->getUser();
         
-        // Ensure user has a password (OAuth users might not)
         if (!$user instanceof User) {
              throw $this->createAccessDeniedException();
         }
@@ -91,7 +103,6 @@ class ProfileController extends AbstractController
         ]);
     }
 
-    // Helper to extract errors (duplicate of SecurityController one, could be a Trait)
     private function getErrorsFromForm(\Symfony\Component\Form\FormInterface $form): array
     {
         $errors = [];

@@ -5,9 +5,11 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -37,6 +39,22 @@ class ProfileFormType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select'],
             ])
+            ->add('avatar', FileType::class, [
+                'mapped' => false, // Not mapped to User entity directly
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '1M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                            'image/webp',
+                        ],
+                        'mimeTypesMessage' => 'Please upload a valid image (JPG, PNG, GIF, WebP)',
+                    ])
+                ],
+            ])
         ;
     }
 
@@ -47,3 +65,4 @@ class ProfileFormType extends AbstractType
         ]);
     }
 }
+

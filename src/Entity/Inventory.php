@@ -73,6 +73,13 @@ class Inventory
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
 
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $viewCount = 0;
+
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\JoinTable(name: 'inventory_likes')]
+    private Collection $likedBy;
+
     public function __construct()
     {
         $this->id = Uuid::v7();
@@ -80,6 +87,7 @@ class Inventory
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->sharedWith = new ArrayCollection();
+        $this->likedBy = new ArrayCollection();
         // Default ID Config
         $this->idGenerationConfig = [
             'type' => 'manual', // manual, auto
@@ -327,4 +335,73 @@ class Inventory
 
         return $this;
     }
+
+    public function getViewCount(): int
+    {
+        return $this->viewCount;
+    }
+
+    public function setViewCount(int $viewCount): static
+    {
+        $this->viewCount = $viewCount;
+        return $this;
+    }
+
+    public function incrementViewCount(): static
+    {
+        $this->viewCount++;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getLikedBy(): Collection
+    {
+        return $this->likedBy;
+    }
+
+    public function getLikeCount(): int
+    {
+        return $this->likedBy->count();
+    }
+
+    public function isLikedByUser(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        return $this->likedBy->contains($user);
+    }
+
+    public function addLike(User $user): static
+    {
+        if (!$this->likedBy->contains($user)) {
+            $this->likedBy->add($user);
+        }
+        return $this;
+    }
+
+    public function removeLike(User $user): static
+    {
+        $this->likedBy->removeElement($user);
+        return $this;
+    }
+
+    public function toggleLike(User $user): bool
+    {
+        if ($this->likedBy->contains($user)) {
+            $this->likedBy->removeElement($user);
+            return false;
+        } else {
+            $this->likedBy->add($user);
+            return true;
+        }
+    }
+
+    public function getPopularityScore(): int
+    {
+        return ($this->getLikeCount() * 3) + $this->viewCount;
+    }
 }
+

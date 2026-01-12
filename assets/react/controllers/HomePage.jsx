@@ -20,7 +20,15 @@ import {
     Globe,
     Heart
 } from 'lucide-react';
+import { motion } from "motion/react";
 import { t } from '@/lib/i18n';
+
+import { Spotlight } from '@/components/ui/spotlight-new';
+import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
+import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
+import { HoverEffect } from '@/components/ui/card-hover-effect';
+
+import logo from '@/../images/logo.svg';
 
 export default function HomePage({ 
     user, 
@@ -36,85 +44,108 @@ export default function HomePage({
 }) {
     const isLoggedIn = !!user;
 
+    // Features for card hover effect
     const features = [
         {
-            icon: Fingerprint,
-            titleKey: 'home.feature.custom_id.title',
-            titleFallback: 'Custom ID Generation',
-            descKey: 'home.feature.custom_id.desc',
-            descFallback: 'Create unique item identifiers with composable elements: sequences, dates, random codes, and fixed text.',
+            title: t('home.feature.custom_id.title', 'Custom ID Generation'),
+            description: t('home.feature.custom_id.desc', 'Create unique item identifiers with composable elements: sequences, dates, random codes, and fixed text.'),
+            link: '#',
         },
         {
-            icon: Settings2,
-            titleKey: 'home.feature.custom_fields.title',
-            titleFallback: 'Flexible Custom Fields',
-            descKey: 'home.feature.custom_fields.desc',
-            descFallback: 'Define up to 15 custom fields per inventory: text, numbers, links, and boolean values.',
+            title: t('home.feature.custom_fields.title', 'Flexible Custom Fields'),
+            description: t('home.feature.custom_fields.desc', 'Define up to 15 custom fields per inventory: text, numbers, links, and boolean values.'),
+            link: '#',
         },
         {
-            icon: Users,
-            titleKey: 'home.feature.access.title',
-            titleFallback: 'Access Control',
-            descKey: 'home.feature.access.desc',
-            descFallback: 'Share private inventories with specific users. Control who can view and edit your data.',
+            title: t('home.feature.access.title', 'Access Control'),
+            description: t('home.feature.access.desc', 'Share private inventories with specific users. Control who can view and edit your data.'),
+            link: '#',
         },
         {
-            icon: MessageSquare,
-            titleKey: 'home.feature.discussion.title',
-            titleFallback: 'Real-time Discussion',
-            descKey: 'home.feature.discussion.desc',
-            descFallback: 'Collaborate with your team through per-inventory discussion threads with instant updates.',
+            title: t('home.feature.discussion.title', 'Real-time Discussion'),
+            description: t('home.feature.discussion.desc', 'Collaborate with your team through per-inventory discussion threads with instant updates.'),
+            link: '#',
         },
         {
-            icon: Search,
-            titleKey: 'home.feature.search.title',
-            titleFallback: 'Full-text Search',
-            descKey: 'home.feature.search.desc',
-            descFallback: 'Find any inventory or item instantly with powerful full-text search across all fields.',
+            title: t('home.feature.search.title', 'Full-text Search'),
+            description: t('home.feature.search.desc', 'Find any inventory or item instantly with powerful full-text search across all fields.'),
+            link: '#',
         },
         {
-            icon: Shield,
-            titleKey: 'home.feature.security.title',
-            titleFallback: 'Concurrent Editing',
-            descKey: 'home.feature.security.desc',
-            descFallback: 'Optimistic locking prevents data conflicts when multiple users edit simultaneously.',
+            title: t('home.feature.security.title', 'Concurrent Editing'),
+            description: t('home.feature.security.desc', 'Optimistic locking prevents data conflicts when multiple users edit simultaneously.'),
+            link: '#',
         },
     ];
 
+    // Transform popular inventories for infinite moving cards
+    const popularItems = popularInventories.map((inv) => ({
+        quote: inv.description || `${inv.itemCount || 0} items tracked`,
+        name: inv.title,
+        title: `❤️ ${inv.likeCount || 0} • 👁️ ${inv.viewCount?.toLocaleString() || 0} • ${inv.category || 'General'}`,
+        href: `/inventory/${inv.id}`,
+    }));
+
     return (
-        <div className="min-h-screen">
-            {/* Hero Section */}
-            <section className="relative py-20 md:py-32 overflow-hidden">
-                {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+            {/* ===== HERO SECTION with Spotlight ===== */}
+            <section 
+                className="relative overflow-hidden flex items-center justify-center bg-background"
+                style={{ minHeight: 'calc(100dvh - 56px)' }}
+            >
+                {/* Spotlight Effect */}
+                <Spotlight />
                 
-                {/* Grid pattern */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--muted)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-50" />
+                {/* Grid pattern overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--muted)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-30" />
                 
-                <div className="container mx-auto px-4 relative">
+                <div className="relative z-10">
                     <div className="text-center max-w-4xl mx-auto">
-                        {/* Badge */}
-                        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            <Zap className="h-4 w-4 text-primary" />
-                            <span className="text-primary font-medium">{t('home.hero.badge', 'Schema-Driven Inventory Management')}</span>
+                        <motion.div 
+                            className="mb-6 inline-block relative"
+                            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                        >
+                            <div className="absolute inset-0 bg-transparent blur-xl rounded-full opacity-50"></div>
+                            <div className="relative p-2 rounded-3xl bg-transparent">
+                                <motion.div
+                                    animate={{ 
+                                        y: [-5, 5, -5],
+                                        rotate: [0, 5, -5, 0]
+                                    }}
+                                    transition={{ 
+                                        duration: 6, 
+                                        repeat: Infinity, 
+                                        ease: "easeInOut" 
+                                    }}
+                                >
+                                    <img src={logo} alt="Inventorio Logo" className="h-20 w-20 object-contain" />
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                        
+                        {/* Title with Typewriter Highlight */}
+                        <div className="mb-6">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4">
+                                {t('home.hero.title', 'Manage Your Inventory')}
+                            </h1>
+                            <TypewriterEffectSmooth 
+                                words={[
+                                    { text: t('home.hero.highlight', 'Effortlessly'), className: 'text-primary' }
+                                ]}
+                                className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl justify-center"
+                                cursorClassName="bg-primary"
+                            />
                         </div>
                         
-                        {/* Title */}
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-6 animate-in fade-in slide-in-from-bottom-3 duration-700">
-                            {t('home.hero.title', 'Manage Your Inventory')}{' '}
-                            <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
-                                {t('home.hero.highlight', 'Effortlessly')}
-                            </span>
-                        </h1>
-                        
                         {/* Subtitle */}
-                        <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
                             {t('home.hero.subtitle', 'Create custom inventories with flexible fields, unique ID formats, and powerful organization tools. Built for teams who need control over their data.')}
                         </p>
                         
                         {/* CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row justify-center gap-4 animate-in fade-in slide-in-from-bottom-5 duration-1000">
+                        <div className="flex flex-col sm:flex-row justify-center gap-4">
                             {isLoggedIn ? (
                                 <>
                                     <Button size="lg" className="h-12 px-8 text-base font-semibold" asChild>
@@ -149,7 +180,7 @@ export default function HomePage({
                         </div>
                         
                         {/* Trust indicators */}
-                        <div className="flex flex-wrap justify-center items-center gap-6 mt-12 text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
+                        {/* <div className="flex flex-wrap justify-center items-center gap-6 mt-12 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <Globe className="h-4 w-4" />
                                 <span>{t('home.hero.feature1', 'Multi-language support')}</span>
@@ -164,12 +195,12 @@ export default function HomePage({
                                 <Users className="h-4 w-4" />
                                 <span>{t('home.hero.feature3', 'Team collaboration')}</span>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </section>
 
-            {/* Features Section */}
+            {/* ===== FEATURES with Card Hover Effect ===== */}
             <section className="py-16 md:py-24 bg-muted/30">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-12">
@@ -181,28 +212,35 @@ export default function HomePage({
                         </p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {features.map((feature, index) => (
-                            <Card key={index} className="bg-background/50 backdrop-blur-sm border-muted hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                                <CardHeader>
-                                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                                        <feature.icon className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <CardTitle className="text-xl">{t(feature.titleKey, feature.titleFallback)}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <CardDescription className="text-base leading-relaxed">
-                                        {t(feature.descKey, feature.descFallback)}
-                                    </CardDescription>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    <HoverEffect items={features} className="max-w-5xl mx-auto" />
                 </div>
             </section>
 
+            {/* ===== POPULAR INVENTORIES with Infinite Moving Cards ===== */}
+            {popularInventories.length > 0 && (
+                <section className="py-16 md:py-24">
+                    <div className="container mx-auto px-4 mb-8">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                                <TrendingUp className="h-5 w-5 text-orange-500" />
+                            </div>
+                            <h2 className="text-2xl font-semibold tracking-tight">{t('home.popular.title', 'Top 5 Popular')}</h2>
+                        </div>
+                        <p className="text-muted-foreground ml-13">{t('home.popular.subtitle', 'Most viewed inventories this week')}</p>
+                    </div>
+                    
+                    <InfiniteMovingCards
+                        items={popularItems}
+                        direction="left"
+                        speed="slow"
+                        pauseOnHover={true}
+                        className="py-4"
+                    />
+                </section>
+            )}
+
             <div className="container mx-auto px-4 py-16">
-                {/* Latest Inventories Section */}
+                {/* ===== LATEST INVENTORIES (Table - Required) ===== */}
                 <section className="mb-16">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
@@ -219,12 +257,12 @@ export default function HomePage({
                         </Button>
                     </div>
                     
-                    <Card className="overflow-hidden">
+                    <Card className="overflow-hidden border-muted/50 shadow-lg">
                         <CardContent className="p-0">
                             {latestInventories.length > 0 ? (
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-muted/50">
+                                        <TableRow className="bg-muted/50 hover:bg-muted/50">
                                             <TableHead className="font-semibold">{t('table.title', 'Title')}</TableHead>
                                             <TableHead className="hidden md:table-cell font-semibold">{t('table.category', 'Category')}</TableHead>
                                             <TableHead className="hidden sm:table-cell font-semibold text-center">{t('table.items', 'Items')}</TableHead>
@@ -235,7 +273,7 @@ export default function HomePage({
                                         {latestInventories.map((inventory, index) => (
                                             <TableRow 
                                                 key={index} 
-                                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                                className="cursor-pointer hover:bg-primary/5 transition-all duration-200"
                                                 onClick={() => window.location.href = `/inventory/${inventory.id}`}
                                             >
                                                 <TableCell className="font-medium">
@@ -274,64 +312,7 @@ export default function HomePage({
                     </Card>
                 </section>
 
-                {/* Popular Inventories Section */}
-                <section className="mb-16">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                                <TrendingUp className="h-5 w-5 text-orange-500" />
-                            </div>
-                            <h2 className="text-2xl font-semibold tracking-tight">{t('home.popular.title', 'Top 5 Popular')}</h2>
-                        </div>
-                    </div>
-                    
-                    <Card className="overflow-hidden">
-                        <CardContent className="p-0">
-                            {popularInventories.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="bg-muted/50">
-                                            <TableHead className="w-16 font-semibold text-center">#</TableHead>
-                                            <TableHead className="font-semibold">{t('table.title', 'Title')}</TableHead>
-                                            <TableHead className="hidden sm:table-cell font-semibold text-right">{t('table.views', 'Views')}</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {popularInventories.map((inventory, index) => (
-                                            <TableRow 
-                                                key={index} 
-                                                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                                                onClick={() => window.location.href = `/inventory/${inventory.id}`}
-                                            >
-                                                <TableCell className="text-center">
-                                                    <span className={`inline-flex items-center justify-center h-8 w-8 rounded-full font-bold ${
-                                                        index === 0 ? 'bg-yellow-500/20 text-yellow-600' :
-                                                        index === 1 ? 'bg-gray-400/20 text-gray-600' :
-                                                        index === 2 ? 'bg-orange-500/20 text-orange-600' :
-                                                        'bg-muted text-muted-foreground'
-                                                    }`}>
-                                                        {index + 1}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="font-medium">{inventory.title}</TableCell>
-                                                <TableCell className="hidden sm:table-cell text-right text-muted-foreground font-mono">
-                                                    {inventory.viewCount?.toLocaleString()}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <div className="text-center py-16">
-                                    <TrendingUp className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-                                    <p className="text-muted-foreground">{t('home.no_popular', 'No popular inventories yet.')}</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </section>
-
-                {/* Tags Section */}
+                {/* ===== TAGS Section ===== */}
                 <section className="mb-16">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
@@ -341,24 +322,36 @@ export default function HomePage({
                     </div>
                     
                     {tags.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            {tags.map((tag, index) => (
-                                <a key={index} href={`/search?q=${encodeURIComponent(tag.name)}`}>
-                                    <Badge 
-                                        variant="secondary" 
-                                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-200 text-sm py-1.5 px-4"
-                                    >
-                                        #{tag.name}
-                                    </Badge>
-                                </a>
-                            ))}
+                        <div className="flex flex-wrap gap-2 items-center">
+                            {tags.map((tag, index) => {
+                                // Calculate size: base 0.875rem, max 1.25rem based on count
+                                const maxCount = Math.max(...tags.map(t => t.count || 0), 1);
+                                const normalizedSize = ((tag.count || 0) / maxCount);
+                                const fontSize = 0.875 + (normalizedSize * 0.375); // 0.875rem to 1.25rem
+                                
+                                return (
+                                    <a key={index} href={`/search?q=${encodeURIComponent(tag.name)}`}>
+                                        <Badge 
+                                            variant="secondary" 
+                                            className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-200 py-1.5 px-3 hover:scale-105"
+                                            style={{ fontSize: `${fontSize}rem` }}
+                                            title={`${tag.count || 0} inventories`}
+                                        >
+                                            #{tag.name}
+                                            {tag.count > 0 && (
+                                                <span className="ml-1 opacity-60 text-xs">({tag.count})</span>
+                                            )}
+                                        </Badge>
+                                    </a>
+                                );
+                            })}
                         </div>
                     ) : (
                         <p className="text-muted-foreground">{t('home.no_tags', 'No tags available.')}</p>
                     )}
                 </section>
 
-                {/* Categories Section */}
+                {/* ===== CATEGORIES Section ===== */}
                 <section>
                     <div className="flex items-center gap-3 mb-6">
                         <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
@@ -374,7 +367,7 @@ export default function HomePage({
                                 href={`/search?category=${encodeURIComponent(category.name)}`}
                                 className="group"
                             >
-                                <Card className="h-full hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group-hover:shadow-md">
+                                <Card className="h-full hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group-hover:shadow-lg group-hover:-translate-y-1">
                                     <CardContent className="flex flex-col items-center justify-center p-6 text-center">
                                         <span className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
                                             {category.icon || '📦'}
@@ -388,7 +381,7 @@ export default function HomePage({
                 </section>
             </div>
 
-            {/* CTA Section */}
+            {/* ===== CTA Section ===== */}
             {!isLoggedIn && (
                 <section className="py-16 md:py-24 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
                     <div className="container mx-auto px-4 text-center">

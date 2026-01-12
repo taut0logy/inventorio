@@ -9,7 +9,7 @@ export default function Footer({ locale = 'en' }) {
 
     return (
         <footer className="border-t bg-background">
-            <div className="container mx-auto px-4 py-12">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-1">
@@ -99,7 +99,6 @@ export default function Footer({ locale = 'en' }) {
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
                     <p>© {currentYear} Inventorio. {t('footer.rights', 'All rights reserved.')}</p>
-                    <p>{t('footer.built_with', 'Built with Symfony + React + shadcn/ui')}</p>
                 </div>
             </div>
         </footer>
