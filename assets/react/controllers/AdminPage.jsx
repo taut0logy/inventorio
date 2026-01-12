@@ -8,7 +8,7 @@ import AdminTagsTab from './admin/AdminTagsTab';
 
 export default function AdminPage({ currentUser }) {
     return (
-        <div className="container mx-auto py-10 px-4">
+        <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">{t('admin.title', 'Admin Panel')}</h1>

@@ -59,6 +59,10 @@ export default function TagInput({ value = [], onChange, placeholder = "Add tags
             if (availableSuggestions.length > 0) {
                 setSelectedIndex(prev => (prev - 1 + availableSuggestions.length) % availableSuggestions.length);
             }
+        } else if (e.key === 'Tab' && open && availableSuggestions.length > 0) {
+            // Tab completes the selected suggestion
+            e.preventDefault();
+            handleSelect(availableSuggestions[selectedIndex].name);
         } else if (e.key === 'Enter') {
             e.preventDefault();
             if (open && availableSuggestions.length > 0) {

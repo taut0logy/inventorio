@@ -44,7 +44,7 @@ export default function ProfilePage({
     };
 
     return (
-        <div className="container mx-auto px-4 py-4 max-w-4xl">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 py-4 max-w-4xl">
             <h1 className="text-3xl font-bold mb-4">{t('profile.title', 'Account Settings')}</h1>
 
             <Tabs defaultValue={initialTab} className="w-full">

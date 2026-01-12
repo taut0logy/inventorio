@@ -35,27 +35,32 @@ class ItemRepository extends ServiceEntityRepository
      * Full-text search across items
      * Searches custom_id and all string/text fields
      * Can be scoped to a specific inventory or search globally (public inventories only)
+     * Supports category filtering (by inventory category) and pagination
      */
-    public function searchFullText(string $query, ?Inventory $inventory = null, int $limit = 10): array
+    public function searchFullText(string $query = '', ?Inventory $inventory = null, int $limit = 10, int $offset = 0, ?string $category = null): array
     {
         $qb = $this->createQueryBuilder('i')
             ->leftJoin('i.inventory', 'inv')
+            ->leftJoin('inv.category', 'c')
             ->leftJoin('i.tags', 't')
             ->where('i.deletedAt IS NULL')
             ->andWhere('inv.deletedAt IS NULL');
 
-        // Search across multiple fields
-        $searchCondition = $qb->expr()->orX(
-            $qb->expr()->like('LOWER(i.customId)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customString1Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customString2Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customString3Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customText1Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customText2Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(i.customText3Value)', 'LOWER(:query)'),
-            $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
-        );
-        $qb->andWhere($searchCondition);
+        // Search across multiple fields (only if query is provided)
+        if (!empty($query)) {
+            $searchCondition = $qb->expr()->orX(
+                $qb->expr()->like('LOWER(i.customId)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.customString1Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.customString2Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.customString3Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.customText1Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.customText2Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(i.customText3Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
+            );
+            $qb->andWhere($searchCondition)
+               ->setParameter('query', '%' . $query . '%');
+        }
 
         if ($inventory) {
             // Scoped to specific inventory
@@ -67,8 +72,15 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('true', true);
         }
 
-        $qb->setParameter('query', '%' . $query . '%')
+        // Category filter (by inventory's category)
+        if ($category) {
+            $qb->andWhere('c.name = :category')
+               ->setParameter('category', $category);
+        }
+
+        $qb->groupBy('i.id')
            ->orderBy('i.createdAt', 'DESC')
+           ->setFirstResult($offset)
            ->setMaxResults($limit);
 
         return $qb->getQuery()->getResult();

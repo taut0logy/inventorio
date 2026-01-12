@@ -28,22 +28,22 @@ class HomeController extends AbstractController
                 'name' => $row[0]->getName(),
                 'count' => (int) $row['inventoryCount'],
             ], $tags),
-            'latestInventories' => array_map(fn($inv) => [
-                'id' => $inv->getId()->toRfc4122(),
-                'title' => $inv->getTitle(),
-                'description' => mb_substr($inv->getDescription() ?? '', 0, 100),
-                'category' => $inv->getCategory()?->getName(),
-                'itemCount' => $inv->getItems()->count(),
-                'createdAt' => $inv->getCreatedAt()->format('Y-m-d'),
+            'latestInventories' => array_map(fn($row) => [
+                'id' => $row[0]->getId()->toRfc4122(),
+                'title' => $row[0]->getTitle(),
+                'description' => mb_substr($row[0]->getDescription() ?? '', 0, 100),
+                'category' => $row[0]->getCategory()?->getName(),
+                'itemCount' => (int) $row['itemCount'],
+                'createdAt' => $row[0]->getCreatedAt()->format('Y-m-d'),
             ], $latestInventories),
-            'popularInventories' => array_map(fn($inv) => [
-                'id' => $inv->getId()->toRfc4122(),
-                'title' => $inv->getTitle(),
-                'description' => mb_substr($inv->getDescription() ?? '', 0, 100),
-                'category' => $inv->getCategory()?->getName(),
-                'itemCount' => $inv->getItems()->count(),
-                'viewCount' => $inv->getViewCount(),
-                'likeCount' => $inv->getLikeCount(),
+            'popularInventories' => array_map(fn($row) => [
+                'id' => $row[0]->getId()->toRfc4122(),
+                'title' => $row[0]->getTitle(),
+                'description' => mb_substr($row[0]->getDescription() ?? '', 0, 100),
+                'category' => $row[0]->getCategory()?->getName(),
+                'itemCount' => (int) $row['itemCount'],
+                'viewCount' => $row[0]->getViewCount(),
+                'likeCount' => $row[0]->getLikeCount(),
             ], $popularInventories),
         ]);
     }

@@ -408,7 +408,7 @@ export default function InventoryShowPage({
     };
 
     return (
-        <div className="min-h-screen bg-background pb-10">
+        <div className="min-h-[calc(100vh-4rem)] bg-background pb-10 px-4 md:px-6 lg:px-8">
             {/* Sticky Header */}
             <header className="sticky top-14 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -609,26 +609,15 @@ export default function InventoryShowPage({
                                                         {item.customId}
                                                         <Button 
                                                             variant="ghost" 
-                                                            size="icon" 
-                                                            className={`h-6 w-6 ${likes[item.id] ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
+                                                            size="sm" 
+                                                            className={`h-7 px-2 gap-1 ${likes[item.id] ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
                                                             onClick={(e) => { e.stopPropagation(); handleToggleLike(item.id); }}
                                                             title={likes[item.id] ? "Unlike" : "Like"}
                                                         >
-                                                            <span className={`text-[10px] mr-1 ${likes[item.id] ? 'font-bold' : ''}`}>
-                                                                {localCounts[item.id] > 0 ? localCounts[item.id] : ''}
+                                                            <Heart className={`h-3.5 w-3.5 ${likes[item.id] ? 'fill-current' : ''}`} />
+                                                            <span className="text-xs font-medium">
+                                                                {localCounts[item.id] ?? 0}
                                                             </span>
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                viewBox="0 0 24 24"
-                                                                fill={likes[item.id] ? "currentColor" : "none"}
-                                                                stroke="currentColor"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                className="h-3.5 w-3.5"
-                                                            >
-                                                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 1.5l.25.15c.12.07.24.15.34.23a4.9 4.9 0 0 0 .58.55L12 8l-2.17-2.57a4.9 4.9 0 0 0-.58-.55l-.34-.23c-1.5-1-2.74-1.5-4.5-1.5A5.5 5.5 0 0 0 2.5 8.5c0 2.28 1.5 4.04 3 5.5l6.5 6.5 6.5-6.5z" />
-                                                            </svg>
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -693,7 +682,7 @@ export default function InventoryShowPage({
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={tableColumns.length + 3} className="h-32 text-center">
-                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                <div className="flex flex-col items-center justify-center gap-2 py-4">
                                                     <Package className="h-10 w-10 text-muted-foreground/30" />
                                                     <p className="text-muted-foreground">
                                                         {canAddItem 

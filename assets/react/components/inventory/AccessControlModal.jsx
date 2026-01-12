@@ -13,9 +13,6 @@ export default function AccessControlModal({ inventoryId, initialSharedUsers = [
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     
-    // Simple debounce if hook not available, but let's assume manual debounce for now to be safe
-    // Actually, I'll use useEffect for debounce
-    
     useEffect(() => {
         setSharedUsers(initialSharedUsers);
     }, [initialSharedUsers]);

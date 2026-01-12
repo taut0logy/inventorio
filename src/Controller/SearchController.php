@@ -24,60 +24,88 @@ class SearchController extends AbstractController
         $category = $request->query->get('category');
         $type = $request->query->get('type', 'all'); // all, inventories, items
         $limit = min((int) $request->query->get('limit', 10), 50);
+        $offset = max((int) $request->query->get('offset', 0), 0);
 
+        // Allow empty query if category is provided
         if (strlen($query) < 2 && !$category) {
             return $this->json([
                 'inventories' => [],
                 'items' => [],
                 'total' => 0,
-                'message' => 'Query must be at least 2 characters'
+                'hasMore' => false,
+                'message' => 'Query must be at least 2 characters or select a category'
             ]);
         }
 
         $user = $this->getUser();
         $inventories = [];
         $items = [];
+        $hasMoreInventories = false;
+        $hasMoreItems = false;
 
         // Search inventories
         if ($type === 'all' || $type === 'inventories') {
-            $inventoryResults = $this->inventoryRepository->searchFullText($query, $user, $limit, $category);
-            $inventories = array_map(fn($inv) => [
-                'id' => $inv->getId()->toRfc4122(),
-                'title' => $inv->getTitle(),
-                'description' => mb_substr($inv->getDescription() ?? '', 0, 100),
-                'imageUrl' => $inv->getImageUrl(),
-                'isPublic' => $inv->isPublic(),
+            // Fetch limit + 1 to check if there are more
+            $inventoryResults = $this->inventoryRepository->searchFullText($query, $user, $limit + 1, $category, $offset);
+            $hasMoreInventories = count($inventoryResults) > $limit;
+            
+            // Trim to actual limit
+            if ($hasMoreInventories) {
+                array_pop($inventoryResults);
+            }
+            
+            $inventories = array_map(fn($row) => [
+                'id' => $row[0]->getId()->toRfc4122(),
+                'title' => $row[0]->getTitle(),
+                'description' => mb_substr($row[0]->getDescription() ?? '', 0, 100),
+                'imageUrl' => $row[0]->getImageUrl(),
+                'isPublic' => $row[0]->isPublic(),
                 'category' => [
-                    'name' => $inv->getCategory()?->getName(),
-                    'icon' => $inv->getCategory()?->getIconUrl(),
+                    'name' => $row[0]->getCategory()?->getName(),
+                    'icon' => $row[0]->getCategory()?->getIconUrl(),
                 ],
                 'creator' => [
-                    'name' => $inv->getCreator()?->getName(),
+                    'name' => $row[0]->getCreator()?->getName(),
                 ],
-                'itemCount' => $inv->getItems()->count(),
+                'itemCount' => (int) $row['itemCount'],
             ], $inventoryResults);
         }
 
-        // Search items (only if query is provided, as items don't strictly belong to categories in the same way, or we could filter items by parent inventory category if needed, but for now lets keep it simple)
-        // Actually, if category is selected, we probably only want to show inventories, or we need to filter items by their inventory's category.
-        // For now, let's only search items if query is present, ignoring category filter for items or disabling item search if only category is present.
-        if (!empty($query) && ($type === 'all' || $type === 'items')) {
-            $itemResults = $this->itemRepository->searchFullText($query, null, $limit);
-            $items = array_map(fn($item) => [
-                'id' => $item->getId()->toRfc4122(),
-                'customId' => $item->getCustomId(),
-                'inventoryId' => $item->getInventory()->getId()->toRfc4122(),
-                'inventoryTitle' => $item->getInventory()->getTitle(),
-                'preview' => $this->getItemPreview($item),
-            ], $itemResults);
+        // Search items - now supports category filtering and empty queries
+        if ($type === 'all' || $type === 'items') {
+            // For items, search if: query is provided OR category is selected
+            if (!empty($query) || $category) {
+                // Fetch limit + 1 to check if there are more
+                $itemResults = $this->itemRepository->searchFullText($query, null, $limit + 1, $offset, $category);
+                $hasMoreItems = count($itemResults) > $limit;
+                
+                // Trim to actual limit
+                if ($hasMoreItems) {
+                    array_pop($itemResults);
+                }
+                
+                $items = array_map(fn($item) => [
+                    'id' => $item->getId()->toRfc4122(),
+                    'customId' => $item->getCustomId(),
+                    'inventoryId' => $item->getInventory()->getId()->toRfc4122(),
+                    'inventoryTitle' => $item->getInventory()->getTitle(),
+                    'category' => $item->getInventory()->getCategory()?->getName(),
+                    'preview' => $this->getItemPreview($item),
+                ], $itemResults);
+            }
         }
 
         return $this->json([
             'inventories' => $inventories,
             'items' => $items,
             'total' => count($inventories) + count($items),
+            'hasMoreInventories' => $hasMoreInventories,
+            'hasMoreItems' => $hasMoreItems,
+            'hasMore' => $hasMoreInventories || $hasMoreItems,
             'query' => $query,
             'category' => $category,
+            'limit' => $limit,
+            'offset' => $offset,
         ]);
     }
 

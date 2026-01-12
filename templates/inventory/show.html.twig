@@ -41,6 +41,7 @@
         items: (showDeleted ? deletedItems : inventory.items)|map(item => {
             id: item.id ~ '',
             customId: item.customId,
+            likeCount: item.likeCount,
             customString1Value: item.customString1Value,
             customString2Value: item.customString2Value,
             customString3Value: item.customString3Value,

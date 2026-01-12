@@ -65,6 +65,9 @@ table.created: তৈরি
 table.views: দেখা
 table.actions: অ্যাকশন
 
+common.hide_trash: ট্র্যাশ লুকান
+common.show_trash: ট্র্যাশ দেখুন
+
 # Inventory
 inventory.add_item: আইটেম যোগ করুন
 inventory.activity: কার্যকলাপ

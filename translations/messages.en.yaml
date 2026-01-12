@@ -67,6 +67,9 @@ table.created: Created
 table.views: Views
 table.actions: Actions
 
+common.hide_trash: Hide Trash
+common.show_trash: Show Trash
+
 # Inventory
 inventory.add_item: Add Item
 inventory.activity: Activity

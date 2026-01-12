@@ -30,7 +30,7 @@ export default function SetPasswordPage({ user, errors = {}, csrfToken }) {
     const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-background p-4">
+        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-background p-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">

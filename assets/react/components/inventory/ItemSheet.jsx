@@ -271,13 +271,13 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
                         ) : (
                             <>
                                 <Plus className="mr-2 h-4 w-4" />
-                                {t('inventory.add_item', 'Add Item')}
+                                {t('action.add_item', 'Add Item')}
                             </>
                         )}
                     </Button>
                 )}
             </SheetTrigger>
-            <SheetContent className="sm:max-w-[540px] overflow-y-auto px-4">
+            <SheetContent className="sm:max-w-[540px] overflow-y-auto px-4 md:px-6">
                 <form onSubmit={handleSubmit}>
                     <SheetHeader>
                         <SheetTitle>{isEditMode ? t('item.edit_title', 'Edit Item') : t('item.create_title', 'Add New Item')}</SheetTitle>

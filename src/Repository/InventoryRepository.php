@@ -26,10 +26,13 @@ class InventoryRepository extends ServiceEntityRepository
      * Full-text search across inventories
      * Searches title and description using PostgreSQL ILIKE for simplicity
      * Returns public inventories OR inventories owned by the user
+     * Uses subquery to avoid N+1 for item counts
+     * Supports pagination via offset
      */
-    public function searchFullText(string $query, ?User $user = null, int $limit = 10, ?string $category = null): array
+    public function searchFullText(string $query = '', ?User $user = null, int $limit = 10, ?string $category = null, int $offset = 0): array
     {
         $qb = $this->createQueryBuilder('i')
+            ->addSelect('(SELECT COUNT(item.id) FROM App\Entity\Item item WHERE item.inventory = i AND item.deletedAt IS NULL) AS itemCount')
             ->leftJoin('i.creator', 'u')
             ->leftJoin('i.category', 'c')
             ->leftJoin('i.tags', 't')
@@ -66,7 +69,9 @@ class InventoryRepository extends ServiceEntityRepository
                ->setParameter('true', true);
         }
 
-        $qb->orderBy('i.createdAt', 'DESC')
+        $qb->groupBy('i.id')
+           ->orderBy('i.createdAt', 'DESC')
+           ->setFirstResult($offset)
            ->setMaxResults($limit);
 
         return $qb->getQuery()->getResult();
@@ -103,10 +108,12 @@ class InventoryRepository extends ServiceEntityRepository
 
     /**
      * Find public inventories for homepage (latest)
+     * Uses subquery to avoid N+1 for item counts
      */
     public function findLatestPublic(int $limit = 10): array
     {
         return $this->createQueryBuilder('i')
+            ->addSelect('(SELECT COUNT(item.id) FROM App\Entity\Item item WHERE item.inventory = i AND item.deletedAt IS NULL) AS itemCount')
             ->andWhere('i.isPublic = :true')
             ->andWhere('i.deletedAt IS NULL')
             ->setParameter('true', true)
@@ -116,11 +123,16 @@ class InventoryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Find popular inventories
+     * Uses subquery to avoid N+1 for item counts
+     */
     public function findPopular(int $limit = 5): array
     {
-        $inventories = $this->createQueryBuilder('i')
+        return $this->createQueryBuilder('i')
             ->leftJoin('i.likedBy', 'likes')
             ->addSelect('COUNT(likes.id) as HIDDEN likeCount')
+            ->addSelect('(SELECT COUNT(item.id) FROM App\Entity\Item item WHERE item.inventory = i AND item.deletedAt IS NULL) AS itemCount')
             ->andWhere('i.isPublic = :true')
             ->andWhere('i.deletedAt IS NULL')
             ->setParameter('true', true)
@@ -129,8 +141,6 @@ class InventoryRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
-
-        return $inventories;
     }
 }
 

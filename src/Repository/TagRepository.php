@@ -49,15 +49,40 @@ class TagRepository extends ServiceEntityRepository
     }
 
     /**
-     * Search tags by name prefix
+     * Search tags by name (matches anywhere, ordered by relevance)
+     * Returns tags where the query appears anywhere in the name
+     * Ordered by: exact match first, then prefix match, then contains, then by popularity
      */
-    public function searchByName(string $query): array
+    public function searchByName(string $query, int $limit = 15): array
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.name LIKE :query')
-            ->setParameter('query', mb_strtolower($query) . '%')
-            ->orderBy('t.name', 'ASC')
-            ->setMaxResults(20)
+        $q = mb_strtolower(trim($query));
+        
+        if (empty($q)) {
+            return [];
+        }
+
+        // Use a CASE expression to score relevance:
+        // 3 = exact match, 2 = starts with, 1 = contains
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->addSelect('COUNT(DISTINCT i.id) as HIDDEN usageCount')
+            ->addSelect("CASE 
+                WHEN LOWER(t.name) = :exact THEN 3
+                WHEN LOWER(t.name) LIKE :prefix THEN 2
+                ELSE 1
+            END as HIDDEN relevance")
+            ->from(Tag::class, 't')
+            ->leftJoin('App\Entity\Inventory', 'i', 'WITH', 't MEMBER OF i.tags AND i.deletedAt IS NULL')
+            ->where('LOWER(t.name) LIKE :contains')
+            ->andWhere('t.deletedAt IS NULL')
+            ->setParameter('exact', $q)
+            ->setParameter('prefix', $q . '%')
+            ->setParameter('contains', '%' . $q . '%')
+            ->groupBy('t.id')
+            ->orderBy('relevance', 'DESC')
+            ->addOrderBy('usageCount', 'DESC')
+            ->addOrderBy('t.name', 'ASC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }
