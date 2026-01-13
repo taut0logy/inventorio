@@ -355,3 +355,60 @@ profile.tab.activity: Activity
 profile.visibility: Visibility
 profile.no_inventories: No inventories found
 profile.activity_coming_soon: Activity log coming soon
+
+# Activity Tab
+activity.views: views
+activity.likes: likes
+activity.items_added: added
+activity.edits: edits
+activity.pending: pending
+activity.filters: Filter by Type
+activity.feed: Activity Feed
+activity.empty: No activity yet
+activity.access_requests: Access Requests
+activity.viewed: viewed this inventory
+activity.liked: liked this inventory
+activity.item_add: added an item
+activity.item_edit: edited an item
+activity.item_delete: deleted an item
+activity.inventory_edit: updated inventory settings
+activity.permission_request: requested access
+activity.permission_granted: granted access
+activity.permission_denied: denied access
+pagination.page: Page
+
+# Access Request
+access.requested: Access Requested
+access.request: Request Edit Access
+access.request_title: Request Edit Access
+access.request_desc: Send a request to the inventory owner for edit access. You can include an optional message.
+access.message: Message (optional)
+access.message_placeholder: I'd like to contribute to this inventory...
+access.send_request: Send Request
+access.request_sent: Request Sent!
+access.request_sent_desc: The owner will review your request.
+
+# Activity Filters
+filter.views: Views
+filter.likes: Likes
+filter.items_added: Added
+filter.item_edits: Edits
+filter.item_deletions: Deletions
+filter.settings: Settings
+filter.requests: Requests
+filter.granted: Granted
+filter.denied: Denied
+
+# Stats Tab
+inventory.stats: Stats
+stats.values: values
+stats.unique: unique
+stats.min: Min
+stats.avg: Avg
+stats.max: Max
+stats.sum: Sum
+stats.empty: Add items to see statistics
+stats.total_items: Total Items
+stats.completion: Field Completion
+stats.numeric_summary: Numeric Fields
+stats.string_breakdown: Text Field Breakdown

@@ -35,7 +35,8 @@ import {
     Heart,
     Eye,
     User,
-    Package
+    Package,
+    BarChart3
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { t } from '@/lib/i18n';
@@ -43,6 +44,9 @@ import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
 import CommentsSection from '@/components/inventory/CommentsSection';
 import AccessControlModal from '@/components/inventory/AccessControlModal';
+import ActivityTab from '@/components/inventory/ActivityTab';
+import StatsTab from '@/components/inventory/StatsTab';
+import RequestAccessButton from '@/components/inventory/RequestAccessButton';
 import { useConfirm } from '@/components/common/useConfirm';
 
 // Default order includes all fields
@@ -67,8 +71,12 @@ export default function InventoryShowPage({
     inventory, 
     currentUser,
     isCreator,
+    isCollaborator = false,
     canAddItem = false,
+    canEditItem = false,
     canEditInventory = false,
+    canManageAccess = false,
+    hasRequestedAccess = false,
     items = [],
     showDeleted = false,
     likedItemIds = [],
@@ -485,10 +493,16 @@ export default function InventoryShowPage({
                                 idConfig={idConfig}
                             />
                         )}
-                        {canEditInventory && (
+                        {canManageAccess && (
                             <Button variant="outline" size="icon" onClick={() => setIsAccessModalOpen(true)} title={t('action.share', 'Share')}>
                                 <Share2 className="h-4 w-4" />
                             </Button>
+                        )}
+                        {!isCollaborator && currentUser && (
+                            <RequestAccessButton 
+                                inventoryId={inventory.id} 
+                                hasRequested={hasRequestedAccess} 
+                            />
                         )}
                         {canEditInventory && (
                             <InventorySettingsSheet 
@@ -508,11 +522,14 @@ export default function InventoryShowPage({
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-6">
-                <Tabs defaultValue="items" className="space-y-6">
+            <main className="container mx-auto px-4 py-4">
+                <Tabs defaultValue="items" className="">
                     <TabsList>
                         <TabsTrigger value="items" className="gap-2">
                             {t('inventory.box', 'Box')} <Badge variant="secondary" className="ml-1 h-5 px-1.5">{items.length}</Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="stats" className="gap-2">
+                            <BarChart3 className="h-4 w-4" /> {t('inventory.stats', 'Stats')}
                         </TabsTrigger>
                         <TabsTrigger value="activity" className="gap-2">
                             <Activity className="h-4 w-4" /> {t('inventory.activity', 'Activity')}
@@ -522,7 +539,7 @@ export default function InventoryShowPage({
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="items" className="space-y-4">
+                    <TabsContent value="items" className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 flex-1">
                                 <div className="relative flex-1 max-w-sm">
@@ -715,12 +732,16 @@ export default function InventoryShowPage({
                         </Card>
                     </TabsContent>
 
+                    <TabsContent value="stats">
+                        <StatsTab inventoryId={inventory.id} />
+                    </TabsContent>
+
                     <TabsContent value="activity">
-                        <Card>
-                            <CardContent className="pt-6">
-                                <p className="text-muted-foreground text-center">Activity log coming soon.</p>
-                            </CardContent>
-                        </Card>
+                        <ActivityTab 
+                            inventoryId={inventory.id} 
+                            isCollaborator={isCollaborator}
+                            canManageAccess={canManageAccess}
+                        />
                     </TabsContent>
 
                     <TabsContent value="discussion">

@@ -318,15 +318,29 @@ class InventoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_inventory_show', methods: ['GET'])]
-    public function show(Inventory $inventory, Request $request, EntityManagerInterface $em, ItemRepository $itemRepo): Response
-    {
+    public function show(
+        Inventory $inventory, 
+        Request $request, 
+        EntityManagerInterface $em, 
+        ItemRepository $itemRepo,
+        \App\Repository\ActivityRepository $activityRepo
+    ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
+        
+        /** @var User|null $user */
+        $user = $this->getUser();
         
         $sessionKey = 'viewed_inventory_' . $inventory->getId()->toRfc4122();
         if (!$request->getSession()->has($sessionKey)) {
             $inventory->incrementViewCount();
             $em->flush();
             $request->getSession()->set($sessionKey, true);
+            
+            // Log view activity (only once per session)
+            if ($user) {
+                $isAdmin = $this->isGranted('ROLE_ADMIN');
+                $activityRepo->logActivity($inventory, $user, 'view', $isAdmin);
+            }
         }
         
         $showDeleted = $request->query->getBoolean('deleted');
@@ -344,16 +358,26 @@ class InventoryController extends AbstractController
                
              $items = array_filter($items, fn($i) => $i->getDeletedAt() !== null);
         }
+        
+        // Check if user has pending access request
+        $hasRequestedAccess = false;
+        if ($user && !$inventory->getSharedWith()->contains($user) && $inventory->getCreator() !== $user) {
+            $hasRequestedAccess = $activityRepo->hasPendingRequest($inventory, $user);
+        }
 
         return $this->render('inventory/show.html.twig', [
             'inventory' => $inventory,
-            'isCreator' => $this->getUser() === $inventory->getCreator(),
+            'isCreator' => $user === $inventory->getCreator(),
+            'isCollaborator' => $user && ($inventory->getCreator() === $user || $inventory->getSharedWith()->contains($user) || $this->isGranted('ROLE_ADMIN')),
             'canAddItem' => $this->isGranted('ITEM_ADD', $inventory),
+            'canEditItem' => $this->isGranted('ITEM_EDIT', $inventory),
             'canEditInventory' => $this->isGranted('INVENTORY_EDIT', $inventory),
+            'canManageAccess' => $this->isGranted('INVENTORY_MANAGE_ACCESS', $inventory),
+            'hasRequestedAccess' => $hasRequestedAccess,
             'showDeleted' => $showDeleted,
             'deletedItems' => $showDeleted ? $items : [],
-            'likedItemIds' => $this->getUser() ? $itemRepo->findLikedItemIds($inventory, $this->getUser()) : [],
-            'inventoryLiked' => $inventory->isLikedByUser($this->getUser()),
+            'likedItemIds' => $user ? $itemRepo->findLikedItemIds($inventory, $user) : [],
+            'inventoryLiked' => $inventory->isLikedByUser($user),
             'inventoryLikeCount' => $inventory->getLikeCount(),
         ]);
     }
@@ -425,7 +449,7 @@ class InventoryController extends AbstractController
         UserRepository $userRepo, 
         EntityManagerInterface $em
     ): Response {
-        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+        $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
         
         $data = json_decode($request->getContent(), true);
         $userId = $data['userId'] ?? null;
@@ -456,7 +480,7 @@ class InventoryController extends AbstractController
         UserRepository $userRepo, 
         EntityManagerInterface $em
     ): Response {
-        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+        $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
         
         $user = $userRepo->find($userId);
         if (!$user) {
@@ -473,7 +497,8 @@ class InventoryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function toggleLike(
         Inventory $inventory,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        \App\Repository\ActivityRepository $activityRepo
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -481,10 +506,296 @@ class InventoryController extends AbstractController
         $liked = $inventory->toggleLike($user);
         $em->flush();
 
+        // Log activity only when liking (not unliking)
+        if ($liked) {
+            $isAdmin = $this->isGranted('ROLE_ADMIN');
+            $activityRepo->logActivity($inventory, $user, 'like', $isAdmin);
+        }
+
         return $this->json([
             'liked' => $liked,
             'likeCount' => $inventory->getLikeCount(),
         ]);
     }
-}
 
+    // =========================================
+    // Activity & Permission Request Endpoints
+    // =========================================
+
+    #[Route('/{id}/activities', name: 'app_inventory_activities', methods: ['GET'])]
+    public function getActivities(
+        Inventory $inventory,
+        Request $request,
+        \App\Repository\ActivityRepository $activityRepo
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
+        
+        /** @var User|null $user */
+        $user = $this->getUser();
+        
+        // Determine if viewer is collaborator (owner, sharedWith, or admin)
+        $isCollaborator = false;
+        if ($user) {
+            $isCollaborator = $inventory->getCreator() === $user
+                           || $inventory->getSharedWith()->contains($user)
+                           || $this->isGranted('ROLE_ADMIN');
+        }
+        
+        $types = $request->query->all('types') ?: [];
+        $page = max(1, (int)$request->query->get('page', 1));
+        $limit = min(50, max(10, (int)$request->query->get('limit', 20)));
+        
+        $result = $activityRepo->findByInventoryPaginated(
+            $inventory, $isCollaborator, $types, $page, $limit
+        );
+        
+        return $this->json([
+            'activities' => array_map(fn($a) => [
+                'id' => $a->getId()->toRfc4122(),
+                'type' => $a->getType(),
+                'user' => [
+                    'id' => $a->getUser()->getId()->toRfc4122(),
+                    'name' => $a->getUser()->getName(),
+                    'avatarUrl' => $a->getUser()->getAvatarUrl()
+                ],
+                'isAdminAction' => $a->isAdminAction(),
+                'metadata' => $a->getMetadata(),
+                'createdAt' => $a->getCreatedAt()->format('c')
+            ], $result['data']),
+            'stats' => $activityRepo->getStats($inventory),
+            'total' => $result['total'],
+            'pages' => $result['pages'],
+            'page' => $result['page']
+        ]);
+    }
+
+    #[Route('/{id}/request-access', name: 'app_inventory_request_access', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function requestAccess(
+        Inventory $inventory,
+        Request $request,
+        \App\Repository\ActivityRepository $activityRepo
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        // Can't request if already has access
+        if ($inventory->getCreator() === $user) {
+            return $this->json(['error' => 'You are the owner'], 400);
+        }
+        if ($inventory->getSharedWith()->contains($user)) {
+            return $this->json(['error' => 'Already have access'], 400);
+        }
+        
+        // Check for existing pending request
+        if ($activityRepo->hasPendingRequest($inventory, $user)) {
+            return $this->json(['error' => 'Request already pending'], 400);
+        }
+        
+        $data = json_decode($request->getContent(), true);
+        $message = isset($data['message']) ? substr(trim($data['message']), 0, 200) : null;
+        
+        $activityRepo->logActivity($inventory, $user, 'permission_request', false, [
+            'message' => $message
+        ]);
+        
+        return $this->json(['message' => 'Request sent']);
+    }
+
+    #[Route('/{id}/access-requests', name: 'app_inventory_access_requests', methods: ['GET'])]
+    public function getAccessRequests(
+        Inventory $inventory,
+        \App\Repository\ActivityRepository $activityRepo
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
+        
+        $requests = $activityRepo->getPendingRequests($inventory);
+        
+        return $this->json([
+            'requests' => array_map(fn($a) => [
+                'id' => $a->getId()->toRfc4122(),
+                'user' => [
+                    'id' => $a->getUser()->getId()->toRfc4122(),
+                    'name' => $a->getUser()->getName(),
+                    'email' => $a->getUser()->getEmail(),
+                    'avatarUrl' => $a->getUser()->getAvatarUrl()
+                ],
+                'message' => $a->getMetadata()['message'] ?? null,
+                'createdAt' => $a->getCreatedAt()->format('c')
+            ], $requests)
+        ]);
+    }
+
+    #[Route('/{id}/access-requests/{userId}/approve', name: 'app_inventory_approve_access', methods: ['POST'])]
+    public function approveAccessRequest(
+        Inventory $inventory,
+        string $userId,
+        UserRepository $userRepo,
+        \App\Repository\ActivityRepository $activityRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
+        
+        $requestUser = $userRepo->find($userId);
+        if (!$requestUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+        
+        // Add user to sharedWith
+        $inventory->addSharedWith($requestUser);
+        $em->flush();
+        
+        // Remove pending request
+        $activityRepo->removePendingRequest($inventory, $requestUser);
+        
+        // Log approval
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $activityRepo->logActivity($inventory, $this->getUser(), 'permission_granted', $isAdmin, [
+            'grantedToId' => $userId,
+            'grantedToName' => $requestUser->getName()
+        ]);
+        
+        return $this->json(['message' => 'Access granted']);
+    }
+
+    #[Route('/{id}/access-requests/{userId}/deny', name: 'app_inventory_deny_access', methods: ['POST'])]
+    public function denyAccessRequest(
+        Inventory $inventory,
+        string $userId,
+        UserRepository $userRepo,
+        \App\Repository\ActivityRepository $activityRepo
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
+        
+        $requestUser = $userRepo->find($userId);
+        if (!$requestUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+        
+        // Remove pending request
+        $activityRepo->removePendingRequest($inventory, $requestUser);
+        
+        // Log denial
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $activityRepo->logActivity($inventory, $this->getUser(), 'permission_denied', $isAdmin, [
+            'deniedUserId' => $userId,
+            'deniedUserName' => $requestUser->getName()
+        ]);
+        
+        return $this->json(['message' => 'Request denied']);
+    }
+
+    #[Route('/{id}/stats', name: 'app_inventory_stats', methods: ['GET'])]
+    public function getItemStats(
+        Inventory $inventory,
+        ItemRepository $itemRepo
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
+
+        $items = $inventory->getItems();
+        $fieldsConfig = $inventory->getCustomFieldsConfig() ?? [];
+        $totalItems = count($items);
+
+        if ($totalItems === 0) {
+            return $this->json([
+                'totalItems' => 0,
+                'numericStats' => [],
+                'stringStats' => [],
+                'completionRates' => []
+            ]);
+        }
+
+        $numericStats = [];
+        $stringStats = [];
+        $completionRates = [];
+
+        // Define field mappings
+        $numericFields = ['number1', 'number2', 'number3'];
+        $stringFields = ['string1', 'string2', 'string3'];
+
+        // Calculate numeric stats
+        foreach ($numericFields as $field) {
+            $fieldKey = $field;
+            $config = $fieldsConfig[$fieldKey] ?? null;
+            
+            // Skip hidden fields
+            if ($config && ($config['hidden'] ?? false)) {
+                continue;
+            }
+
+            $getter = 'getCustom' . ucfirst(str_replace('number', 'Number', $field)) . 'Value';
+            $values = [];
+            $nonNullCount = 0;
+
+            foreach ($items as $item) {
+                $val = $item->$getter();
+                if ($val !== null) {
+                    $values[] = $val;
+                    $nonNullCount++;
+                }
+            }
+
+            if (count($values) > 0) {
+                $numericStats[$fieldKey] = [
+                    'label' => $config['label'] ?? ucfirst($field),
+                    'min' => min($values),
+                    'max' => max($values),
+                    'avg' => round(array_sum($values) / count($values), 2),
+                    'sum' => array_sum($values),
+                    'count' => count($values)
+                ];
+            }
+
+            $completionRates[$fieldKey] = [
+                'label' => $config['label'] ?? ucfirst($field),
+                'rate' => round(($nonNullCount / $totalItems) * 100)
+            ];
+        }
+
+        // Calculate string stats (top 5 most frequent values)
+        foreach ($stringFields as $field) {
+            $fieldKey = $field;
+            $config = $fieldsConfig[$fieldKey] ?? null;
+            
+            if ($config && ($config['hidden'] ?? false)) {
+                continue;
+            }
+
+            $getter = 'getCustom' . ucfirst(str_replace('string', 'String', $field)) . 'Value';
+            $valueCounts = [];
+            $nonNullCount = 0;
+
+            foreach ($items as $item) {
+                $val = $item->$getter();
+                if ($val !== null && $val !== '') {
+                    $valueCounts[$val] = ($valueCounts[$val] ?? 0) + 1;
+                    $nonNullCount++;
+                }
+            }
+
+            if (count($valueCounts) > 0) {
+                arsort($valueCounts);
+                $topValues = array_slice($valueCounts, 0, 5, true);
+                
+                $stringStats[$fieldKey] = [
+                    'label' => $config['label'] ?? ucfirst($field),
+                    'topValues' => array_map(fn($v, $c) => ['value' => $v, 'count' => $c], 
+                        array_keys($topValues), array_values($topValues)),
+                    'uniqueCount' => count($valueCounts)
+                ];
+            }
+
+            $completionRates[$fieldKey] = [
+                'label' => $config['label'] ?? ucfirst($field),
+                'rate' => round(($nonNullCount / $totalItems) * 100)
+            ];
+        }
+
+        return $this->json([
+            'totalItems' => $totalItems,
+            'numericStats' => $numericStats,
+            'stringStats' => $stringStats,
+            'completionRates' => $completionRates
+        ]);
+    }
+}

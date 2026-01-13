@@ -207,6 +207,8 @@
                     // Table headers
                     'table.title': {{ 'table.title'|trans|json_encode|raw }},
                     'table.category': {{ 'table.category'|trans|json_encode|raw }},
+                    'inventory.activity': {{ 'inventory.activity'|trans|json_encode|raw }},
+                    'inventory.comments': {{ 'inventory.comments'|trans|json_encode|raw }},
                     'table.items': {{ 'table.items'|trans|json_encode|raw }},
                     'table.created': {{ 'table.created'|trans|json_encode|raw }},
                     'table.views': {{ 'table.views'|trans|json_encode|raw }},
@@ -338,7 +340,64 @@
                     'comments.title': {{ 'comments.title'|trans|json_encode|raw }},
                     'comments.empty': {{ 'comments.empty'|trans|json_encode|raw }},
                     'comments.placeholder': {{ 'comments.placeholder'|trans|json_encode|raw }},
-                    'comments.login_required': {{ 'comments.login_required'|trans|json_encode|raw }}
+                    'comments.login_required': {{ 'comments.login_required'|trans|json_encode|raw }},
+
+                    // Activity Tab
+                    'activity.views': {{ 'activity.views'|trans|json_encode|raw }},
+                    'activity.likes': {{ 'activity.likes'|trans|json_encode|raw }},
+                    'activity.items_added': {{ 'activity.items_added'|trans|json_encode|raw }},
+                    'activity.edits': {{ 'activity.edits'|trans|json_encode|raw }},
+                    'activity.pending': {{ 'activity.pending'|trans|json_encode|raw }},
+                    'activity.filters': {{ 'activity.filters'|trans|json_encode|raw }},
+                    'activity.feed': {{ 'activity.feed'|trans|json_encode|raw }},
+                    'activity.empty': {{ 'activity.empty'|trans|json_encode|raw }},
+                    'activity.access_requests': {{ 'activity.access_requests'|trans|json_encode|raw }},
+                    'activity.viewed': {{ 'activity.viewed'|trans|json_encode|raw }},
+                    'activity.liked': {{ 'activity.liked'|trans|json_encode|raw }},
+                    'activity.item_add': {{ 'activity.item_add'|trans|json_encode|raw }},
+                    'activity.item_edit': {{ 'activity.item_edit'|trans|json_encode|raw }},
+                    'activity.item_delete': {{ 'activity.item_delete'|trans|json_encode|raw }},
+                    'activity.inventory_edit': {{ 'activity.inventory_edit'|trans|json_encode|raw }},
+                    'activity.permission_request': {{ 'activity.permission_request'|trans|json_encode|raw }},
+                    'activity.permission_granted': {{ 'activity.permission_granted'|trans|json_encode|raw }},
+                    'activity.permission_denied': {{ 'activity.permission_denied'|trans|json_encode|raw }},
+                    'pagination.page': {{ 'pagination.page'|trans|json_encode|raw }},
+
+                    // Access Request
+                    'access.requested': {{ 'access.requested'|trans|json_encode|raw }},
+                    'access.request': {{ 'access.request'|trans|json_encode|raw }},
+                    'access.request_title': {{ 'access.request_title'|trans|json_encode|raw }},
+                    'access.request_desc': {{ 'access.request_desc'|trans|json_encode|raw }},
+                    'access.message': {{ 'access.message'|trans|json_encode|raw }},
+                    'access.message_placeholder': {{ 'access.message_placeholder'|trans|json_encode|raw }},
+                    'access.send_request': {{ 'access.send_request'|trans|json_encode|raw }},
+                    'access.request_sent': {{ 'access.request_sent'|trans|json_encode|raw }},
+                    'access.request_sent_desc': {{ 'access.request_sent_desc'|trans|json_encode|raw }},
+
+                    // Activity Filters
+                    'filter.views': {{ 'filter.views'|trans|json_encode|raw }},
+                    'filter.likes': {{ 'filter.likes'|trans|json_encode|raw }},
+                    'filter.items_added': {{ 'filter.items_added'|trans|json_encode|raw }},
+                    'filter.item_edits': {{ 'filter.item_edits'|trans|json_encode|raw }},
+                    'filter.item_deletions': {{ 'filter.item_deletions'|trans|json_encode|raw }},
+                    'filter.settings': {{ 'filter.settings'|trans|json_encode|raw }},
+                    'filter.requests': {{ 'filter.requests'|trans|json_encode|raw }},
+                    'filter.granted': {{ 'filter.granted'|trans|json_encode|raw }},
+                    'filter.denied': {{ 'filter.denied'|trans|json_encode|raw }},
+
+                    // Stats Tab
+                    'inventory.stats': {{ 'inventory.stats'|trans|json_encode|raw }},
+                    'stats.values': {{ 'stats.values'|trans|json_encode|raw }},
+                    'stats.unique': {{ 'stats.unique'|trans|json_encode|raw }},
+                    'stats.min': {{ 'stats.min'|trans|json_encode|raw }},
+                    'stats.avg': {{ 'stats.avg'|trans|json_encode|raw }},
+                    'stats.max': {{ 'stats.max'|trans|json_encode|raw }},
+                    'stats.sum': {{ 'stats.sum'|trans|json_encode|raw }},
+                    'stats.empty': {{ 'stats.empty'|trans|json_encode|raw }},
+                    'stats.total_items': {{ 'stats.total_items'|trans|json_encode|raw }},
+                    'stats.completion': {{ 'stats.completion'|trans|json_encode|raw }},
+                    'stats.numeric_summary': {{ 'stats.numeric_summary'|trans|json_encode|raw }},
+                    'stats.string_breakdown': {{ 'stats.string_breakdown'|trans|json_encode|raw }}
 
                 };
             </script>

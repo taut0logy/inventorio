@@ -355,3 +355,60 @@ profile.tab.activity: কার্যকলাপ
 profile.visibility: দৃশ্যমানতা
 profile.no_inventories: কোনো ইনভেন্টরি পাওয়া যায়নি
 profile.activity_coming_soon: কার্যকলাপ লগ শীঘ্রই আসছে
+
+# Activity Tab
+activity.views: ভিউ
+activity.likes: লাইক
+activity.items_added: যোগ
+activity.edits: সম্পাদনা
+activity.pending: অপেক্ষমান
+activity.filters: টাইপ অনুযায়ী ফিল্টার
+activity.feed: কার্যকলাপ ফিড
+activity.empty: এখনও কোন কার্যকলাপ নেই
+activity.access_requests: অ্যাক্সেস অনুরোধ
+activity.viewed: এই ইনভেন্টরি দেখেছেন
+activity.liked: এই ইনভেন্টরি পছন্দ করেছেন
+activity.item_add: একটি আইটেম যোগ করেছেন
+activity.item_edit: একটি আইটেম সম্পাদনা করেছেন
+activity.item_delete: একটি আইটেম মুছেছেন
+activity.inventory_edit: ইনভেন্টরি সেটিংস আপডেট করেছেন
+activity.permission_request: অ্যাক্সেস অনুরোধ করেছেন
+activity.permission_granted: অ্যাক্সেস দিয়েছেন
+activity.permission_denied: অ্যাক্সেস প্রত্যাখ্যান করেছেন
+pagination.page: পৃষ্ঠা
+
+# Access Request
+access.requested: অ্যাক্সেস অনুরোধ করা হয়েছে
+access.request: সম্পাদনা অ্যাক্সেস অনুরোধ করুন
+access.request_title: সম্পাদনা অ্যাক্সেস অনুরোধ করুন
+access.request_desc: ইনভেন্টরি মালিকের কাছে সম্পাদনা অ্যাক্সেসের জন্য অনুরোধ পাঠান। আপনি একটি ঐচ্ছিক বার্তা অন্তর্ভুক্ত করতে পারেন।
+access.message: বার্তা (ঐচ্ছিক)
+access.message_placeholder: আমি এই ইনভেন্টরিতে অবদান রাখতে চাই...
+access.send_request: অনুরোধ পাঠান
+access.request_sent: অনুরোধ পাঠানো হয়েছে!
+access.request_sent_desc: মালিক আপনার অনুরোধ পর্যালোচনা করবেন।
+
+# Activity Filters
+filter.views: ভিউ
+filter.likes: লাইক
+filter.items_added: যোগ
+filter.item_edits: সম্পাদনা
+filter.item_deletions: মুছে ফেলা
+filter.settings: সেটিংস
+filter.requests: অনুরোধ
+filter.granted: মঞ্জুর
+filter.denied: প্রত্যাখ্যাত
+
+# Stats Tab
+inventory.stats: পরিসংখ্যান
+stats.values: মান
+stats.unique: অনন্য
+stats.min: ন্যূনতম
+stats.avg: গড়
+stats.max: সর্বোচ্চ
+stats.sum: মোট
+stats.empty: পরিসংখ্যান দেখতে আইটেম যোগ করুন
+stats.total_items: মোট আইটেম
+stats.completion: ফিল্ড পূর্ণতা
+stats.numeric_summary: সংখ্যাসূচক ফিল্ড
+stats.string_breakdown: টেক্সট ফিল্ড বিশ্লেষণ

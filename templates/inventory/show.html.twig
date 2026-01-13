@@ -36,8 +36,12 @@
             avatarUrl: app.user.avatarUrl
         } : null,
         isCreator: isCreator,
+        isCollaborator: isCollaborator,
         canAddItem: canAddItem,
+        canEditItem: canEditItem,
         canEditInventory: canEditInventory,
+        canManageAccess: canManageAccess,
+        hasRequestedAccess: hasRequestedAccess,
         items: (showDeleted ? deletedItems : inventory.items)|map(item => {
             id: item.id ~ '',
             customId: item.customId,

@@ -27,6 +27,7 @@ import { Spotlight } from '@/components/ui/spotlight-new';
 import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
 import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
 import { HoverEffect } from '@/components/ui/card-hover-effect';
+import { TagCloudSphere } from '@/components/ui/tag-cloud';
 
 import logo from '@/../images/logo.svg';
 
@@ -78,13 +79,14 @@ export default function HomePage({
         },
     ];
 
-    // Transform popular inventories for infinite moving cards
     const popularItems = popularInventories.map((inv) => ({
         quote: inv.description || `${inv.itemCount || 0} items tracked`,
         name: inv.title,
         title: `❤️ ${inv.likeCount || 0} • 👁️ ${inv.viewCount?.toLocaleString() || 0} • ${inv.category || 'General'}`,
         href: `/inventory/${inv.id}`,
     }));
+
+    const isLargeScreen = typeof window !== 'undefined' && window.innerWidth >= 768;
 
     return (
         <div>
@@ -321,29 +323,8 @@ export default function HomePage({
                     </div>
                     
                     {tags.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 items-center">
-                            {tags.map((tag, index) => {
-                                // Calculate size: base 0.875rem, max 1.25rem based on count
-                                const maxCount = Math.max(...tags.map(t => t.count || 0), 1);
-                                const normalizedSize = ((tag.count || 0) / maxCount);
-                                const fontSize = 0.875 + (normalizedSize * 0.375); // 0.875rem to 1.25rem
-                                
-                                return (
-                                    <a key={index} href={`/search?q=${encodeURIComponent(tag.name)}`}>
-                                        <Badge 
-                                            variant="secondary" 
-                                            className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-200 py-1.5 px-3 hover:scale-105"
-                                            style={{ fontSize: `${fontSize}rem` }}
-                                            title={`${tag.count || 0} inventories`}
-                                        >
-                                            #{tag.name}
-                                            {tag.count > 0 && (
-                                                <span className="ml-1 opacity-60 text-xs">({tag.count})</span>
-                                            )}
-                                        </Badge>
-                                    </a>
-                                );
-                            })}
+                        <div className="flex justify-center py-8">
+                           <TagCloudSphere tags={tags} size={isLargeScreen ? 500 : 320} />
                         </div>
                     ) : (
                         <p className="text-muted-foreground">{t('home.no_tags', 'No tags available.')}</p>

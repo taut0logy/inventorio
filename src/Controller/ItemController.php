@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Inventory;
 use App\Entity\Item;
+use App\Entity\User;
+use App\Repository\ActivityRepository;
 use App\Repository\ItemRepository;
 use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -108,7 +110,8 @@ class ItemController extends AbstractController
         Request $request,
         ItemRepository $itemRepository,
         TagRepository $tagRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ActivityRepository $activityRepo
     ): Response {
         // Security check
         $this->denyAccessUnlessGranted('ITEM_ADD', $inventory);
@@ -179,6 +182,15 @@ class ItemController extends AbstractController
         $entityManager->persist($item);
         $entityManager->flush();
 
+        // Log activity
+        /** @var User $user */
+        $user = $this->getUser();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $activityRepo->logActivity($inventory, $user, 'item_add', $isAdmin, [
+            'itemId' => $item->getId()->toRfc4122(),
+            'customId' => $item->getCustomId()
+        ]);
+
         return $this->json([
             'id' => $item->getId()->toRfc4122(),
             'customId' => $item->getCustomId(),
@@ -193,7 +205,8 @@ class ItemController extends AbstractController
         Request $request,
         ItemRepository $itemRepository,
         TagRepository $tagRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ActivityRepository $activityRepo
     ): Response {
         $this->denyAccessUnlessGranted('ITEM_EDIT', $item->getInventory());
 
@@ -251,6 +264,15 @@ class ItemController extends AbstractController
             return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
         }
 
+        // Log activity
+        /** @var User $user */
+        $user = $this->getUser();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $activityRepo->logActivity($item->getInventory(), $user, 'item_edit', $isAdmin, [
+            'itemId' => $item->getId()->toRfc4122(),
+            'customId' => $item->getCustomId()
+        ]);
+
         return $this->json(['message' => 'Item updated successfully']);
     }
 
@@ -258,20 +280,31 @@ class ItemController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(
         Item $item,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ActivityRepository $activityRepo
     ): Response {
         $this->denyAccessUnlessGranted('ITEM_DELETE', $item->getInventory());
 
-        // Soft delete logic handled by Gedmo or manual? 
-        // Entity has SoftDeletable trait usually, but let's check. 
-        // For now, standard remove() which triggers soft delete if configured, or hard delete.
-        // User requested soft delete in Phase 4. Using remove() for now.
+        // Capture info before delete
+        /** @var User $user */
+        $user = $this->getUser();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $inventory = $item->getInventory();
+        $itemId = $item->getId()->toRfc4122();
+        $customId = $item->getCustomId();
+
+        // Soft delete logic
         $entityManager->remove($item);
         try {
             $entityManager->flush();
         } catch (\Doctrine\ORM\OptimisticLockException $e) {
             return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
         }
+
+        $activityRepo->logActivity($inventory, $user, 'item_delete', $isAdmin, [
+            'itemId' => $itemId,
+            'customId' => $customId
+        ]);
 
         return $this->json(['message' => 'Item deleted successfully']);
     }

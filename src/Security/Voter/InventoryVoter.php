@@ -13,6 +13,7 @@ class InventoryVoter extends Voter
     public const VIEW = 'INVENTORY_VIEW';
     public const EDIT = 'INVENTORY_EDIT';
     public const DELETE = 'INVENTORY_DELETE';
+    public const MANAGE_ACCESS = 'INVENTORY_MANAGE_ACCESS';
     public const ITEM_ADD = 'ITEM_ADD';
     public const ITEM_EDIT = 'ITEM_EDIT';
     public const ITEM_DELETE = 'ITEM_DELETE';
@@ -30,6 +31,7 @@ class InventoryVoter extends Voter
             self::VIEW, 
             self::EDIT, 
             self::DELETE,
+            self::MANAGE_ACCESS,
             self::ITEM_ADD,
             self::ITEM_EDIT,
             self::ITEM_DELETE
@@ -39,51 +41,59 @@ class InventoryVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-
-        // If 'VIEW' and inventory is public, grant access immediately (unless we want to block banned users, etc.)
         /** @var Inventory $inventory */
-        $inventory = $subject; // Logic handles subject being Inventory. 
-        // Note: For Item operations, the subject passed should be the Inventory (or Item->getInventory())
-        // But for simplicity, we'll assume the subject IS the Inventory for all these attributes.
-        // If the controller passes an Item, it should pass Item->getInventory().
+        $inventory = $subject;
 
-        if ($attribute === self::VIEW) {
-            if ($inventory->isPublic()) {
-                return true;
-            }
+        // VIEW: public inventories are viewable by everyone (including anonymous)
+        if ($attribute === self::VIEW && $inventory->isPublic()) {
+            return true;
         }
 
-        // If user is not logged in, they can only view public (handled above).
+        // All other operations require authentication
         if (!$user instanceof User) {
             return false;
         }
 
-        // Admin has full access
+        // Admin has FULL access to everything (like owner)
         if ($this->security->isGranted('ROLE_ADMIN')) {
             return true;
         }
 
-        // Check ownership
+        // Owner has FULL access
         if ($inventory->getCreator() === $user) {
             return true;
         }
 
-        // Check shared access
+        // Check if user is a collaborator (in sharedWith)
+        $isCollaborator = $inventory->getSharedWith()->contains($user);
+
         switch ($attribute) {
             case self::VIEW:
+                // Private inventory: only collaborators can view
+                return $isCollaborator;
+                
             case self::ITEM_ADD:
+                // Public inventories: ANY authenticated user can add items
+                // Private inventories: only collaborators
+                return $inventory->isPublic() || $isCollaborator;
+                
             case self::ITEM_EDIT:
             case self::ITEM_DELETE:
-                 if ($inventory->getSharedWith()->contains($user)) {
-                     return true;
-                 }
-                 break;
-            case self::EDIT:   // Inventory settings
-            case self::DELETE: // Inventory delete
-                // Shared users CANNOT edit inventory settings or delete inventory
+                // Only collaborators can edit/delete items (not random public users)
+                return $isCollaborator;
+                
+            case self::EDIT:
+                // Collaborators CAN edit inventory settings (title, desc, fields, ID config)
+                return $isCollaborator;
+                
+            case self::DELETE:
+            case self::MANAGE_ACCESS:
+                // Only owner/admin can delete inventory or manage access
+                // (already handled above - if we reach here, deny)
                 return false;
         }
 
         return false;
     }
 }
+

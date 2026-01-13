@@ -80,8 +80,8 @@ export default function CommentsSection({ inventoryId, currentUser }) {
     // Group comments? No, requirement says "Linear".
     
     return (
-        <Card className="h-[600px] flex flex-col">
-            <CardHeader className="py-4 border-b">
+        <Card className="h-[480px] flex flex-col">
+            <CardHeader className="border-b">
                 <CardTitle className="text-lg flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
                     {t('comments.title', 'Discussion')}
@@ -136,7 +136,7 @@ export default function CommentsSection({ inventoryId, currentUser }) {
 
                 {/* Input Area */}
                 {currentUser ? (
-                    <div className="p-4 border-t bg-background">
+                    <div className="p-4 border-t">
                         <form onSubmit={handleSubmit} className="flex gap-2">
                             <Textarea
                                 value={content}
