@@ -3,13 +3,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Loader2, Package, Box, ArrowRight, ChevronDown } from 'lucide-react';
+import { Search, Loader2, Package, Box, ArrowRight, ChevronDown, User } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 export default function SearchPage({ initialQuery = '' }) {
     const [query, setQuery] = useState(initialQuery);
-    const [results, setResults] = useState({ inventories: [], items: [], total: 0, hasMoreInventories: false, hasMoreItems: false });
+    const [results, setResults] = useState({ inventories: [], items: [], users: [], total: 0, hasMoreInventories: false, hasMoreItems: false });
     const [loading, setLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [searched, setSearched] = useState(false);
@@ -292,6 +293,38 @@ export default function SearchPage({ initialQuery = '' }) {
                                     </Button>
                                 </div>
                             )}
+                        </section>
+                    )}
+
+                    {/* Users */}
+                    {results.users && results.users.length > 0 && (
+                        <section>
+                            <div className="flex items-center gap-2 mb-6">
+                                <User className="h-6 w-6 text-primary" />
+                                <h3 className="text-2xl font-bold">{t('search.users', 'Users')}</h3>
+                                <Badge variant="secondary">{results.users.length}</Badge>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {results.users.map(user => (
+                                    <a key={user.id} href={`/user/${user.id}`} className="block group">
+                                        <Card className="hover:border-primary transition-colors">
+                                            <CardContent className="p-4 flex items-center gap-4">
+                                                <Avatar className="h-12 w-12">
+                                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                                    <AvatarFallback>
+                                                        {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium truncate">{user.name}</p>
+                                                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                                                </div>
+                                                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                            </CardContent>
+                                        </Card>
+                                    </a>
+                                ))}
+                            </div>
                         </section>
                     )}
 

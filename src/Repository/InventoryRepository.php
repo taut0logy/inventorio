@@ -142,5 +142,104 @@ class InventoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-}
 
+    /**
+     * Find inventories by creator with visibility and deleted filters
+     * For public profile page
+     * 
+     * @param string $visibility 'public', 'private', 'all'
+     * @param bool $includeDeleted Only admins can set this to true
+     */
+    public function findByCreatorWithFilters(
+        User $creator, 
+        string $visibility = 'public', 
+        bool $includeDeleted = false
+    ): array {
+        $qb = $this->createQueryBuilder('i')
+            ->addSelect('(SELECT COUNT(item.id) FROM App\Entity\Item item WHERE item.inventory = i AND item.deletedAt IS NULL) AS itemCount')
+            ->leftJoin('i.likedBy', 'likes')
+            ->addSelect('COUNT(likes.id) as likeCount')
+            ->andWhere('i.creator = :creator')
+            ->setParameter('creator', $creator)
+            ->groupBy('i.id')
+            ->orderBy('i.createdAt', 'DESC');
+
+        // Visibility filter
+        if ($visibility === 'public') {
+            $qb->andWhere('i.isPublic = :true')
+               ->setParameter('true', true);
+        } elseif ($visibility === 'private') {
+            $qb->andWhere('i.isPublic = :false')
+               ->setParameter('false', false);
+        }
+        // 'all' means no visibility filter
+
+        // Deleted filter
+        if (!$includeDeleted) {
+            $qb->andWhere('i.deletedAt IS NULL');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Get aggregate stats for a user's inventories
+     */
+    public function getStatsForCreator(User $creator, bool $publicOnly = true): array
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(DISTINCT i.id) as inventoryCount')
+            ->addSelect('COALESCE(SUM(i.viewCount), 0) as totalViews')
+            ->from(Inventory::class, 'i')
+            ->where('i.creator = :creator')
+            ->andWhere('i.deletedAt IS NULL')
+            ->setParameter('creator', $creator);
+
+        if ($publicOnly) {
+            $qb->andWhere('i.isPublic = :true')
+               ->setParameter('true', true);
+        }
+
+        $stats = $qb->getQuery()->getSingleResult();
+
+        // Get total likes separately (needs join)
+        $likesQb = $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(likes.id) as totalLikes')
+            ->from(Inventory::class, 'i')
+            ->leftJoin('i.likedBy', 'likes')
+            ->where('i.creator = :creator')
+            ->andWhere('i.deletedAt IS NULL')
+            ->setParameter('creator', $creator);
+
+        if ($publicOnly) {
+            $likesQb->andWhere('i.isPublic = :true')
+                    ->setParameter('true', true);
+        }
+
+        $likesResult = $likesQb->getQuery()->getSingleResult();
+
+        // Get total items count
+        $itemsQb = $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(item.id) as totalItems')
+            ->from('App\Entity\Item', 'item')
+            ->join('item.inventory', 'i')
+            ->where('i.creator = :creator')
+            ->andWhere('i.deletedAt IS NULL')
+            ->andWhere('item.deletedAt IS NULL')
+            ->setParameter('creator', $creator);
+
+        if ($publicOnly) {
+            $itemsQb->andWhere('i.isPublic = :true')
+                    ->setParameter('true', true);
+        }
+
+        $itemsResult = $itemsQb->getQuery()->getSingleResult();
+
+        return [
+            'inventoryCount' => (int) $stats['inventoryCount'],
+            'totalViews' => (int) $stats['totalViews'],
+            'totalLikes' => (int) $likesResult['totalLikes'],
+            'totalItems' => (int) $itemsResult['totalItems'],
+        ];
+    }
+}

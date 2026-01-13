@@ -240,7 +240,7 @@ export default function AdminCategoriesTab() {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        {item.iconUrl && <img src={item.iconUrl} alt="" className="w-6 h-6 object-cover rounded" />}
+                                        {item.iconUrl && <img src={item.iconUrl || '/images/default-category-icon.svg'} alt="" className="w-6 h-6 object-cover rounded" />}
                                     </TableCell>
                                     <TableCell className="font-medium">{item.name}</TableCell>
                                     <TableCell>{item.inventoryCount}</TableCell>
@@ -285,7 +285,7 @@ export default function AdminCategoriesTab() {
                     <SheetHeader>
                         <SheetTitle>{editingItem ? 'Edit Category' : 'Create Category'}</SheetTitle>
                     </SheetHeader>
-                    <form onSubmit={handleSave} className="space-y-4 mt-4">
+                    <form onSubmit={handleSave} className="space-y-4 mt-4 px-4 md:px-6">
                         <div className="space-y-2">
                             <Label htmlFor="name">Name</Label>
                             <Input 

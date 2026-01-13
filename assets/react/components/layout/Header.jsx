@@ -166,9 +166,9 @@ export default function Header({
                                     </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                    <a href={profilePath} className="cursor-pointer">
+                                    <a href={`/user/${user.id}`} className="cursor-pointer">
                                         <User className="mr-2 h-4 w-4" />
-                                        {t('nav.profile', 'Profile')}
+                                        {t('nav.profile', 'View Profile')}
                                     </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>

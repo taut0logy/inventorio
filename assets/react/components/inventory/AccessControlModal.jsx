@@ -18,32 +18,33 @@ export default function AccessControlModal({ inventoryId, initialSharedUsers = [
     }, [initialSharedUsers]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery.length >= 2) {
-                performSearch();
-            } else {
+        const performSearch = async () => {
+            if (searchQuery.length < 2) {
                 setSearchResults([]);
+                return;
             }
+            
+            setIsSearching(true);
+            try {
+                const res = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    // Filter out already shared users
+                    setSearchResults(data.filter(u => !sharedUsers.some(s => s.id === u.id)));
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        const timer = setTimeout(() => {
+            performSearch();
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    const performSearch = async () => {
-        setIsSearching(true);
-        try {
-            const res = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
-            if (res.ok) {
-                const data = await res.json();
-                // Filter out already shared users
-                setSearchResults(data.filter(u => !sharedUsers.some(s => s.id === u.id)));
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsSearching(false);
-        }
-    };
+    }, [searchQuery, sharedUsers]);
 
     const handleAddUser = async (user) => {
         try {
@@ -152,7 +153,7 @@ export default function AccessControlModal({ inventoryId, initialSharedUsers = [
                         <h4 className="text-sm font-medium text-muted-foreground">{t('access.shared_with', 'Shared with')}</h4>
                         <ScrollArea className="h-[200px] border rounded-md p-2">
                             {sharedUsers.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50">
+                                <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50 py-4">
                                     <UserPlus className="h-8 w-8 mb-2" />
                                     <p className="text-sm">{t('access.empty', 'No one yet')}</p>
                                 </div>

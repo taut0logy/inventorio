@@ -341,3 +341,17 @@ comments.title: Discussion
 comments.empty: No comments yet. Start the discussion!
 comments.placeholder: Type a message...
 comments.login_required: Please log in to participate in the discussion.
+
+# User Profile
+profile.joined: Joined
+profile.you: You
+profile.viewing_as_admin: Admin View
+profile.inventories: Inventories
+profile.likes: Likes
+profile.views: Views
+profile.items: Items
+profile.tab.inventories: Inventories
+profile.tab.activity: Activity
+profile.visibility: Visibility
+profile.no_inventories: No inventories found
+profile.activity_coming_soon: Activity log coming soon

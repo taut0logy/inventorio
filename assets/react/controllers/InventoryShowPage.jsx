@@ -440,7 +440,10 @@ export default function InventoryShowPage({
                                     {!isCreator && inventory.creator && (
                                         <>
                                             <span>•</span>
-                                            <span className="flex items-center gap-1">
+                                            <a 
+                                                href={`/user/${inventory.creator.id}`} 
+                                                className="flex items-center gap-1 hover:underline"
+                                            >
                                                 {t('inventory.by', 'by')}
                                                 <Avatar className="h-4 w-4">
                                                     <AvatarImage src={inventory.creator.avatarUrl} alt={inventory.creator.name} />
@@ -449,7 +452,7 @@ export default function InventoryShowPage({
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <span className="font-medium">{inventory.creator.name}</span>
-                                            </span>
+                                            </a>
                                         </>
                                     )}
                                 </div>

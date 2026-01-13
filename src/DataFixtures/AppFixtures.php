@@ -11,20 +11,20 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        // Create default categories
+        // Create default categories with SVG icon URLs (from Iconify CDN)
         $categories = [
-            ['name' => 'Electronics', 'icon' => null],
-            ['name' => 'Furniture', 'icon' => null],
-            ['name' => 'Office Supplies', 'icon' => null],
-            ['name' => 'Tools & Equipment', 'icon' => null],
-            ['name' => 'Vehicles', 'icon' => null],
-            ['name' => 'Books & Media', 'icon' => null],
-            ['name' => 'Clothing & Accessories', 'icon' => null],
-            ['name' => 'Food & Beverages', 'icon' => null],
-            ['name' => 'Medical Supplies', 'icon' => null],
-            ['name' => 'Raw Materials', 'icon' => null],
-            ['name' => 'Collectibles', 'icon' => null],
-            ['name' => 'Other', 'icon' => null],
+            ['name' => 'Electronics', 'icon' => 'https://api.iconify.design/lucide/laptop.svg'],
+            ['name' => 'Furniture', 'icon' => 'https://api.iconify.design/lucide/armchair.svg'],
+            ['name' => 'Office Supplies', 'icon' => 'https://api.iconify.design/lucide/paperclip.svg'],
+            ['name' => 'Tools & Equipment', 'icon' => 'https://api.iconify.design/lucide/wrench.svg'],
+            ['name' => 'Vehicles', 'icon' => 'https://api.iconify.design/lucide/car.svg'],
+            ['name' => 'Books & Media', 'icon' => 'https://api.iconify.design/lucide/book-open.svg'],
+            ['name' => 'Clothing & Accessories', 'icon' => 'https://api.iconify.design/lucide/shirt.svg'],
+            ['name' => 'Food & Beverages', 'icon' => 'https://api.iconify.design/lucide/apple.svg'],
+            ['name' => 'Medical Supplies', 'icon' => 'https://api.iconify.design/lucide/pill.svg'],
+            ['name' => 'Raw Materials', 'icon' => 'https://api.iconify.design/lucide/boxes.svg'],
+            ['name' => 'Collectibles', 'icon' => 'https://api.iconify.design/lucide/trophy.svg'],
+            ['name' => 'Other', 'icon' => 'https://api.iconify.design/lucide/package.svg'],
         ];
 
         foreach ($categories as $categoryData) {

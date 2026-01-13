@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ profileUser.name }} - Inventorio{% endblock %}
+
+{% block body %}
+    <div {{ react_component('UserProfilePage', {
+        profileUser: {
+            id: profileUser.id ~ '',
+            name: profileUser.name,
+            email: profileUser.email,
+            avatarUrl: profileUser.avatarUrl,
+            createdAt: profileUser.createdAt|date('Y-m-d')
+        },
+        stats: stats,
+        inventories: inventories,
+        isOwner: isOwner,
+        isAdmin: isAdmin,
+        canSeePrivate: canSeePrivate,
+        canSeeDeleted: canSeeDeleted,
+        currentVisibility: visibility,
+        showDeleted: showDeleted
+    }) }}></div>
+{% endblock %}

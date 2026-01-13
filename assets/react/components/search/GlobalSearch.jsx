@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Package, Box, Loader2, X } from 'lucide-react';
+import { Search, Package, Box, Loader2, X, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { t } from '@/lib/i18n';
 
 export default function GlobalSearch({ className = '' }) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [results, setResults] = useState({ inventories: [], items: [], total: 0 });
+    const [results, setResults] = useState({ inventories: [], items: [], users: [], total: 0 });
     const containerRef = useRef(null);
     const inputRef = useRef(null);
     const debounceRef = useRef(null);
@@ -16,7 +17,7 @@ export default function GlobalSearch({ className = '' }) {
     // Debounced search
     const performSearch = useCallback(async (searchQuery) => {
         if (searchQuery.length < 2) {
-            setResults({ inventories: [], items: [], total: 0 });
+            setResults({ inventories: [], items: [], users: [], total: 0 });
             return;
         }
 
@@ -196,6 +197,39 @@ export default function GlobalSearch({ className = '' }) {
                                             <div className="text-xs text-muted-foreground truncate">
                                                 {item.preview && <span>{item.preview} • </span>}
                                                 <span className="text-primary">{t('search.in_inventory', 'in')} {item.inventoryTitle}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Users Section */}
+                            {results.users && results.users.length > 0 && (
+                                <div>
+                                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/50 flex items-center gap-2">
+                                        <User className="h-3.5 w-3.5" />
+                                        {t('search.users', 'Users')}
+                                        <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs">
+                                            {results.users.length}
+                                        </Badge>
+                                    </div>
+                                    {results.users.map((user) => (
+                                        <button
+                                            key={user.id}
+                                            onClick={() => handleResultClick(`/user/${user.id}`)}
+                                            className="w-full px-3 py-2.5 text-left hover:bg-accent transition-colors flex items-center gap-3"
+                                        >
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                                <AvatarFallback>
+                                                    {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium truncate">{user.name}</div>
+                                                <div className="text-xs text-muted-foreground truncate">
+                                                    {user.email}
+                                                </div>
                                             </div>
                                         </button>
                                     ))}

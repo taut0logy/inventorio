@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -14,22 +14,24 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class UserApiController extends AbstractController
 {
     #[Route('/search', name: 'app_api_users_search', methods: ['GET'])]
-    public function search(Request $request, UserRepository $userRepository): Response
+    public function search(Request $request, UserRepository $userRepository): JsonResponse
     {
         $query = $request->query->get('q', '');
         if (strlen($query) < 2) {
             return $this->json([]);
         }
 
-        // Needs a repository method to search by name/email excluding current user
-        // Assuming findBySearchQuery exists or I'll use createQueryBuilder here for speed.
-        
-        /** @var \App\Entity\User $currentUser */
+        /** @var \App\Entity\User|null $currentUser */
         $currentUser = $this->getUser();
+        
+        if (!$currentUser) {
+            return $this->json(['error' => 'Not authenticated'], 401);
+        }
 
         $users = $userRepository->createQueryBuilder('u')
             ->where('u.email LIKE :query OR u.name LIKE :query')
             ->andWhere('u.id != :currentUserId')
+            ->andWhere('u.deletedAt IS NULL')
             ->setParameter('query', '%'.$query.'%')
             ->setParameter('currentUserId', $currentUser->getId())
             ->setMaxResults(10)
@@ -40,7 +42,7 @@ class UserApiController extends AbstractController
             'id' => $user->getId()->toRfc4122(),
             'name' => $user->getName(),
             'email' => $user->getEmail(),
-            'avatar' => $user->getAvatarUrl()
+            'avatarUrl' => $user->getAvatarUrl()
         ], $users);
 
         return $this->json($results);

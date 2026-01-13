@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\InventoryRepository;
 use App\Repository\ItemRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ class SearchController extends AbstractController
     public function __construct(
         private InventoryRepository $inventoryRepository,
         private ItemRepository $itemRepository,
+        private UserRepository $userRepository,
     ) {}
 
     #[Route('', name: 'api_search', methods: ['GET'])]
@@ -95,10 +97,23 @@ class SearchController extends AbstractController
             }
         }
 
+        // Search users (only for non-category searches and when type allows)
+        $users = [];
+        if (($type === 'all' || $type === 'users') && !empty($query) && !$category) {
+            $userResults = $this->userRepository->searchByNameOrEmail($query);
+            $users = array_map(fn($user) => [
+                'id' => $user->getId()->toRfc4122(),
+                'name' => $user->getName(),
+                'email' => $user->getEmail(),
+                'avatarUrl' => $user->getAvatarUrl(),
+            ], array_slice($userResults, 0, $limit));
+        }
+
         return $this->json([
             'inventories' => $inventories,
             'items' => $items,
-            'total' => count($inventories) + count($items),
+            'users' => $users,
+            'total' => count($inventories) + count($items) + count($users),
             'hasMoreInventories' => $hasMoreInventories,
             'hasMoreItems' => $hasMoreItems,
             'hasMore' => $hasMoreInventories || $hasMoreItems,

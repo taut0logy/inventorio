@@ -7,7 +7,7 @@ import {
     Package, 
     ArrowRight, 
     TrendingUp, 
-    Clock, 
+    Clock,
     FolderOpen,
     Fingerprint,
     Settings2,
@@ -88,7 +88,6 @@ export default function HomePage({
 
     return (
         <div>
-            {/* ===== HERO SECTION with Spotlight ===== */}
             <section 
                 className="relative overflow-hidden flex items-center justify-center bg-background"
                 style={{ minHeight: 'calc(100dvh - 56px)' }}

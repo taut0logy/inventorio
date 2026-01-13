@@ -341,3 +341,17 @@ comments.title: আলোচনা
 comments.empty: কোন মন্তব্য নেই। আলোচনা শুরু করুন!
 comments.placeholder: বার্তা লিখুন...
 comments.login_required: আলোচনায় অংশ নিতে দয়া করে লগ ইন করুন।
+
+# User Profile
+profile.joined: যোগদান
+profile.you: আপনি
+profile.viewing_as_admin: অ্যাডমিন ভিউ
+profile.inventories: ইনভেন্টরি
+profile.likes: লাইক
+profile.views: ভিউ
+profile.items: আইটেম
+profile.tab.inventories: ইনভেন্টরি
+profile.tab.activity: কার্যকলাপ
+profile.visibility: দৃশ্যমানতা
+profile.no_inventories: কোনো ইনভেন্টরি পাওয়া যায়নি
+profile.activity_coming_soon: কার্যকলাপ লগ শীঘ্রই আসছে
