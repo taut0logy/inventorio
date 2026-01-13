@@ -30,6 +30,7 @@ import { HoverEffect } from '@/components/ui/card-hover-effect';
 import { TagCloudSphere } from '@/components/ui/tag-cloud';
 
 import logo from '@/../images/logo.svg';
+import box from '@/../images/box-icon.svg';
 
 export default function HomePage({ 
     user, 
@@ -349,9 +350,7 @@ export default function HomePage({
                             >
                                 <Card className="h-full hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group-hover:shadow-lg group-hover:-translate-y-1">
                                     <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                                        <span className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                                            {category.icon || '📦'}
-                                        </span>
+                                        <img src={category.icon || box} alt={category.name} className="w-16 h-16 mb-3 group-hover:scale-110 transition-transform duration-300" />
                                         <span className="text-sm font-medium group-hover:text-primary transition-colors">{category.name}</span>
                                     </CardContent>
                                 </Card>

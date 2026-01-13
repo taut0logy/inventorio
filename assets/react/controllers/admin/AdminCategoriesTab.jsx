@@ -17,6 +17,7 @@ import { t } from '@/lib/i18n';
 import { useConfirm } from '@/components/common/useConfirm';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'; // Or Dialog? Using Sheet for consistency
 import { Label } from '@/components/ui/label';
+import box from '@/../images/box-icon.svg';
 
 export default function AdminCategoriesTab() {
     const [items, setItems] = useState([]);
@@ -240,7 +241,7 @@ export default function AdminCategoriesTab() {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        {item.iconUrl && <img src={item.iconUrl || '/images/default-category-icon.svg'} alt="" className="w-6 h-6 object-cover rounded" />}
+                                        {item.iconUrl && <img src={item.iconUrl || box} alt="" className="w-6 h-6 object-cover rounded" />}
                                     </TableCell>
                                     <TableCell className="font-medium">{item.name}</TableCell>
                                     <TableCell>{item.inventoryCount}</TableCell>
