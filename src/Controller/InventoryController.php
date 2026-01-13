@@ -238,7 +238,83 @@ class InventoryController extends AbstractController
             return $this->json(['error' => 'Conflict detected. The settings have been modified by another user.'], 409);
         }
 
-        return $this->json(['message' => 'Settings updated successfully']);
+        return $this->json([
+            'message' => 'Settings updated successfully',
+            'version' => $inventory->getVersion()
+        ]);
+    }
+
+    #[Route('/{id}/auto-save', name: 'app_inventory_auto_save', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function autoSave(
+        Inventory $inventory,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        CategoryRepository $categoryRepository,
+        TagRepository $tagRepository
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+
+        $data = json_decode($request->getContent(), true);
+        
+        // Optimistic locking: check expected version
+        $expectedVersion = $data['expectedVersion'] ?? null;
+        if ($expectedVersion !== null && $inventory->getVersion() !== (int)$expectedVersion) {
+            return $this->json([
+                'error' => 'Version conflict',
+                'message' => 'This inventory has been modified by another user.',
+                'currentVersion' => $inventory->getVersion()
+            ], 409);
+        }
+
+        // Update basic fields if provided
+        if (isset($data['title']) && trim($data['title']) !== '') {
+            $inventory->setTitle($data['title']);
+        }
+        
+        if (array_key_exists('description', $data)) {
+            $inventory->setDescription($data['description']);
+        }
+        
+        if (isset($data['isPublic'])) {
+            $inventory->setPublic((bool)$data['isPublic']);
+        }
+        
+        if (isset($data['category'])) {
+            $category = $categoryRepository->find($data['category']);
+            if ($category) {
+                $inventory->setCategory($category);
+            }
+        }
+
+        // Update tags if provided
+        if (isset($data['tags']) && is_array($data['tags'])) {
+            foreach ($inventory->getTags() as $tag) {
+                $inventory->removeTag($tag);
+            }
+            foreach ($data['tags'] as $tagName) {
+                if (trim($tagName) === '') continue;
+                $tag = $tagRepository->findOrCreate($tagName);
+                $entityManager->persist($tag);
+                $inventory->addTag($tag);
+            }
+        }
+
+        try {
+            $entityManager->flush();
+        } catch (\Doctrine\ORM\OptimisticLockException $e) {
+            return $this->json([
+                'error' => 'Version conflict',
+                'message' => 'This inventory has been modified by another user.',
+                'currentVersion' => $inventory->getVersion()
+            ], 409);
+        }
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Auto-saved successfully',
+            'version' => $inventory->getVersion()
+        ]);
     }
 
     #[Route('/{id}', name: 'app_inventory_show', methods: ['GET'])]

@@ -175,6 +175,12 @@ export default function AdminUsersTab({ currentUser }) {
             const response = await fetch(`/api/admin/users/${user.id}/role`, { method: 'POST' });
             if (response.ok) {
                 const data = await response.json();
+                
+                if (data.redirectRequired) {
+                    window.location.href = '/';
+                    return;
+                }
+                
                 setUsers(users.map(u => u.id === user.id ? { ...u, roles: data.roles } : u));
             }
         } catch (error) {

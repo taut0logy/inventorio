@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,7 @@ import {
     SheetClose 
 } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Loader2, Pencil } from 'lucide-react';
+import { Plus, Loader2, Pencil, Check, AlertCircle, Cloud } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import TagInput from '@/components/inventory/TagInput';
 
@@ -29,6 +29,14 @@ export default function InventorySheet({
     const isEdit = !!inventory;
     const [isLoading, setIsLoading] = useState(false);
     
+    // Auto-save states
+    const [version, setVersion] = useState(inventory?.version || 1);
+    const [isDirty, setIsDirty] = useState(false);
+    const [autoSaveStatus, setAutoSaveStatus] = useState('idle'); // idle, saving, saved, error
+    const [conflictError, setConflictError] = useState(null);
+    const autoSaveTimerRef = useRef(null);
+    const initialFormDataRef = useRef(null);
+    
     // Form state
     const [formData, setFormData] = useState({
         title: '',
@@ -38,19 +46,23 @@ export default function InventorySheet({
         tags: []
     });
 
+    // Initialize form data when inventory changes or sheet opens
     useEffect(() => {
         if (inventory) {
-            setFormData({
+            const initial = {
                 title: inventory.title || '',
-                // If inventory.category is just a string name, we might need to find ID. 
-                // But usually we need ID. Assuming parent passes generic object.
-                // If inventory.category is object/string, we need to map to ID.
                 category: typeof inventory.categoryId === 'string' ? inventory.categoryId : 
                           categories.find(c => c.name === inventory.category)?.id || '', 
                 description: inventory.description || '',
                 isPublic: inventory.isPublic || false,
                 tags: inventory.tags ? inventory.tags.map(t => t.name || t) : []
-            });
+            };
+            setFormData(initial);
+            initialFormDataRef.current = JSON.stringify(initial);
+            setVersion(inventory.version || 1);
+            setIsDirty(false);
+            setAutoSaveStatus('idle');
+            setConflictError(null);
         } else {
             setFormData({
                 title: '',
@@ -59,8 +71,85 @@ export default function InventorySheet({
                 isPublic: false,
                 tags: []
             });
+            initialFormDataRef.current = null;
+            setIsDirty(false);
         }
     }, [inventory, categories, open]);
+
+    // Track dirty state
+    const updateFormData = useCallback((updates) => {
+        setFormData(prev => {
+            const newData = { ...prev, ...updates };
+            // Check if data has changed from initial
+            if (isEdit && initialFormDataRef.current) {
+                const hasChanges = JSON.stringify(newData) !== initialFormDataRef.current;
+                setIsDirty(hasChanges);
+                if (hasChanges) {
+                    setAutoSaveStatus('idle');
+                }
+            }
+            return newData;
+        });
+    }, [isEdit]);
+
+    // Auto-save timer (7 seconds after changes)
+    useEffect(() => {
+        if (!isEdit || !isDirty || autoSaveStatus === 'saving') return;
+
+        // Clear existing timer
+        if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+        }
+
+        // Set new timer
+        autoSaveTimerRef.current = setTimeout(() => {
+            performAutoSave();
+        }, 7000);
+
+        return () => {
+            if (autoSaveTimerRef.current) {
+                clearTimeout(autoSaveTimerRef.current);
+            }
+        };
+    }, [formData, isDirty, isEdit]);
+
+    const performAutoSave = async () => {
+        if (!isEdit || !inventory?.id || !isDirty) return;
+
+        setAutoSaveStatus('saving');
+        try {
+            const response = await fetch(`/inventory/${inventory.id}/auto-save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...formData,
+                    expectedVersion: version
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setVersion(data.version);
+                setIsDirty(false);
+                setAutoSaveStatus('saved');
+                setConflictError(null);
+                initialFormDataRef.current = JSON.stringify(formData);
+                
+                // Reset status after 3 seconds
+                setTimeout(() => {
+                    setAutoSaveStatus('idle');
+                }, 3000);
+            } else if (response.status === 409) {
+                setAutoSaveStatus('error');
+                setConflictError(t('error.conflict', 'This inventory has been modified by another user. Please refresh.'));
+            } else {
+                setAutoSaveStatus('error');
+            }
+        } catch (error) {
+            console.error('Auto-save error:', error);
+            setAutoSaveStatus('error');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -101,6 +190,39 @@ export default function InventorySheet({
         }
     };
 
+    const renderAutoSaveStatus = () => {
+        if (!isEdit) return null;
+        
+        return (
+            <div className="flex items-center gap-2 text-sm">
+                {autoSaveStatus === 'saving' && (
+                    <>
+                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        <span className="text-muted-foreground">{t('autosave.saving', 'Saving...')}</span>
+                    </>
+                )}
+                {autoSaveStatus === 'saved' && (
+                    <>
+                        <Check className="h-3 w-3 text-green-500" />
+                        <span className="text-green-500">{t('autosave.saved', 'Saved')}</span>
+                    </>
+                )}
+                {autoSaveStatus === 'error' && (
+                    <>
+                        <AlertCircle className="h-3 w-3 text-destructive" />
+                        <span className="text-destructive">{t('autosave.error', 'Save failed')}</span>
+                    </>
+                )}
+                {autoSaveStatus === 'idle' && isDirty && (
+                    <>
+                        <Cloud className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">{t('autosave.unsaved', 'Unsaved changes')}</span>
+                    </>
+                )}
+            </div>
+        );
+    };
+
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             {/* If managed externally (open prop), we might not need trigger. But if provided... */}
@@ -130,6 +252,7 @@ export default function InventorySheet({
                             : t('inventory.create_desc', 'Fill in the details below to create a new inventory space.')
                         }
                     </SheetDescription>
+                    {renderAutoSaveStatus()}
                 </SheetHeader>
                 
                 <form onSubmit={handleSubmit} className="space-y-6 mt-6 px-4 md:px-6">
@@ -142,7 +265,7 @@ export default function InventorySheet({
                             required 
                             placeholder="e.g. My Rare Coins"
                             value={formData.title}
-                            onChange={(e) => setFormData({...formData, title: e.target.value})}
+                            onChange={(e) => updateFormData({ title: e.target.value })}
                         />
                     </div>
 
@@ -153,7 +276,7 @@ export default function InventorySheet({
                         <Select 
                             required
                             value={formData.category} 
-                            onValueChange={(val) => setFormData({...formData, category: val})}
+                            onValueChange={(val) => updateFormData({ category: val })}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a category" />
@@ -180,7 +303,7 @@ export default function InventorySheet({
                             className="min-h-[120px]"
                             placeholder="Describe your inventory..."
                             value={formData.description}
-                            onChange={(e) => setFormData({...formData, description: e.target.value})}
+                            onChange={(e) => updateFormData({ description: e.target.value })}
                         />
                     </div>
 
@@ -188,7 +311,7 @@ export default function InventorySheet({
                         <Label>Tags</Label>
                         <TagInput 
                             value={formData.tags}
-                            onChange={(tags) => setFormData({...formData, tags})}
+                            onChange={(tags) => updateFormData({ tags })}
                             placeholder="Add tags (e.g. rare, vintage)"
                         />
                     </div>
@@ -205,7 +328,7 @@ export default function InventorySheet({
                         <Switch 
                             id="isPublic"
                             checked={formData.isPublic}
-                            onCheckedChange={(checked) => setFormData({...formData, isPublic: checked})}
+                            onCheckedChange={(checked) => updateFormData({ isPublic: checked })}
                         />
                     </div>
 

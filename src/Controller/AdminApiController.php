@@ -160,17 +160,18 @@ class AdminApiController extends AbstractController
     }
 
     #[Route('/{id}/role', name: 'api_admin_users_role', methods: ['POST'])]
-    public function toggleAdmin(User $user): JsonResponse
+    public function toggleAdmin(User $user, Request $request): JsonResponse
     {
+        $currentUser = $this->getUser();
+        $isSelf = $user === $currentUser;
+        
         $roles = $user->getRoles();
         $isAdmin = in_array('ROLE_ADMIN', $roles);
 
         if ($isAdmin) {
-            // Remove ROLE_ADMIN
             $roles = array_diff($roles, ['ROLE_ADMIN']);
             $message = 'Admin role removed';
         } else {
-            // Add ROLE_ADMIN
             if (!in_array('ROLE_ADMIN', $roles)) {
                 $roles[] = 'ROLE_ADMIN';
             }
@@ -180,9 +181,12 @@ class AdminApiController extends AbstractController
         $user->setRoles(array_values($roles));
         $this->entityManager->flush();
 
+        $redirectRequired = $isSelf && $isAdmin;
+
         return $this->json([
             'message' => $message,
-            'roles' => $user->getRoles()
+            'roles' => $user->getRoles(),
+            'redirectRequired' => $redirectRequired
         ]);
     }
 

@@ -7,20 +7,26 @@
         inventories: inventories|map(i => {
             id: i.id ~ '',
             title: i.title,
+            description: i.description,
             category: i.category.name,
+            categoryId: i.category.id ~ '',
             itemCount: i.items|length,
             isPublic: i.isPublic,
             createdAt: i.createdAt|date('M d, Y'),
-            tags: i.tags|map(t => ({ id: t.id ~ '', name: t.name }))
+            tags: i.tags|map(t => ({ id: t.id ~ '', name: t.name })),
+            version: i.version
         }),
         sharedInventories: sharedInventories|map(i => {
             id: i.id ~ '',
             title: i.title,
+            description: i.description,
             category: i.category.name,
+            categoryId: i.category.id ~ '',
             itemCount: i.items|length,
             isPublic: i.isPublic,
             createdAt: i.createdAt|date('M d, Y'),
-            tags: i.tags|map(t => ({ id: t.id ~ '', name: t.name }))
+            tags: i.tags|map(t => ({ id: t.id ~ '', name: t.name })),
+            version: i.version
         }),
         categories: categories|map(c => {
             id: c.id ~ '',
