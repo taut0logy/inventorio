@@ -241,7 +241,7 @@ export default function AdminCategoriesTab() {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        {item.iconUrl && <img src={item.iconUrl || box} alt="" className="w-6 h-6 object-cover rounded" />}
+                                        {item.iconUrl && <img src={item.iconUrl || box} alt="" className="w-6 h-6 object-cover rounded text-primary" />}
                                     </TableCell>
                                     <TableCell className="font-medium">{item.name}</TableCell>
                                     <TableCell>{item.inventoryCount}</TableCell>

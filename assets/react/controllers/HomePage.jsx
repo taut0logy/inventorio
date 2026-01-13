@@ -350,7 +350,7 @@ export default function HomePage({
                             >
                                 <Card className="h-full hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 cursor-pointer group-hover:shadow-lg group-hover:-translate-y-1">
                                     <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                                        <img src={category.icon || box} alt={category.name} className="w-16 h-16 mb-3 group-hover:scale-110 transition-transform duration-300" />
+                                        <img src={category.icon || box} alt={category.name} className="w-16 h-16 mb-3 group-hover:scale-110 transition-transform duration-300 text-primary" />
                                         <span className="text-sm font-medium group-hover:text-primary transition-colors">{category.name}</span>
                                     </CardContent>
                                 </Card>
