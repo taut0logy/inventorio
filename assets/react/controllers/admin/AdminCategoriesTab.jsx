@@ -241,7 +241,35 @@ export default function AdminCategoriesTab() {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        {item.iconUrl && <img src={item.iconUrl || box} alt="" className="w-6 h-6 object-cover rounded text-primary" />}
+                                        {item.iconUrl ? (
+                                            <div 
+                                                className="w-6 h-6 bg-primary rounded"
+                                                style={{
+                                                    maskImage: `url(${item.iconUrl})`,
+                                                    maskSize: 'contain',
+                                                    maskRepeat: 'no-repeat',
+                                                    maskPosition: 'center',
+                                                    WebkitMaskImage: `url(${item.iconUrl})`,
+                                                    WebkitMaskSize: 'contain',
+                                                    WebkitMaskRepeat: 'no-repeat',
+                                                    WebkitMaskPosition: 'center',
+                                                }}
+                                            />
+                                        ) : (
+                                            <div 
+                                                className="w-6 h-6 bg-primary rounded"
+                                                style={{
+                                                    maskImage: `url(${box})`,
+                                                    maskSize: 'contain',
+                                                    maskRepeat: 'no-repeat',
+                                                    maskPosition: 'center',
+                                                    WebkitMaskImage: `url(${box})`,
+                                                    WebkitMaskSize: 'contain',
+                                                    WebkitMaskRepeat: 'no-repeat',
+                                                    WebkitMaskPosition: 'center',
+                                                }}
+                                            />
+                                        )}
                                     </TableCell>
                                     <TableCell className="font-medium">{item.name}</TableCell>
                                     <TableCell>{item.inventoryCount}</TableCell>
