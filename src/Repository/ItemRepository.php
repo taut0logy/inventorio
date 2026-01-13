@@ -37,7 +37,7 @@ class ItemRepository extends ServiceEntityRepository
      * Can be scoped to a specific inventory or search globally (public inventories only)
      * Supports category filtering (by inventory category) and pagination
      */
-    public function searchFullText(string $query = '', ?Inventory $inventory = null, int $limit = 10, int $offset = 0, ?string $category = null): array
+    public function searchFullText(string $query = '', ?Inventory $inventory = null, int $limit = 10, int $offset = 0, ?string $category = null, ?\App\Entity\User $user = null): array
     {
         $qb = $this->createQueryBuilder('i')
             ->leftJoin('i.inventory', 'inv')
@@ -67,9 +67,23 @@ class ItemRepository extends ServiceEntityRepository
             $qb->andWhere('i.inventory = :inventory')
                ->setParameter('inventory', $inventory);
         } else {
-            // Global search - only items in public inventories
-            $qb->andWhere('inv.isPublic = :true')
-               ->setParameter('true', true);
+            // Global search
+            if ($user) {
+                // Public OR Owned OR Shared
+                $qb->leftJoin('inv.sharedWith', 'sw');
+                $visibilityCondition = $qb->expr()->orX(
+                    $qb->expr()->eq('inv.isPublic', ':true'),
+                    $qb->expr()->eq('inv.creator', ':user'),
+                    $qb->expr()->eq('sw', ':user')
+                );
+                $qb->andWhere($visibilityCondition)
+                   ->setParameter('true', true)
+                   ->setParameter('user', $user);
+            } else {
+                // Public only (anonymous)
+                $qb->andWhere('inv.isPublic = :true')
+                   ->setParameter('true', true);
+            }
         }
 
         // Category filter (by inventory's category)

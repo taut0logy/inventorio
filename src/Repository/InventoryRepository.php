@@ -55,11 +55,13 @@ class InventoryRepository extends ServiceEntityRepository
                ->setParameter('category', $category);
         }
 
-        // Visibility: public OR owned by user
+        // Visibility: public OR owned by user OR shared with user
         if ($user) {
+            $qb->leftJoin('i.sharedWith', 'sw');
             $visibilityCondition = $qb->expr()->orX(
                 $qb->expr()->eq('i.isPublic', ':true'),
-                $qb->expr()->eq('i.creator', ':user')
+                $qb->expr()->eq('i.creator', ':user'),
+                $qb->expr()->eq('sw', ':user')
             );
             $qb->andWhere($visibilityCondition)
                ->setParameter('true', true)

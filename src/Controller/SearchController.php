@@ -78,7 +78,7 @@ class SearchController extends AbstractController
             // For items, search if: query is provided OR category is selected
             if (!empty($query) || $category) {
                 // Fetch limit + 1 to check if there are more
-                $itemResults = $this->itemRepository->searchFullText($query, null, $limit + 1, $offset, $category);
+                $itemResults = $this->itemRepository->searchFullText($query, null, $limit + 1, $offset, $category, $user);
                 $hasMoreItems = count($itemResults) > $limit;
                 
                 // Trim to actual limit

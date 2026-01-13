@@ -39,19 +39,12 @@ class InventoryController extends AbstractController
         );
 
         if ($showDeleted) {
-             // Re-enable filter for safety if this EM is reused, 
-             // though in Symfony request scope it usually dies.
-             // But good practice.
              // Re-enable filter for safety
              if (!$entityManager->getFilters()->isEnabled('softdeleteable')) {
                  $entityManager->getFilters()->enable('softdeleteable');
              }
              
-             // Filter in memory to only return actually deleted ones?
-             // findBy will return ALL (including deleted).
-             // The user might want ONLY deleted items in Trash UI.
-             // If I disable filter, I get both.
-             // I should filter `u.deletedAt IS NOT NULL`.
+             // Filter in memory to only return actually deleted ones
              $inventories = array_filter($inventories, fn($i) => $i->getDeletedAt() !== null);
         }
 
@@ -323,7 +316,8 @@ class InventoryController extends AbstractController
         Request $request, 
         EntityManagerInterface $em, 
         ItemRepository $itemRepo,
-        \App\Repository\ActivityRepository $activityRepo
+        \App\Repository\ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
         
@@ -341,6 +335,12 @@ class InventoryController extends AbstractController
                 $isAdmin = $this->isGranted('ROLE_ADMIN');
                 $activityRepo->logActivity($inventory, $user, 'view', $isAdmin);
             }
+            
+            // Broadcast real-time stats update
+            $notifier->notifyInventoryStats($inventory->getId()->toRfc4122(), [
+                'likes' => $inventory->getLikeCount(),
+                'views' => $inventory->getViewCount()
+            ]);
         }
         
         $showDeleted = $request->query->getBoolean('deleted');
@@ -391,12 +391,20 @@ class InventoryController extends AbstractController
         if ($em->getFilters()->isEnabled('softdeleteable')) {
             $em->getFilters()->disable('softdeleteable');
         }
+        
         $inventory = $repo->find($id);
 
-        if (!$inventory || $inventory->getCreator() !== $this->getUser()) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
              if (!$em->getFilters()->isEnabled('softdeleteable')) {
                  $em->getFilters()->enable('softdeleteable');
              }
+             throw $this->createAccessDeniedException('Only admins can restore inventories.');
+        }
+
+        if (!$inventory) {
+            if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                $em->getFilters()->enable('softdeleteable');
+            }
             throw $this->createNotFoundException();
         }
 
@@ -421,7 +429,14 @@ class InventoryController extends AbstractController
         }
         $inventory = $repo->find($id);
 
-        if (!$inventory || $inventory->getCreator() !== $this->getUser()) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+             throw $this->createAccessDeniedException('Only admins can permanently delete inventories.');
+        }
+
+        if (!$inventory) {
              if (!$em->getFilters()->isEnabled('softdeleteable')) {
                  $em->getFilters()->enable('softdeleteable');
              }
@@ -432,8 +447,6 @@ class InventoryController extends AbstractController
         $em->createQuery('DELETE FROM App\Entity\Inventory i WHERE i.id = :id')
            ->setParameter('id', $inventory->getId()) // Use getId() specifically for UUID
            ->execute();
-
-
 
         if (!$em->getFilters()->isEnabled('softdeleteable')) {
             $em->getFilters()->enable('softdeleteable');
@@ -447,7 +460,9 @@ class InventoryController extends AbstractController
         Inventory $inventory, 
         Request $request, 
         UserRepository $userRepo, 
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        \App\Repository\ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
         
@@ -470,6 +485,15 @@ class InventoryController extends AbstractController
         $inventory->addSharedWith($user);
         $em->flush();
 
+        // Log activity
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $activity = $activityRepo->logActivity($inventory, $this->getUser(), 'collaborator_added', $isAdmin, [
+            'addedUserId' => $user->getId()->toRfc4122(),
+            'addedUserName' => $user->getName()
+        ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
+
         return $this->json(['message' => 'User access granted']);
     }
 
@@ -478,7 +502,9 @@ class InventoryController extends AbstractController
         Inventory $inventory, 
         string $userId, 
         UserRepository $userRepo, 
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        \App\Repository\ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
         
@@ -490,6 +516,15 @@ class InventoryController extends AbstractController
         $inventory->removeSharedWith($user);
         $em->flush();
 
+        // Log activity
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $activity = $activityRepo->logActivity($inventory, $this->getUser(), 'collaborator_removed', $isAdmin, [
+            'removedUserId' => $user->getId()->toRfc4122(),
+            'removedUserName' => $user->getName()
+        ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
+
         return $this->json(['message' => 'User access removed']);
     }
 
@@ -498,7 +533,8 @@ class InventoryController extends AbstractController
     public function toggleLike(
         Inventory $inventory,
         EntityManagerInterface $em,
-        \App\Repository\ActivityRepository $activityRepo
+        \App\Repository\ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -509,8 +545,15 @@ class InventoryController extends AbstractController
         // Log activity only when liking (not unliking)
         if ($liked) {
             $isAdmin = $this->isGranted('ROLE_ADMIN');
-            $activityRepo->logActivity($inventory, $user, 'like', $isAdmin);
+            $activity = $activityRepo->logActivity($inventory, $user, 'like', $isAdmin);
+            $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
         }
+
+        // Broadcast stats update
+        $notifier->notifyInventoryStats($inventory->getId()->toRfc4122(), [
+            'likes' => $inventory->getLikeCount(),
+            'views' => $inventory->getViewCount()
+        ]);
 
         return $this->json([
             'liked' => $liked,
@@ -574,7 +617,8 @@ class InventoryController extends AbstractController
     public function requestAccess(
         Inventory $inventory,
         Request $request,
-        \App\Repository\ActivityRepository $activityRepo
+        \App\Repository\ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -595,9 +639,11 @@ class InventoryController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $message = isset($data['message']) ? substr(trim($data['message']), 0, 200) : null;
         
-        $activityRepo->logActivity($inventory, $user, 'permission_request', false, [
+        $activity = $activityRepo->logActivity($inventory, $user, 'permission_request', false, [
             'message' => $message
         ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
         
         return $this->json(['message' => 'Request sent']);
     }
@@ -632,7 +678,8 @@ class InventoryController extends AbstractController
         string $userId,
         UserRepository $userRepo,
         \App\Repository\ActivityRepository $activityRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
         
@@ -650,10 +697,12 @@ class InventoryController extends AbstractController
         
         // Log approval
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $activityRepo->logActivity($inventory, $this->getUser(), 'permission_granted', $isAdmin, [
+        $activity = $activityRepo->logActivity($inventory, $this->getUser(), 'permission_granted', $isAdmin, [
             'grantedToId' => $userId,
             'grantedToName' => $requestUser->getName()
         ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
         
         return $this->json(['message' => 'Access granted']);
     }
@@ -663,7 +712,8 @@ class InventoryController extends AbstractController
         Inventory $inventory,
         string $userId,
         UserRepository $userRepo,
-        \App\Repository\ActivityRepository $activityRepo
+        \App\Repository\ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_MANAGE_ACCESS', $inventory);
         
@@ -677,10 +727,12 @@ class InventoryController extends AbstractController
         
         // Log denial
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $activityRepo->logActivity($inventory, $this->getUser(), 'permission_denied', $isAdmin, [
-            'deniedUserId' => $userId,
-            'deniedUserName' => $requestUser->getName()
+        $activity = $activityRepo->logActivity($inventory, $this->getUser(), 'permission_denied', $isAdmin, [
+            'deniedToId' => $userId,
+            'deniedToName' => $requestUser->getName() 
         ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
         
         return $this->json(['message' => 'Request denied']);
     }
@@ -776,12 +828,15 @@ class InventoryController extends AbstractController
             if (count($valueCounts) > 0) {
                 arsort($valueCounts);
                 $topValues = array_slice($valueCounts, 0, 5, true);
-                
                 $stringStats[$fieldKey] = [
                     'label' => $config['label'] ?? ucfirst($field),
-                    'topValues' => array_map(fn($v, $c) => ['value' => $v, 'count' => $c], 
-                        array_keys($topValues), array_values($topValues)),
-                    'uniqueCount' => count($valueCounts)
+                    'topValues' => array_map(function($val, $count) use ($totalItems) {
+                        return [
+                            'value' => $val,
+                            'count' => $count,
+                            'percentage' => round(($count / $totalItems) * 100)
+                        ];
+                    }, array_keys($topValues), array_values($topValues))
                 ];
             }
 

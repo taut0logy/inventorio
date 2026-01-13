@@ -35,6 +35,7 @@
             name: app.user.name,
             avatarUrl: app.user.avatarUrl
         } : null,
+        isAdmin: is_granted('ROLE_ADMIN'),
         isCreator: isCreator,
         isCollaborator: isCollaborator,
         canAddItem: canAddItem,

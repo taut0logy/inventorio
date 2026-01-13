@@ -111,7 +111,8 @@ class ItemController extends AbstractController
         ItemRepository $itemRepository,
         TagRepository $tagRepository,
         EntityManagerInterface $entityManager,
-        ActivityRepository $activityRepo
+        ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         // Security check
         $this->denyAccessUnlessGranted('ITEM_ADD', $inventory);
@@ -186,10 +187,12 @@ class ItemController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $activityRepo->logActivity($inventory, $user, 'item_add', $isAdmin, [
+        $activity = $activityRepo->logActivity($inventory, $user, 'item_add', $isAdmin, [
             'itemId' => $item->getId()->toRfc4122(),
             'customId' => $item->getCustomId()
         ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
 
         return $this->json([
             'id' => $item->getId()->toRfc4122(),
@@ -206,7 +209,8 @@ class ItemController extends AbstractController
         ItemRepository $itemRepository,
         TagRepository $tagRepository,
         EntityManagerInterface $entityManager,
-        ActivityRepository $activityRepo
+        ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('ITEM_EDIT', $item->getInventory());
 
@@ -268,10 +272,12 @@ class ItemController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $activityRepo->logActivity($item->getInventory(), $user, 'item_edit', $isAdmin, [
+        $activity = $activityRepo->logActivity($item->getInventory(), $user, 'item_edit', $isAdmin, [
             'itemId' => $item->getId()->toRfc4122(),
             'customId' => $item->getCustomId()
         ]);
+        
+        $notifier->notifyNewActivity($item->getInventory()->getId()->toRfc4122(), $activity);
 
         return $this->json(['message' => 'Item updated successfully']);
     }
@@ -281,7 +287,8 @@ class ItemController extends AbstractController
     public function delete(
         Item $item,
         EntityManagerInterface $entityManager,
-        ActivityRepository $activityRepo
+        ActivityRepository $activityRepo,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         $this->denyAccessUnlessGranted('ITEM_DELETE', $item->getInventory());
 
@@ -301,10 +308,12 @@ class ItemController extends AbstractController
             return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
         }
 
-        $activityRepo->logActivity($inventory, $user, 'item_delete', $isAdmin, [
+        $activity = $activityRepo->logActivity($inventory, $user, 'item_delete', $isAdmin, [
             'itemId' => $itemId,
             'customId' => $customId
         ]);
+        
+        $notifier->notifyNewActivity($inventory->getId()->toRfc4122(), $activity);
 
         return $this->json(['message' => 'Item deleted successfully']);
     }
@@ -336,6 +345,7 @@ class ItemController extends AbstractController
 
         return $this->json(['message' => 'Items deleted successfully']);
     }
+
     #[Route('/{id}/restore', name: 'app_item_restore', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function restore(
@@ -346,9 +356,17 @@ class ItemController extends AbstractController
         if ($em->getFilters()->isEnabled('softdeleteable')) {
             $em->getFilters()->disable('softdeleteable');
         }
+        
         $item = $repo->find($id);
 
-        if (!$item || $item->getInventory()->getCreator() !== $this->getUser()) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+             throw $this->createAccessDeniedException('Only admins can restore items.');
+        }
+
+        if (!$item) {
             if (!$em->getFilters()->isEnabled('softdeleteable')) {
                 $em->getFilters()->enable('softdeleteable');
             }
@@ -358,7 +376,7 @@ class ItemController extends AbstractController
         $item->setDeletedAt(null);
         $em->flush();
         if (!$em->getFilters()->isEnabled('softdeleteable')) {
-            $em->getFilters()->enable('softdeleteable');
+             $em->getFilters()->enable('softdeleteable');
         }
 
         return $this->json(['message' => 'Item restored']);
@@ -374,9 +392,17 @@ class ItemController extends AbstractController
         if ($em->getFilters()->isEnabled('softdeleteable')) {
             $em->getFilters()->disable('softdeleteable');
         }
+
         $item = $repo->find($id);
 
-        if (!$item || $item->getInventory()->getCreator() !== $this->getUser()) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+             if (!$em->getFilters()->isEnabled('softdeleteable')) {
+                 $em->getFilters()->enable('softdeleteable');
+             }
+             throw $this->createAccessDeniedException('Only admins can permanently delete items.');
+        }
+
+        if (!$item) {
              if (!$em->getFilters()->isEnabled('softdeleteable')) {
                  $em->getFilters()->enable('softdeleteable');
              }
@@ -386,8 +412,6 @@ class ItemController extends AbstractController
         $em->createQuery('DELETE FROM App\Entity\Item i WHERE i.id = :id')
            ->setParameter('id', $item->getId())
            ->execute();
-
-
 
         if (!$em->getFilters()->isEnabled('softdeleteable')) {
             $em->getFilters()->enable('softdeleteable');
@@ -400,7 +424,8 @@ class ItemController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function toggleLike(
         Item $item, 
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        \App\Service\RealTimeNotifier $notifier
     ): Response {
         // Check if user is fully authenticated (should be covered by IsGranted)
         $user = $this->getUser();
@@ -419,6 +444,11 @@ class ItemController extends AbstractController
 
         try {
             $entityManager->flush();
+            $notifier->notifyItemStats(
+                $item->getInventory()->getId()->toRfc4122(),
+                $item->getId()->toRfc4122(),
+                ['likes' => $item->getLikeCount()]
+            );
         } catch (\Exception $e) {
              return $this->json(['error' => 'Error updating like status'], 500);
         }

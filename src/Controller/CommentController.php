@@ -12,12 +12,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+use App\Service\RealTimeNotifier;
+
 #[Route('/api/inventories/{id}/comments')]
 class CommentController extends AbstractController
 {
     public function __construct(
         private CommentRepository $commentRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private RealTimeNotifier $notifier
     ) {}
 
     #[Route('', name: 'api_comments_list', methods: ['GET'])]
@@ -61,6 +64,9 @@ class CommentController extends AbstractController
 
         $this->entityManager->persist($comment);
         $this->entityManager->flush();
+
+        // Broadcast real-time update
+        $this->notifier->notifyNewComment($inventory->getId()->toRfc4122(), $comment);
 
         return $this->json([
             'id' => $comment->getId()->toRfc4122(),

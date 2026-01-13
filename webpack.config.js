@@ -88,6 +88,13 @@ Encore
 
     // uncomment if you're having problems with a jQuery plugin
     //.autoProvidejQuery()
+
+    // Configure dotenv via DefinePlugin manually or use dotenv-webpack
+    .addPlugin(new (require('dotenv-webpack'))({
+        path: './.env',
+        systemvars: true,
+        safe: true
+    }))
     ;
 
 module.exports = Encore.getWebpackConfig();

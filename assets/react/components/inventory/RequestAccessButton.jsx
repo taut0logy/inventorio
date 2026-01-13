@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { UserPlus, Clock, Loader2, Check } from 'lucide-react';
 import { t } from '@/lib/i18n';
+import { toast } from 'sonner';
 
 export default function RequestAccessButton({ inventoryId, hasRequested: initialHasRequested }) {
     const [hasRequested, setHasRequested] = useState(initialHasRequested);
@@ -39,11 +40,11 @@ export default function RequestAccessButton({ inventoryId, hasRequested: initial
                 }, 1500);
             } else {
                 const data = await res.json();
-                alert(data.error || 'Failed to send request');
+                toast.error(data.error || 'Failed to send request');
             }
         } catch (err) {
             console.error('Error requesting access:', err);
-            alert('An error occurred');
+            toast.error('An error occurred');
         }
         setLoading(false);
     };

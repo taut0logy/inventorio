@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
+import { useMercure } from '@/hooks/useMercure';
 import { t } from '@/lib/i18n';
 
 export default function CommentsSection({ inventoryId, currentUser }) {
@@ -41,16 +42,19 @@ export default function CommentsSection({ inventoryId, currentUser }) {
 
     useEffect(() => {
         fetchComments();
-        
-        // Poll every 5 seconds
-        intervalRef.current = setInterval(() => {
-            fetchComments(true);
-        }, 5000);
-
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
     }, [inventoryId]);
+
+    // Real-time updates
+    useMercure([`/inventory/${inventoryId}/comments`], (data, type) => {
+        if (type === 'comment') {
+            setComments(prev => {
+                // Prevent duplicates if user just sent it (though socket usually faster than fetch, let's be safe)
+                if (prev.some(c => c.id === data.id)) return prev;
+                return [...prev, data];
+            });
+            setTimeout(scrollToBottom, 100);
+        }
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -66,7 +70,10 @@ export default function CommentsSection({ inventoryId, currentUser }) {
 
             if (response.ok) {
                 const newComment = await response.json();
-                setComments(prev => [...prev, newComment]);
+                setComments(prev => {
+                    if (prev.some(c => c.id === newComment.id)) return prev;
+                    return [...prev, newComment];
+                });
                 setContent('');
                 setTimeout(scrollToBottom, 100);
             }

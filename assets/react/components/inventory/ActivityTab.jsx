@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
     Eye, Heart, Plus, Pencil, Trash2, Settings, 
     UserPlus, Check, X, Loader2, ChevronLeft, ChevronRight,
-    Activity as ActivityIcon
+    Activity as ActivityIcon, UserMinus, UserCheck
 } from 'lucide-react';
 import { t } from '@/lib/i18n';
+import { useMercure } from '@/hooks/useMercure';
 
 const ACTIVITY_TYPES = [
     { key: 'view', labelKey: 'filter.views', fallback: 'Views', icon: Eye },
@@ -26,6 +27,8 @@ const ACCESS_TYPES = [
     { key: 'permission_request', labelKey: 'filter.requests', fallback: 'Requests', icon: UserPlus },
     { key: 'permission_granted', labelKey: 'filter.granted', fallback: 'Granted', icon: Check },
     { key: 'permission_denied', labelKey: 'filter.denied', fallback: 'Denied', icon: X },
+    { key: 'collaborator_added', labelKey: 'filter.collaborator_added', fallback: 'Users Added', icon: UserCheck },
+    { key: 'collaborator_removed', labelKey: 'filter.collaborator_removed', fallback: 'Users Removed', icon: UserMinus },
 ];
 
 function formatRelativeTime(dateString) {
@@ -130,6 +133,33 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
     useEffect(() => {
         fetchAccessRequests();
     }, [fetchAccessRequests]);
+
+    // Real-time updates
+    useMercure([`/inventory/${inventoryId}/activities`], (data, type) => {
+        // Handle Activity
+        if (type === 'activity') {
+            const activity = data;
+            
+            // Only prepend if it matches current filter
+            if (activeTypes.length > 0 && !activeTypes.includes(activity.type)) {
+                return;
+            }
+
+            // Update stats
+            setStats(prev => ({
+                ...prev,
+                [activity.type]: (prev[activity.type] || 0) + 1
+            }));
+
+            // Prepend to list if on page 1
+            if (page === 1) {
+                setActivities(prev => {
+                    if (prev.some(a => a.id === activity.id)) return prev;
+                    return [activity, ...prev];
+                });
+            }
+        }
+    });
 
     const toggleType = (type) => {
         setActiveTypes(prev => 

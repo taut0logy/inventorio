@@ -39,6 +39,8 @@ import {
     BarChart3
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
+import { LinkPreview } from '@/components/ui/link-preview';
+import { useMercure } from '@/hooks/useMercure';
 import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
@@ -72,6 +74,7 @@ export default function InventoryShowPage({
     currentUser,
     isCreator,
     isCollaborator = false,
+    isAdmin = false,
     canAddItem = false,
     canEditItem = false,
     canEditInventory = false,
@@ -84,6 +87,7 @@ export default function InventoryShowPage({
     inventoryLikeCount = 0,
     inventoryViewCount = 0
 }) {
+
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState([]);
     const [ConfirmDialog, confirm] = useConfirm();
@@ -92,6 +96,21 @@ export default function InventoryShowPage({
     // Inventory like state
     const [isInventoryLiked, setIsInventoryLiked] = useState(inventoryLiked);
     const [invLikeCount, setInvLikeCount] = useState(inventoryLikeCount);
+    const [invViewCount, setInvViewCount] = useState(inventoryViewCount); // Track view count
+
+    // Real-time updates
+    useMercure([`/inventory/${inventory.id}`], (data, type) => {
+        if (type === 'stats') {
+            setInvLikeCount(data.likes);
+            setInvViewCount(data.views);
+        } else if (type === 'item_stats') {
+            const { itemId, data: stats } = data;
+            setLocalCounts(prev => ({
+                ...prev,
+                [itemId]: stats.likes
+            }));
+        }
+    });
 
     const handleToggleInventoryLike = async () => {
         if (!currentUser) {
@@ -419,19 +438,19 @@ export default function InventoryShowPage({
         <div className="min-h-[calc(100vh-4rem)] bg-background pb-10 px-4 md:px-6 lg:px-8">
             {/* Sticky Header */}
             <header className="sticky top-14 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" asChild>
+                <div className="container mx-auto px-4 py-3 min-h-16 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+                        <Button variant="ghost" size="icon" asChild className="shrink-0">
                             <a href="/inventory/">
                                 <ArrowLeft className="h-5 w-5" />
                             </a>
                         </Button>
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                                 <span className="text-xl">📦</span>
                             </div>
-                            <div>
-                                <h1 className="text-lg font-semibold leading-none mb-1">
+                            <div className="min-w-0">
+                                <h1 className="text-lg font-semibold leading-none mb-1 truncate max-w-[200px] sm:max-w-md">
                                     {inventory.title}
                                 </h1>
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
@@ -443,8 +462,8 @@ export default function InventoryShowPage({
                                             #{tag.name}
                                         </Badge>
                                     ))}
-                                    <span>•</span>
-                                    <span>{items.length} {t('inventory.items', 'items')}</span>
+                                    <span className="hidden xs:inline">•</span>
+                                    <span className="hidden xs:inline">{items.length} {t('inventory.items', 'items')}</span>
                                     {!isCreator && inventory.creator && (
                                         <>
                                             <span>•</span>
@@ -467,12 +486,12 @@ export default function InventoryShowPage({
                             </div>
                         </div>
                         
-                        {/* Likes and Views */}
-                        <div className="hidden sm:flex items-center gap-3 ml-4 pl-4 border-l">
+                        {/* Likes and Views - Always visible, grouped to wrap together */}
+                        <div className="flex items-center gap-3 pl-4 border-l border-border/50 shrink-0">
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className={`gap-1.5 ${isInventoryLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground'}`}
+                                className={`h-8 px-2 gap-1.5 ${isInventoryLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground'}`}
                                 onClick={handleToggleInventoryLike}
                             >
                                 <Heart className={`h-4 w-4 ${isInventoryLiked ? 'fill-current' : ''}`} />
@@ -480,7 +499,7 @@ export default function InventoryShowPage({
                             </Button>
                             <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
                                 <Eye className="h-4 w-4" />
-                                <span>{inventoryViewCount.toLocaleString()}</span>
+                                <span>{invViewCount.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -515,9 +534,7 @@ export default function InventoryShowPage({
                                 }}
                             />
                         )}
-                        {canEditInventory && (
-                            <TrashToggle showDeleted={showDeleted} onToggle={toggleDeletedMode} />
-                        )}
+
                     </div>
                 </div>
             </header>
@@ -641,11 +658,23 @@ export default function InventoryShowPage({
                                                         </Button>
                                                     </div>
                                                 </TableCell>
-                                                {tableColumns.map(col => (
-                                                    <TableCell key={col.key}>
-                                                        {getItemValue(item, col.key) ?? '-'}
-                                                    </TableCell>
-                                                ))}
+                                                {tableColumns.map(col => {
+                                                    const val = getItemValue(item, col.key);
+                                                    if (col.key.startsWith('link') && val) {
+                                                        return (
+                                                            <TableCell key={col.key}>
+                                                                <LinkPreview url={val} className="font-medium text-primary hover:underline">
+                                                                    View Link
+                                                                </LinkPreview>
+                                                            </TableCell>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <TableCell key={col.key}>
+                                                            {val ?? '-'}
+                                                        </TableCell>
+                                                    );
+                                                })}
                                                 <TableCell>
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
