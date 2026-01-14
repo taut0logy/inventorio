@@ -6,6 +6,8 @@ action.cancel: Cancel
 action.delete: Delete
 action.edit: Edit
 action.upload_avatar: Change Avatar
+action.restore: Restore
+confirm.restore: Are you sure you want to restore this inventory?
 
 # Navigation
 nav.dashboard: Dashboard
@@ -142,6 +144,16 @@ auth.sign_in_link: Sign in
 
 # Error
 error.conflict: "Conflict detected: This item has been modified by another user. The page will reload."
+error.restore_failed: Failed to restore inventory
+error.restore_error: Error restoring inventory
+error.fetch_failed: Failed to load data
+error.save_failed: Failed to save changes
+error.network: Network error. Please check your connection.
+error.unknown: An unknown error occurred.
+error.action_failed: Action failed. Please try again.
+error.search_failed: Search failed. Please try again.
+error.add_user: Error adding user
+error.remove_user: Error removing user
 
 # Validation
 val.email_required: Email is required
@@ -228,6 +240,12 @@ inventory.back: Back
 inventory.box: Box
 inventory.view: View
 action.add_item: Add Item
+inventory.action.restored: Inventory restored successfully.
+inventory.action.deleted_forever: Inventory permanently deleted.
+inventory.action.batch_deleted: "{count} inventories deleted."
+inventory.action.created: Inventory created successfully.
+inventory.action.updated: Inventory updated successfully.
+inventory.settings.updated: Sort order saved.
 
 # Item Form
 item.create_title: Add New Item
@@ -240,6 +258,12 @@ item.create_btn: Create Item
 item.update_btn: Save Changes
 item.creating: Creating...
 item.saving: Saving...
+item.action.restored: Item restored successfully.
+item.action.deleted_forever: Item permanently deleted.
+item.action.batch_deleted: "{count} items deleted."
+item.action.deleted: Item deleted.
+item.action.created: Item created successfully.
+item.action.updated: Item updated successfully.
 
 # Settings
 settings.title: Inventory Settings
@@ -248,6 +272,7 @@ settings.tab_id: Custom ID
 settings.tab_fields: Custom Fields
 settings.save: Save Settings
 settings.saving: Saving...
+settings.saved: Settings saved successfully.
 
 # Custom ID Builder
 id_builder.title: ID Elements
@@ -361,6 +386,7 @@ profile.tab.activity: Activity
 profile.visibility: Visibility
 profile.no_inventories: No inventories found
 profile.activity_coming_soon: Activity log coming soon
+profile.search_inventories: Search inventories...
 
 # Activity Tab
 activity.views: views

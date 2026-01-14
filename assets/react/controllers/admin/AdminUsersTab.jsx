@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { 
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -45,6 +46,7 @@ export default function AdminUsersTab({ currentUser }) {
             setSelectedIds([]); 
         } catch (error) {
             console.error('Failed to fetch users:', error);
+            toast.error(t('error.fetch_failed', 'Failed to load users'));
         } finally {
             setLoading(false);
         }
@@ -129,6 +131,8 @@ export default function AdminUsersTab({ currentUser }) {
             if (response.ok) {
                 const data = await response.json();
                 
+                toast.success(data.message || t('action.success', 'Action completed'));
+
                 if (data.logoutRequired) {
                     window.location.reload();
                     return;
@@ -136,9 +140,13 @@ export default function AdminUsersTab({ currentUser }) {
 
                 fetchUsers();
                 setSelectedIds([]);
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                toast.error(errorData.message || t('error.generic', 'Action failed'));
             }
         } catch (error) {
             console.error('Bulk action failed:', error);
+            toast.error(t('error.network', 'Network error occurred'));
         } finally {
             setBulkLoading(false);
         }
@@ -156,14 +164,18 @@ export default function AdminUsersTab({ currentUser }) {
             const response = await fetch(`/api/admin/users/${user.id}/block`, { method: 'POST' });
             if (response.ok) {
                 const data = await response.json();
+                toast.success(data.message);
                 if (data.logoutRequired) {
                     window.location.reload();
                     return;
                 }
                 setUsers(users.map(u => u.id === user.id ? { ...u, isBlocked: data.isBlocked } : u));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to update block status'));
             }
         } catch (error) {
             console.error('Error blocking user:', error);
+            toast.error(t('error.network', 'Network error'));
         } finally {
             setActionLoading(null);
         }
@@ -175,6 +187,7 @@ export default function AdminUsersTab({ currentUser }) {
             const response = await fetch(`/api/admin/users/${user.id}/role`, { method: 'POST' });
             if (response.ok) {
                 const data = await response.json();
+                toast.success(data.message);
                 
                 if (data.redirectRequired) {
                     window.location.href = '/';
@@ -182,9 +195,12 @@ export default function AdminUsersTab({ currentUser }) {
                 }
                 
                 setUsers(users.map(u => u.id === user.id ? { ...u, roles: data.roles } : u));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to update role'));
             }
         } catch (error) {
             console.error('Error updating role:', error);
+            toast.error(t('error.network', 'Network error'));
         } finally {
             setActionLoading(null);
         }
@@ -203,15 +219,19 @@ export default function AdminUsersTab({ currentUser }) {
             const response = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
             if (response.ok) {
                 const data = await response.json();
+                toast.success(data.message);
                 if (data.logoutRequired) {
                     window.location.reload();
                     return;
                 }
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to delete user'));
             }
         } catch (error) {
             console.error('Error deleting user:', error);
+            toast.error(t('error.network', 'Network error'));
         } finally {
             setActionLoading(null);
         }
@@ -228,10 +248,16 @@ export default function AdminUsersTab({ currentUser }) {
         try {
             const res = await fetch(`/api/admin/users/${user.id}/restore`, { method: 'POST' });
             if (res.ok) {
+                toast.success(t('action.restored', 'User restored'));
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to restore user'));
             }
-        } catch (error) { console.error(error); } 
+        } catch (error) { 
+            console.error(error); 
+            toast.error(t('error.network', 'Network error'));
+        } 
         finally { setActionLoading(null); }
     };
 
@@ -246,10 +272,16 @@ export default function AdminUsersTab({ currentUser }) {
         try {
             const res = await fetch(`/api/admin/users/${user.id}/permanent`, { method: 'DELETE' });
             if (res.ok) {
+                toast.success(t('action.deleted_forever', 'User permanently deleted'));
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to delete user permanently'));
             }
-        } catch (error) { console.error(error); }
+        } catch (error) { 
+            console.error(error); 
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 

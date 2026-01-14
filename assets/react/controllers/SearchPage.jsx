@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -73,6 +74,7 @@ export default function SearchPage({ initialQuery = '' }) {
             }
         } catch (error) {
             console.error('Search failed:', error);
+            toast.error(t('error.search_failed', 'Search failed. Please try again.'));
         } finally {
             setLoading(false);
             setLoadingMore(false);

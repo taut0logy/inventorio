@@ -7,21 +7,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { 
-    Package, 
-    Eye, 
-    Heart, 
-    Box, 
-    Calendar, 
-    Lock, 
-    Globe, 
+import {
+    Package,
+    Eye,
+    Heart,
+    Box,
+    Calendar,
+    Lock,
+    Globe,
     Trash2,
     Activity,
     RefreshCcw,
     Search
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
+import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
+import box from '@/../images/box-icon.svg';
 
 export default function UserProfilePage({
     profileUser,
@@ -42,7 +44,7 @@ export default function UserProfilePage({
     const filteredInventories = useMemo(() => {
         if (!searchQuery.trim()) return inventories;
         const query = searchQuery.toLowerCase();
-        return inventories.filter(inv => 
+        return inventories.filter(inv =>
             inv.title.toLowerCase().includes(query) ||
             inv.category?.name?.toLowerCase().includes(query) ||
             inv.description?.toLowerCase().includes(query)
@@ -73,10 +75,10 @@ export default function UserProfilePage({
         try {
             const res = await fetch(`/inventory/${id}/restore`, { method: 'POST' });
             if (res.ok) window.location.reload();
-            else alert('Failed to restore');
+            else toast.error(t('error.restore_failed', 'Failed to restore inventory'));
         } catch (e) {
             console.error(e);
-            alert('Error restoring inventory');
+            toast.error(t('error.restore_error', 'Error restoring inventory'));
         }
     };
 
@@ -243,15 +245,23 @@ export default function UserProfilePage({
                                     filteredInventories.map(inv => (
                                         <TableRow key={inv.id} className={inv.isDeleted ? 'opacity-60' : ''}>
                                             <TableCell>
-                                                {inv.category?.icon ? (
-                                                    <img src={inv.category.icon} alt="" className="w-6 h-6" />
-                                                ) : (
-                                                    <Package className="h-5 w-5 text-muted-foreground" />
-                                                )}
+                                                <div
+                                                    className="text-center w-8 h-8 mb-3 group-hover:scale-110 transition-transform duration-300 bg-primary"
+                                                    style={{
+                                                        maskImage: `url(${inv.category.icon || box})`,
+                                                        maskSize: 'contain',
+                                                        maskRepeat: 'no-repeat',
+                                                        maskPosition: 'center',
+                                                        WebkitMaskImage: `url(${inv.category.icon || box})`,
+                                                        WebkitMaskSize: 'contain',
+                                                        WebkitMaskRepeat: 'no-repeat',
+                                                        WebkitMaskPosition: 'center',
+                                                    }}
+                                                />
                                             </TableCell>
                                             <TableCell>
-                                                <a 
-                                                    href={`/inventory/${inv.id}`} 
+                                                <a
+                                                    href={`/inventory/${inv.id}`}
                                                     className="font-medium hover:underline flex items-center gap-2"
                                                 >
                                                     {inv.title}
@@ -285,8 +295,8 @@ export default function UserProfilePage({
                                             {(canSeePrivate || deletedMode) && (
                                                 <TableCell>
                                                     {inv.isDeleted && canSeeDeleted && (
-                                                        <Button 
-                                                            variant="ghost" 
+                                                        <Button
+                                                            variant="ghost"
                                                             size="sm"
                                                             onClick={() => handleRestore(inv.id)}
                                                         >

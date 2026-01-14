@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { 
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -48,6 +49,7 @@ export default function AdminCategoriesTab() {
             setSelectedIds([]);
         } catch (e) {
             console.error(e);
+            toast.error(t('error.fetch_failed', 'Failed to load categories'));
         } finally {
             setLoading(false);
         }
@@ -80,10 +82,16 @@ export default function AdminCategoriesTab() {
         try {
             const res = await fetch(`/api/admin/categories/${item.id}`, { method: 'DELETE' });
             if (res.ok) {
+                toast.success(t('category.action.deleted', 'Category deleted'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to delete category'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 
@@ -92,10 +100,16 @@ export default function AdminCategoriesTab() {
         try {
             const res = await fetch(`/api/admin/categories/${item.id}/restore`, { method: 'POST' });
             if (res.ok) {
+                toast.success(t('category.action.restored', 'Category restored'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to restore category'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 
@@ -111,13 +125,17 @@ export default function AdminCategoriesTab() {
         try {
             const res = await fetch(`/api/admin/categories/${item.id}/permanent`, { method: 'DELETE' });
             if (res.ok) {
+                toast.success(t('category.action.deleted_forever', 'Category permanently deleted'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to delete');
+                toast.error(err.error || t('error.action_failed', 'Failed to delete'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 
@@ -134,15 +152,19 @@ export default function AdminCategoriesTab() {
             });
             
             if (res.ok) {
+                toast.success(editingItem ? t('category.action.updated', 'Category updated') : t('category.action.created', 'Category created'));
                 setIsSheetOpen(false);
                 setEditingItem(null);
                 setFormData({ name: '', iconUrl: '' });
                 fetchItems();
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to save');
+                toast.error(err.error || t('error.save_failed', 'Failed to save'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
     };
 
     const openCreate = () => {
@@ -173,10 +195,16 @@ export default function AdminCategoriesTab() {
                body: JSON.stringify({ ids: selectedIds })
            });
            if (res.ok) {
+               toast.success(t('category.action.bulk_deleted', 'Categories deleted'));
                fetchItems();
                setSelectedIds([]);
+           } else {
+               toast.error(t('error.bulk_action_failed', 'Bulk action failed'));
            }
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
     };
 
     return (

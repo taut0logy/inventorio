@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -170,7 +171,7 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
         });
 
         if (errors.length > 0) {
-            alert(errors.join('\n'));
+            errors.forEach(err => toast.error(err));
             setIsLoading(false);
             return;
         }
@@ -196,8 +197,8 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
             const data = await response.json();
 
             if (response.status === 409) {
-                alert(t('error.conflict', 'Conflict detected: This item has been modified by another user. The page will reload.'));
-                window.location.reload();
+                toast.error(t('error.conflict', 'Conflict detected: This item has been modified by another user. The page will reload.'));
+                setTimeout(() => window.location.reload(), 1500);
                 return;
             }
 
@@ -207,10 +208,11 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
 
             // Success
             setOpen(false);
+            toast.success(isEditMode ? t('item.action.updated', 'Item updated') : t('item.action.created', 'Item created'));
             window.location.reload(); 
         } catch (error) {
             console.error('Error saving item:', error);
-            alert(error.message);
+            toast.error(error.message || t('error.save_failed', 'Failed to save item'));
         } finally {
             setIsLoading(false);
         }

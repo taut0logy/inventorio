@@ -45,6 +45,8 @@
                     'action.delete': {{ 'action.delete'|trans|json_encode|raw }},
                     'action.edit': {{ 'action.edit'|trans|json_encode|raw }},
                     'action.upload_avatar': {{ 'action.upload_avatar'|trans|json_encode|raw }},
+                    'action.restore': {{ 'action.restore'|trans|json_encode|raw }},
+                    'confirm.restore': {{ 'confirm.restore'|trans|json_encode|raw }},
 
                     // Navigation
                     'nav.dashboard': {{ 'nav.dashboard'|trans|json_encode|raw }},
@@ -61,6 +63,7 @@
                     'nav.register': {{ 'nav.register'|trans|json_encode|raw }},
 
                     // Profile
+                    'profile.search_inventories': {{ 'profile.search_inventories'|trans|json_encode|raw }},
                     'profile.title': {{ 'profile.title'|trans|json_encode|raw }},
                     'profile.tab.general': {{ 'profile.tab.general'|trans|json_encode|raw }},
                     'profile.tab.security': {{ 'profile.tab.security'|trans|json_encode|raw }},
@@ -108,6 +111,16 @@
 
                     // Errors
                     'error.conflict': {{ 'error.conflict'|trans|json_encode|raw }},
+                    'error.restore_failed': {{ 'error.restore_failed'|trans|json_encode|raw }},
+                    'error.restore_error': {{ 'error.restore_error'|trans|json_encode|raw }},
+                    'error.fetch_failed': {{ 'error.fetch_failed'|trans|json_encode|raw }},
+                    'error.save_failed': {{ 'error.save_failed'|trans|json_encode|raw }},
+                    'error.network': {{ 'error.network'|trans|json_encode|raw }},
+                    'error.unknown': {{ 'error.unknown'|trans|json_encode|raw }},
+                    'error.action_failed': {{ 'error.action_failed'|trans|json_encode|raw }},
+                    'error.search_failed': {{ 'error.search_failed'|trans|json_encode|raw }},
+                    'error.add_user': {{ 'error.add_user'|trans|json_encode|raw }},
+                    'error.remove_user': {{ 'error.remove_user'|trans|json_encode|raw }},
 
                     // Validation
                     'val.email_required': {{ 'val.email_required'|trans|json_encode|raw }},
@@ -230,6 +243,12 @@
                     'inventory.no_items_can_add': {{ 'inventory.no_items_can_add'|trans|json_encode|raw }},
                     'inventory.no_items_view_only': {{ 'inventory.no_items_view_only'|trans|json_encode|raw }},
                     'action.add_item': {{ 'action.add_item'|trans|json_encode|raw }},
+                    'inventory.action.restored': {{ 'inventory.action.restored'|trans|json_encode|raw }},
+                    'inventory.action.deleted_forever': {{ 'inventory.action.deleted_forever'|trans|json_encode|raw }},
+                    'inventory.action.batch_deleted': {{ 'inventory.action.batch_deleted'|trans|json_encode|raw }},
+                    'inventory.action.created': {{ 'inventory.action.created'|trans|json_encode|raw }},
+                    'inventory.action.updated': {{ 'inventory.action.updated'|trans|json_encode|raw }},
+                    'inventory.settings.updated': {{ 'inventory.settings.updated'|trans|json_encode|raw }},
                     
                     // Item Form
                     'item.create_title': {{ 'item.create_title'|trans|json_encode|raw }},
@@ -242,6 +261,12 @@
                     'item.update_btn': {{ 'item.update_btn'|trans|json_encode|raw }},
                     'item.creating': {{ 'item.creating'|trans|json_encode|raw }},
                     'item.saving': {{ 'item.saving'|trans|json_encode|raw }},
+                    'item.action.restored': {{ 'item.action.restored'|trans|json_encode|raw }},
+                    'item.action.deleted_forever': {{ 'item.action.deleted_forever'|trans|json_encode|raw }},
+                    'item.action.batch_deleted': {{ 'item.action.batch_deleted'|trans|json_encode|raw }},
+                    'item.action.deleted': {{ 'item.action.deleted'|trans|json_encode|raw }},
+                    'item.action.created': {{ 'item.action.created'|trans|json_encode|raw }},
+                    'item.action.updated': {{ 'item.action.updated'|trans|json_encode|raw }},
                     
                     // Settings
                     'settings.title': {{ 'settings.title'|trans|json_encode|raw }},
@@ -250,6 +275,7 @@
                     'settings.tab_fields': {{ 'settings.tab_fields'|trans|json_encode|raw }},
                     'settings.save': {{ 'settings.save'|trans|json_encode|raw }},
                     'settings.saving': {{ 'settings.saving'|trans|json_encode|raw }},
+                    'settings.saved': {{ 'settings.saved'|trans|json_encode|raw }},
                     
                     // ID Builder
                     'id_builder.title': {{ 'id_builder.title'|trans|json_encode|raw }},

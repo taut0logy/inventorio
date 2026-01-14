@@ -87,6 +87,104 @@ class AdminApiController extends AbstractController
         ]);
     }
 
+    #[Route('/bulk/block', name: 'api_admin_users_bulk_block', methods: ['POST'])]
+    public function bulkBlock(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        
+        if (empty($ids)) {
+            return $this->json(['message' => 'No users selected'], 400);
+        }
+
+        $count = 0;
+        $selfBlocked = false;
+
+        foreach ($ids as $id) {
+            $user = $this->userRepository->find($id);
+            if ($user) {
+                $user->setBlocked(true);
+                if ($user === $this->getUser()) {
+                    $selfBlocked = true;
+                }
+                $count++;
+            }
+        }
+        
+        $this->entityManager->flush();
+
+        if ($selfBlocked) {
+            $this->tokenStorage->setToken(null);
+            $request->getSession()->invalidate();
+        }
+
+        return $this->json([
+            'message' => "$count users blocked",
+            'logoutRequired' => $selfBlocked
+        ]);
+    }
+
+    #[Route('/bulk/unblock', name: 'api_admin_users_bulk_unblock', methods: ['POST'])]
+    public function bulkUnblock(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        
+        if (empty($ids)) {
+            return $this->json(['message' => 'No users selected'], 400);
+        }
+
+        $count = 0;
+        foreach ($ids as $id) {
+            $user = $this->userRepository->find($id);
+            if ($user) {
+                $user->setBlocked(false);
+                $count++;
+            }
+        }
+        
+        $this->entityManager->flush();
+
+        return $this->json(['message' => "$count users unblocked"]);
+    }
+
+    #[Route('/bulk/delete', name: 'api_admin_users_bulk_delete', methods: ['POST'])]
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        
+        if (empty($ids)) {
+            return $this->json(['message' => 'No users selected'], 400);
+        }
+
+        $count = 0;
+        $selfDeleted = false;
+
+        foreach ($ids as $id) {
+            $user = $this->userRepository->find($id);
+            if ($user) {
+                $user->setDeletedAt(new \DateTime());
+                if ($user === $this->getUser()) {
+                    $selfDeleted = true;
+                }
+                $count++;
+            }
+        }
+        
+        $this->entityManager->flush();
+
+        if ($selfDeleted) {
+            $this->tokenStorage->setToken(null);
+            $request->getSession()->invalidate();
+        }
+
+        return $this->json([
+            'message' => "$count users deleted",
+            'logoutRequired' => $selfDeleted
+        ]);
+    }
+
     #[Route('/{id}/restore', name: 'api_admin_users_restore', methods: ['POST'])]
     public function restore(string $id, UserRepository $repo, EntityManagerInterface $em): JsonResponse
     {
@@ -209,101 +307,5 @@ class AdminApiController extends AbstractController
         ]);
     }
 
-    #[Route('/bulk/block', name: 'api_admin_users_bulk_block', methods: ['POST'])]
-    public function bulkBlock(Request $request): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-        $ids = $data['ids'] ?? [];
-        
-        if (empty($ids)) {
-            return $this->json(['message' => 'No users selected'], 400);
-        }
 
-        $count = 0;
-        $selfBlocked = false;
-
-        foreach ($ids as $id) {
-            $user = $this->userRepository->find($id);
-            if ($user) {
-                $user->setBlocked(true);
-                if ($user === $this->getUser()) {
-                    $selfBlocked = true;
-                }
-                $count++;
-            }
-        }
-        
-        $this->entityManager->flush();
-
-        if ($selfBlocked) {
-            $this->tokenStorage->setToken(null);
-            $request->getSession()->invalidate();
-        }
-
-        return $this->json([
-            'message' => "$count users blocked",
-            'logoutRequired' => $selfBlocked
-        ]);
-    }
-
-    #[Route('/bulk/unblock', name: 'api_admin_users_bulk_unblock', methods: ['POST'])]
-    public function bulkUnblock(Request $request): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-        $ids = $data['ids'] ?? [];
-        
-        if (empty($ids)) {
-            return $this->json(['message' => 'No users selected'], 400);
-        }
-
-        $count = 0;
-        foreach ($ids as $id) {
-            $user = $this->userRepository->find($id);
-            if ($user) {
-                $user->setBlocked(false);
-                $count++;
-            }
-        }
-        
-        $this->entityManager->flush();
-
-        return $this->json(['message' => "$count users unblocked"]);
-    }
-
-    #[Route('/bulk/delete', name: 'api_admin_users_bulk_delete', methods: ['POST'])]
-    public function bulkDelete(Request $request): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-        $ids = $data['ids'] ?? [];
-        
-        if (empty($ids)) {
-            return $this->json(['message' => 'No users selected'], 400);
-        }
-
-        $count = 0;
-        $selfDeleted = false;
-
-        foreach ($ids as $id) {
-            $user = $this->userRepository->find($id);
-            if ($user) {
-                $user->setDeletedAt(new \DateTime());
-                if ($user === $this->getUser()) {
-                    $selfDeleted = true;
-                }
-                $count++;
-            }
-        }
-        
-        $this->entityManager->flush();
-
-        if ($selfDeleted) {
-            $this->tokenStorage->setToken(null);
-            $request->getSession()->invalidate();
-        }
-
-        return $this->json([
-            'message' => "$count users deleted",
-            'logoutRequired' => $selfDeleted
-        ]);
-    }
 }

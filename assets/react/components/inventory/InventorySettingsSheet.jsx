@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -108,10 +109,11 @@ export default function InventorySettingsSheet({
                 onSettingsChange(fieldsConfig, idConfig);
             }
             
+            toast.success(t('settings.saved', 'Settings saved successfully'));
             setOpen(false);
         } catch (error) {
             console.error('Error saving settings:', error);
-            alert(error.message);
+            toast.error(error.message || t('error.save_failed', 'Failed to save settings'));
         } finally {
             setIsLoading(false);
         }

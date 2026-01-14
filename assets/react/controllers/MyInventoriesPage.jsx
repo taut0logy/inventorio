@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -66,11 +67,15 @@ export default function MyInventoriesPage({
         })) return;
         try {
             const res = await fetch(`/inventory/${id}/restore`, { method: 'POST' });
-            if (res.ok) window.location.reload();
-            else alert('Failed to restore');
+            if (res.ok) {
+                toast.success(t('inventory.action.restored', 'Inventory restored'));
+                window.location.reload();
+            } else {
+                toast.error(t('error.action_failed', 'Failed to restore'));
+            }
         } catch (e) {
             console.error(e);
-            alert('Error restoring item');
+            toast.error(t('error.network', 'Network error'));
         }
     };
 
@@ -83,11 +88,15 @@ export default function MyInventoriesPage({
         })) return;
         try {
             const res = await fetch(`/inventory/${id}/permanent`, { method: 'DELETE' });
-            if (res.ok) window.location.reload();
-            else alert('Failed to delete permanently');
+            if (res.ok) {
+                toast.success(t('inventory.action.deleted_forever', 'Inventory permanently deleted'));
+                window.location.reload();
+            } else {
+                toast.error(t('error.action_failed', 'Failed to delete permanently'));
+            }
         } catch (e) {
             console.error(e);
-            alert('Error deleting item');
+            toast.error(t('error.network', 'Network error'));
         }
     };
 
@@ -129,13 +138,14 @@ export default function MyInventoriesPage({
             });
             
             if (response.ok) {
+                toast.success(t('inventory.action.batch_deleted', 'Items deleted'));
                 window.location.reload();
             } else {
-                alert('Failed to delete items');
+                toast.error(t('error.action_failed', 'Failed to delete items'));
             }
         } catch (error) {
             console.error('Batch delete error:', error);
-            alert('An error occurred');
+            toast.error(t('error.network', 'An error occurred'));
         }
     };
 

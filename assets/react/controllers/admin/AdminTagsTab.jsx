@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { 
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
@@ -47,6 +48,7 @@ export default function AdminTagsTab() {
             setSelectedIds([]);
         } catch (e) {
             console.error(e);
+            toast.error(t('error.fetch_failed', 'Failed to load tags'));
         } finally {
             setLoading(false);
         }
@@ -79,10 +81,16 @@ export default function AdminTagsTab() {
         try {
             const res = await fetch(`/api/admin/tags/${item.id}`, { method: 'DELETE' });
             if (res.ok) {
+                toast.success(t('tag.action.deleted', 'Tag deleted'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to delete tag'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 
@@ -91,10 +99,16 @@ export default function AdminTagsTab() {
         try {
             const res = await fetch(`/api/admin/tags/${item.id}/restore`, { method: 'POST' });
             if (res.ok) {
+                toast.success(t('tag.action.restored', 'Tag restored'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
+            } else {
+                toast.error(t('error.action_failed', 'Failed to restore tag'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 
@@ -110,13 +124,17 @@ export default function AdminTagsTab() {
         try {
             const res = await fetch(`/api/admin/tags/${item.id}/permanent`, { method: 'DELETE' });
             if (res.ok) {
+                toast.success(t('tag.action.deleted_forever', 'Tag permanently deleted'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to delete');
+                toast.error(err.error || t('error.action_failed', 'Failed to delete'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
         finally { setActionLoading(null); }
     };
 
@@ -133,15 +151,19 @@ export default function AdminTagsTab() {
             });
             
             if (res.ok) {
+                toast.success(editingItem ? t('tag.action.updated', 'Tag updated') : t('tag.action.created', 'Tag created'));
                 setIsSheetOpen(false);
                 setEditingItem(null);
                 setFormData({ name: '', isPredefined: false });
                 fetchItems();
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to save');
+                toast.error(err.error || t('error.save_failed', 'Failed to save'));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
     };
 
     const openCreate = () => {
@@ -172,10 +194,16 @@ export default function AdminTagsTab() {
                body: JSON.stringify({ ids: selectedIds })
            });
            if (res.ok) {
+               toast.success(t('tag.action.bulk_deleted', 'Tags deleted'));
                fetchItems();
                setSelectedIds([]);
+           } else {
+               toast.error(t('error.bulk_action_failed', 'Bulk action failed'));
            }
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e);
+            toast.error(t('error.network', 'Network error'));
+        }
     };
 
     return (

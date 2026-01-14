@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Loader2, Pencil, Check, AlertCircle, Cloud } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import TagInput from '@/components/inventory/TagInput';
+import box from '@/../images/box-icon.svg'
 
 export default function InventorySheet({ 
     categories = [], 
@@ -171,8 +173,8 @@ export default function InventorySheet({
             const data = await response.json();
 
             if (response.status === 409) {
-                alert(t('error.conflict', 'Conflict detected: This inventory has been modified by another user. The page will reload.'));
-                window.location.reload();
+                toast.error(t('error.conflict', 'Conflict detected: This inventory has been modified by another user. The page will reload.'));
+                setTimeout(() => window.location.reload(), 1500);
                 return;
             }
 
@@ -182,13 +184,15 @@ export default function InventorySheet({
 
             // Success
             if (data.redirect) {
+                toast.success(isEdit ? t('inventory.action.updated', 'Inventory updated') : t('inventory.action.created', 'Inventory created'));
                 window.location.href = data.redirect;
             } else {
+                toast.success(isEdit ? t('inventory.action.updated', 'Inventory updated') : t('inventory.action.created', 'Inventory created'));
                 window.location.reload();
             }
         } catch (error) {
             console.error('Error saving inventory:', error);
-            alert(error.message); 
+            toast.error(error.message || t('error.save_failed', 'Failed to save inventory')); 
             setIsLoading(false);
         }
     };
@@ -288,7 +292,19 @@ export default function InventorySheet({
                                 {categories.map((cat) => (
                                     <SelectItem key={cat.id} value={cat.id}>
                                         <span className="flex items-center gap-2">
-                                            <span>{cat.icon || '📁'}</span>
+                                            <span 
+                                                className="w-6 h-6 bg-primary rounded"
+                                                style={{
+                                                    maskImage: `url(${cat.icon || box})`,
+                                                    maskSize: 'contain',
+                                                    maskRepeat: 'no-repeat',
+                                                    maskPosition: 'center',
+                                                    WebkitMaskImage: `url(${cat.icon || box})`,
+                                                    WebkitMaskSize: 'contain',
+                                                    WebkitMaskRepeat: 'no-repeat',
+                                                    WebkitMaskPosition: 'center',
+                                                }}
+                                            />
                                             <span>{cat.name}</span>
                                         </span>
                                     </SelectItem>

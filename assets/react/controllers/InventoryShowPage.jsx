@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -139,6 +140,7 @@ export default function InventoryShowPage({
         } catch {
             setIsInventoryLiked(wasLiked);
             setInvLikeCount(prev => wasLiked ? prev + 1 : prev - 1);
+            toast.error(t('error.action_failed', 'Failed to update like'));
         }
     };
 
@@ -176,6 +178,7 @@ export default function InventoryShowPage({
                 ...prev, 
                 [itemId]: !isLiked ? (prev[itemId] || 0) + 1 : Math.max(0, (prev[itemId] || 0) - 1)
             }));
+            toast.error(t('error.action_failed', 'Failed to update like'));
         }
     };
 
@@ -198,11 +201,15 @@ export default function InventoryShowPage({
         })) return;
         try {
             const res = await fetch(`/api/items/${id}/restore`, { method: 'POST' });
-            if (res.ok) window.location.reload();
-            else alert('Failed to restore');
+            if (res.ok) {
+                toast.success(t('item.action.restored', 'Item restored'));
+                window.location.reload();
+            } else {
+                toast.error(t('error.action_failed', 'Failed to restore item'));
+            }
         } catch (e) {
             console.error(e);
-            alert('Error restoring item');
+            toast.error(t('error.network', 'Network error'));
         }
     };
 
@@ -215,11 +222,15 @@ export default function InventoryShowPage({
         })) return;
         try {
             const res = await fetch(`/api/items/${id}/permanent`, { method: 'DELETE' });
-            if (res.ok) window.location.reload();
-            else alert('Failed to delete permanently');
+            if (res.ok) {
+                toast.success(t('item.action.deleted_forever', 'Item permanently deleted'));
+                window.location.reload();
+            } else {
+                toast.error(t('error.action_failed', 'Failed to delete permanently'));
+            }
         } catch (e) {
             console.error(e);
-            alert('Error deleting item');
+            toast.error(t('error.network', 'Network error'));
         }
     };
 
@@ -333,8 +344,10 @@ export default function InventoryShowPage({
             
             // Update local state
             setFieldsConfig(updatedFieldsConfig);
+            toast.success(t('inventory.settings.updated', 'Sort order saved'));
         } catch (error) {
             console.error('Failed to save sort order:', error);
+            toast.error(t('error.save_failed', 'Failed to save sort order'));
         }
     };
 
@@ -411,13 +424,14 @@ export default function InventoryShowPage({
             });
             
             if (response.ok) {
+                toast.success(t('item.action.batch_deleted', 'Items deleted'));
                 window.location.reload();
             } else {
-                alert('Failed to delete items');
+                toast.error(t('error.action_failed', 'Failed to delete items'));
             }
         } catch (error) {
             console.error('Batch delete error:', error);
-            alert('An error occurred');
+            toast.error(t('error.network', 'An error occurred'));
         }
     };
 
@@ -434,13 +448,14 @@ export default function InventoryShowPage({
             });
             
             if (response.ok) {
+                toast.success(t('item.action.deleted', 'Item deleted'));
                 window.location.reload();
             } else {
-                alert('Failed to delete item');
+                toast.error(t('error.action_failed', 'Failed to delete item'));
             }
         } catch (error) {
             console.error('Delete error:', error);
-            alert('An error occurred');
+            toast.error(t('error.network', 'An error occurred'));
         }
     };
 

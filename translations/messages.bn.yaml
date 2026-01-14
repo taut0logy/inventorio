@@ -6,6 +6,8 @@ action.cancel: বাতিল
 action.delete: মুছে ফেলুন
 action.edit: সম্পাদনা
 action.upload_avatar: ছবি পরিবর্তন করুন
+action.restore: পুনরুদ্ধার করুন
+confirm.restore: আপনি কি নিশ্চিত যে আপনি এই ইনভেন্টরিটি পুনরুদ্ধার করতে চান?
 
 # Navigation
 nav.dashboard: ড্যাশবোর্ড
@@ -142,7 +144,18 @@ auth.already_account: ইতিমধ্যে একটি অ্যাকা�
 auth.sign_in_link: প্রবেশ করুন
 
 # Error
+# Error
 error.conflict: "দ্বন্দ্ব সনাক্ত হয়েছে: এই আইটেমটি অন্য ব্যবহারকারী দ্বারা পরিবর্তন করা হয়েছে। পৃষ্ঠাটি পুনরায় লোড হবে।"
+error.restore_failed: ইনভেন্টরি পুনরুদ্ধার করতে ব্যর্থ হয়েছে
+error.restore_error: ইনভেন্টরি পুনরুদ্ধারে ত্রুটি
+error.fetch_failed: ডেটা লোড করতে ব্যর্থ হয়েছে
+error.save_failed: পরিবর্তন সংরক্ষণ করতে ব্যর্থ হয়েছে
+error.network: নেটওয়ার্ক ত্রুটি। আপনার সংযোগ পরীক্ষা করুন।
+error.unknown: একটি অজানা ত্রুটি ঘটেছে।
+error.action_failed: কাজটি ব্যর্থ হয়েছে। আবার চেষ্টা করুন।
+error.search_failed: অনুসন্ধান ব্যর্থ হয়েছে। আবার চেষ্টা করুন।
+error.add_user: ব্যবহারকারী যোগ করতে ব্যর্থ হয়েছে
+error.remove_user: ব্যবহারকারী বাদ দেওয়া ব্যর্থ হয়েছে
 
 # Validation
 val.email_required: ইমেল প্রয়োজন
@@ -229,6 +242,12 @@ inventory.back: ফিরে
 inventory.box: বক্স
 inventory.view: দেখুন
 action.add_item: আইটেম যোগ করুন
+inventory.action.restored: ইনভেন্টরি সফলভাবে পুনরুদ্ধার করা হয়েছে।
+inventory.action.deleted_forever: ইনভেন্টরি স্থায়ীভাবে মুছে ফেলা হয়েছে।
+inventory.action.batch_deleted: "{count} টি ইনভেন্টরি মুছে ফেলা হয়েছে।"
+inventory.action.created: ইনভেন্টরি সফলভাবে তৈরি করা হয়েছে।
+inventory.action.updated: ইনভেন্টরি সফলভাবে হালনাগাদ করা হয়েছে।
+inventory.settings.updated: সাজানোর ক্রম সংরক্ষিত হয়েছে।
 
 # Item Form
 item.create_title: নতুন আইটেম যোগ করুন
@@ -241,6 +260,12 @@ item.create_btn: আইটেম তৈরি করুন
 item.update_btn: পরিবর্তন সংরক্ষণ করুন
 item.creating: তৈরি হচ্ছে...
 item.saving: সংরক্ষণ হচ্ছে...
+item.action.restored: আইটেম সফলভাবে পুনরুদ্ধার করা হয়েছে।
+item.action.deleted_forever: আইটেম স্থায়ীভাবে মুছে ফেলা হয়েছে।
+item.action.batch_deleted: "{count} টি আইটেম মুছে ফেলা হয়েছে।"
+item.action.deleted: আইটেম মুছে ফেলা হয়েছে।
+item.action.created: আইটেম সফলভাবে তৈরি করা হয়েছে।
+item.action.updated: আইটেম সফলভাবে হালনাগাদ করা হয়েছে।
 
 # Settings
 settings.title: ইনভেন্টরি সেটিংস
@@ -249,6 +274,7 @@ settings.tab_id: কাস্টম আইডি
 settings.tab_fields: কাস্টম ফিল্ড
 settings.save: সেটিংস সংরক্ষণ করুন
 settings.saving: সংরক্ষণ হচ্ছে...
+settings.saved: সেটিংস সফলভাবে সংরক্ষিত হয়েছে।
 
 # Custom ID Builder
 id_builder.title: আইডি এলিমেন্ট
@@ -362,6 +388,7 @@ profile.tab.activity: কার্যকলাপ
 profile.visibility: দৃশ্যমানতা
 profile.no_inventories: কোনো ইনভেন্টরি পাওয়া যায়নি
 profile.activity_coming_soon: কার্যকলাপ লগ শীঘ্রই আসছে
+profile.search_inventories: ইনভেন্টরি অনুসন্ধান...
 
 # Activity Tab
 activity.views: ভিউ

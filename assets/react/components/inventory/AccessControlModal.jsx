@@ -93,7 +93,7 @@ export default function AccessControlModal({ inventoryId, initialSharedUsers = [
             }
         } catch (e) {
             console.error(e);
-            toast.error('Error adding user');
+            toast.error(t('error.add_user', 'Error adding user'));
         }
     };
 
@@ -114,11 +114,11 @@ export default function AccessControlModal({ inventoryId, initialSharedUsers = [
                 setSharedUsers(sharedUsers.filter(u => u.id !== userId));
                 toast.success(t('access.user_removed', 'Access revoked'));
             } else {
-                toast.error('Failed to remove user');
+                toast.error(t('error.remove_user', 'Failed to remove user'));
             }
         } catch (e) {
             console.error(e);
-            toast.error('Error removing user');
+            toast.error(t('error.remove_user', 'Error removing user'));
         }
     };
 
