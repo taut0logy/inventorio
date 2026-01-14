@@ -37,6 +37,7 @@ class Item
     private ?User $createdBy = null;
 
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
+    #[ORM\Version]
     private int $version = 1;
 
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]

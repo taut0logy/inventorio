@@ -187,7 +187,10 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    version: item?.version
+                })
             });
 
             const data = await response.json();

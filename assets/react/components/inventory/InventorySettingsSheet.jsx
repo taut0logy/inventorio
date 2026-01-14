@@ -96,7 +96,8 @@ export default function InventorySettingsSheet({
                 },
                 body: JSON.stringify({
                     customFieldsConfig: fieldsConfig,
-                    idGenerationConfig: idConfig
+                    idGenerationConfig: idConfig,
+                    version: inventory?.version
                 })
             });
 

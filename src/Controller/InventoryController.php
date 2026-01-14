@@ -138,6 +138,12 @@ class InventoryController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
+        // Optimistic Locking Check
+        // Auto-save logic handles this via 'expectedVersion', but manual save should also support 'version'
+        if (isset($data['version']) && $inventory->getVersion() !== (int)$data['version']) {
+            return $this->json(['error' => 'Conflict detected. The inventory has been modified by another user.'], 409);
+        }
+
         if (!$title = $data['title'] ?? null) {
             return $this->json(['error' => 'Title is required'], 400);
         }
@@ -217,6 +223,11 @@ class InventoryController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
         
+        // Optimistic Locking Check
+        if (isset($data['version']) && $inventory->getVersion() !== (int)$data['version']) {
+            return $this->json(['error' => 'Conflict detected. The settings have been modified by another user.'], 409);
+        }
+
         if (isset($data['customFieldsConfig'])) {
             $inventory->setCustomFieldsConfig($data['customFieldsConfig']);
         }

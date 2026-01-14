@@ -162,7 +162,10 @@ export default function InventorySheet({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    version: version
+                })
             });
 
             const data = await response.json();

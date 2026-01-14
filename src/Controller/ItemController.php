@@ -304,6 +304,12 @@ class ItemController extends AbstractController
              return $this->json(['error' => implode("\n", $validationErrors)], 400); // 400 Bad Request
         }
 
+        // Optimistic Locking Check
+        // If version is provided, ensure it matches the current DB version
+        if (isset($data['version']) && $item->getVersion() !== (int)$data['version']) {
+            return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
+        }
+
         // Helper to convert empty strings to null for numeric fields
         $toNumber = fn($val) => ($val === '' || $val === null) ? null : (float)$val;
         $toString = fn($val) => ($val === null) ? null : (string)$val;
