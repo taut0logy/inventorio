@@ -1,362 +1,172 @@
 # Inventorio
 
-A professional, schema-driven inventory management system built with Symfony and React.
+![License](https://img.shields.io/badge/license-GPL%203.0-blue.svg)
+![PHP](https://img.shields.io/badge/php-8.2%2B-777BB4.svg?logo=php&logoColor=white)
+![Symfony](https://img.shields.io/badge/symfony-7.4-000000.svg?logo=symfony&logoColor=white)
+![React](https://img.shields.io/badge/react-18.0-61DAFB.svg?logo=react&logoColor=black)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-v4-38B2AC.svg?logo=tailwind-css&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/postgresql-17-336791.svg?logo=postgresql&logoColor=white)
+
+**Inventorio** is a next-generation, schema-driven inventory management platform designed for power users and teams. It combines the flexibility of a spreadsheet with the robustness of a relational database, wrapped in a modern, real-time reactive interface.
+
+Unlike traditional inventory systems that force rigid structures, Inventorio empowers users to define their own data models per inventory, supported by strict validation, custom ID generation, and granular access controls.
 
 ---
 
-## Table of Contents
+## Key Differentiators
 
-- [Overview](#overview)
-- [Technology Stack](#technology-stack)
-- [Features](#features)
-  - [Authentication](#authentication)
-  - [Inventory Management](#inventory-management)
-  - [Item Management](#item-management)
-  - [Custom ID Generation](#custom-id-generation)
-  - [Custom Fields](#custom-fields)
-  - [Access Control](#access-control)
-  - [Discussion System](#discussion-system)
-  - [Search](#search)
-  - [Admin Panel](#admin-panel)
-  - [Internationalization and Theming](#internationalization-and-theming)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Development](#development)
-- [Deployment](#deployment)
+### Real-Time Collaboration
+Powered by the **Mercure Protocol**, Inventorio keeps everyone in sync.
+- **Live Activity Feed**: See who is editing, adding, or deleting items effectively instantly.
+- **Collaborative Comments**: Discuss specific items in real-time threads.
+- **Live Stats**: Like counts, view counters, and dashboard metrics update across all connected clients without page reloads.
 
----
+### Flexible Data Schema
+Every inventory is unique. Our custom field engine allows you to map your specific needs to optimized database columns:
+- **Rich Text**: Markdown-supported descriptions.
+- **Custom IDs**: Configurable generators (e.g., `INV-2024-001`, Random Hex, UUID).
+- **Typed Fields**: Define up to 15 custom fields per inventory including:
+    - **Scalars**: Text, Numbers, Booleans.
+    - **Selects**: Dropdowns with validation ("One from list").
+    - **Links**: URLs for documentation or external resources.
+- **Strict Validation**: Enforce Regex patterns, numeric ranges, and required fields.
 
-## Overview
-
-Inventorio is a multi-user, web-based inventory management platform designed for creating and managing structured inventories with custom item identifiers and configurable fields. The system supports concurrent editing with optimistic locking, role-based access control, and full-text search capabilities.
-
-Key differentiators:
-
-- **Schema-Driven Design**: Inventories define their own structure including custom ID formats and field configurations.
-- **Fixed Database Schema**: Custom fields map to predefined database columns, ensuring query performance and data integrity.
-- **Concurrent Editing**: Optimistic locking prevents silent overwrites in multi-user scenarios.
-- **Tables-First UI**: All data is presented in sortable, filterable tables with batch operations.
+### Enterprise-Grade Security
+- **Granular Permissions**: 
+    - **Private**: Visible only to owner.
+    - **Shared**: Specific read/write access for collaborators.
+    - **Public**: Open to all (read-only for guests).
+- **Audit Logging**: Every action is tracked in the Activity Feed.
+- **Optimistic Locking**: Prevents data overwrites when multiple users edit the same item simultaneously.
 
 ---
 
 ## Technology Stack
 
 ### Backend
-
-| Component | Technology |
-|-----------|------------|
-| Language | PHP 8.2+ |
-| Framework | Symfony 7.4 |
-| ORM | Doctrine |
-| Database | PostgreSQL 17 |
-| Authentication | Symfony Security, OAuth2 |
-| Queue | Symfony Messenger |
+- **Framework**: Symfony 7.4 (PHP 8.2+)
+- **Database**: PostgreSQL 17 (via Doctrine ORM)
+- **Real-Time**: Mercure Hub (Server-Sent Events)
+- **Authentication**: Symfony Security + OAuth2 (Google/Facebook)
+- **Storage**: Cloudinary (for optimized image delivery)
+- **Search**: PostgreSQL Full-Text Search (tsvector)
 
 ### Frontend
-
-| Component | Technology |
-|-----------|------------|
-| Framework | React 18 |
-| Build Tool | Webpack Encore |
-| UI Components | Radix UI, shadcn/ui |
-| Styling | Tailwind CSS 4 |
-| State Management | React useState/useEffect |
-| Forms | React Hook Form + Zod |
-| Icons | Lucide React |
-
-### Integration
-
-| Component | Technology |
-|-----------|------------|
-| Symfony-React Bridge | Symfony UX React |
-| Page Navigation | Hotwired Turbo |
-| Interactivity | Hotwired Stimulus |
+- **Core**: React 18
+- **Build System**: Webpack Encore
+- **Styling**: Tailwind CSS v4 (with Typography plugin)
+- **Components**: Radix UI / shadcn/ui
+- **Icons**: Lucide React
+- **DnD**: @dnd-kit (for drag-and-drop reordering)
 
 ---
 
-## Features
+## Feature Showcase
 
-### Authentication
+### 1. The Inventory Engine
+Create inventories that match your mental model.
+- **Category System**: Organized categorization with theme-aware icons.
+- **Tagging system**: Smart, auto-completing tags for easy filtering.
+- **Visuals**: Upload cover images that are automatically optimized and served via CDN.
 
-- **Social Login**: Google and Facebook OAuth integration via `knpuniversity/oauth2-client-bundle`.
-- **Email/Password**: Traditional registration with email verification.
-- **Password Reset**: Secure token-based password recovery flow.
-- **Session Management**: Secure session handling with remember-me functionality.
+### 2. Advanced Item Management
+- **Batch Operations**: Select multiple items to delete or modify.
+- **Responsive Tables**: detailed data views that adapt to mobile and desktop.
+- **Smart Filters**: Filter by any custom field value.
+- **Auto-Save**: Never lose your work; forms save draft progress automatically.
 
-### Inventory Management
+### 3. Analytics & Visualization
+- **Stats Dashboard**: breakdown of item counts, field completion rates, and numeric sums.
+- **3D Tag Cloud**: Interactive, spherical visualization of your most used tags.
+- **Charts**: Visual distribution of category data.
 
-- **Create/Edit Inventories**: Modal-based creation with title, description, category, and visibility settings.
-- **Categories**: Predefined category system for organizing inventories (admin-managed).
-- **Tags**: User-defined tags for flexible classification.
-- **Visibility**: Public (anyone can view/add items) or Private (creator-controlled access).
-- **Soft Delete**: Inventories can be deleted and restored from trash.
-- **Optimistic Locking**: Version-based concurrency control prevents data loss during simultaneous edits.
+### 4. Custom ID Builder
+A one-of-a-kind drag-and-drop builder to define exactly how your Item IDs look.
+- Mix and match **Fixed Text**, **Sequences** (001, 002...), **Dates**, and **Random** hashes.
+- Real-time preview of the ID format.
+- Uniqueness enforced at the database level per inventory.
 
-### Item Management
-
-- **Add/Edit Items**: Form-based item creation with custom field support.
-- **Batch Operations**: Select multiple items for bulk delete operations.
-- **Item Likes**: Users can like items; like counts are displayed per item.
-- **Tags**: Items can be tagged independently of their parent inventory.
-- **Soft Delete**: Items can be deleted and restored.
-
-### Custom ID Generation
-
-Each inventory defines its own item ID format using composable elements:
-
-| Element Type | Description |
-|--------------|-------------|
-| Fixed Text | Static prefix/suffix (Unicode supported) |
-| Random 20-bit | Random hexadecimal value |
-| Random 32-bit | Random hexadecimal value |
-| Random 6-digit | Random numeric value (000000-999999) |
-| Random 9-digit | Random numeric value (000000000-999999999) |
-| GUID | UUID v4 |
-| Date | Current date in configurable format (YYYY, YYYYMMDD, YYYY-MM-DD) |
-| Sequence | Auto-incrementing number with configurable padding |
-
-- Elements are addable, removable, and reorderable via drag-and-drop.
-- Live preview shows the generated ID format.
-- Existing items retain their IDs when the format changes.
-
-### Custom Fields
-
-Inventories can define custom fields within fixed limits:
-
-| Field Type | Maximum |
-|------------|---------|
-| Single-line Text | 3 |
-| Multi-line Text | 3 |
-| Numeric | 3 |
-| URL/Link | 3 |
-| Boolean | 3 |
-
-Field configuration includes:
-
-- Custom label and description (tooltip)
-- Visibility toggle (show/hide in item table)
-- Display order (drag-and-drop reordering)
-
-All custom fields map to predefined database columns (`custom_string1_value`, `custom_number1_value`, etc.) for optimal query performance.
-
-### Access Control
-
-**User Roles:**
-
-| Role | Capabilities |
-|------|-------------|
-| Guest | View public inventories and items, use search |
-| Authenticated | Add items to public inventories, create own inventories |
-| Creator | Full control over owned inventories |
-| Admin | Full control over all resources, user management |
-
-**Inventory-Level Permissions:**
-
-- **Public**: Any authenticated user can add/edit items.
-- **Private**: Creator explicitly grants access to specific users via email/name search.
-
-Access control is enforced via Symfony Voters (`InventoryVoter`).
-
-### Discussion System
-
-- Per-inventory discussion threads.
-- Linear, append-only message format.
-- Real-time updates via polling (5-second interval).
-- Displays author name, avatar, and timestamp.
-- Markdown support for message content.
-
-### Search
-
-- **Full-Text Search**: Search across inventories, items, and tags.
-- **Global Search**: Accessible from every page via the header.
-- **Scoped Search**: Search within a specific inventory.
-- **Results**: Displays inventories and items in separate result sections.
-
-### Admin Panel
-
-- **User Management**: View all users with search and pagination.
-- **Role Management**: Promote/demote admin status (admins can demote themselves).
-- **Block/Unblock**: Disable user accounts.
-- **Delete Users**: Soft-delete user accounts.
-- **Category Management**: CRUD operations for inventory categories.
-- **Tag Management**: CRUD operations for predefined tags.
-
-### Internationalization and Theming
-
-- **Languages**: English and additional language support (configurable).
-- **Themes**: Light and Dark mode with system preference detection.
-- **User Preferences**: Theme and language saved per user account.
+### 5. Internationalization (i18n)
+Full support for global deployment.
+- **Languages**: English (`en`) and Bengali (`bn`) supported out of the box.
+- **Timezones**: Timestamps formatted to local user preference.
 
 ---
 
-## Architecture
-
-```
-inventorio/
-├── assets/
-│   └── react/
-│       ├── components/        # Reusable UI components
-│       │   ├── inventory/     # Inventory-specific components
-│       │   ├── layout/        # Header, Footer, Navigation
-│       │   ├── search/        # Search components
-│       │   └── ui/            # shadcn/ui base components
-│       └── controllers/       # Page-level React components
-├── config/                    # Symfony configuration
-├── migrations/                # Doctrine migrations
-├── public/                    # Web root
-├── src/
-│   ├── Controller/            # HTTP controllers
-│   ├── Entity/                # Doctrine entities
-│   ├── Repository/            # Database queries
-│   └── Security/              # Voters, Authenticators
-├── templates/                 # Twig templates
-└── translations/              # i18n files
-```
-
-**Entity Relationships:**
-
-```
-User ──┬── creates ──> Inventory ──┬── contains ──> Item
-       │                           │
-       ├── sharedWith <── shared   ├── has ──> Tag
-       │                           │
-       └── likedBy <── likes ──────┴── has ──> Comment
-```
-
----
-
-## Installation
+## Installation & Setup
 
 ### Prerequisites
-
 - PHP 8.2 or higher
 - Composer
-- Node.js 18+ and npm
+- Node.js 18+ & npm
 - PostgreSQL 17+
+- Mercure Hub (or Symfony CLI for local dev)
 
-### Steps
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone <repository-url>
-   cd inventory-app
-   ```
-
-2. **Install PHP dependencies:**
-
-   ```bash
-   composer install
-   ```
-
-3. **Install JavaScript dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-4. **Configure environment:**
-
-   ```bash
-   cp .env .env.local
-   # Edit .env.local with your database and OAuth credentials
-   ```
-
-5. **Create database and run migrations:**
-
-   ```bash
-   php bin/console doctrine:database:create
-   php bin/console doctrine:migrations:migrate
-   ```
-
-6. **Build frontend assets:**
-
-   ```bash
-   npm run build
-   ```
-
-7. **Start the development server:**
-
-   ```bash
-   symfony server:start
-   ```
-
----
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `FACEBOOK_CLIENT_ID` | Facebook OAuth app ID |
-| `FACEBOOK_CLIENT_SECRET` | Facebook OAuth app secret |
-| `MAILER_DSN` | Email transport configuration |
-
-### OAuth Setup
-
-1. **Google**: Create credentials at [Google Cloud Console](https://console.cloud.google.com/).
-2. **Facebook**: Create an app at [Facebook Developers](https://developers.facebook.com/).
-
-Set redirect URIs to `https://your-domain.com/connect/google/check` and `https://your-domain.com/connect/facebook/check`.
-
----
-
-## Development
-
-### Running Locally
-
+### 1. Clone the Repository
 ```bash
-# Start PHP development server
-symfony server:start
+git clone https://github.com/your-org/inventorio.git
+cd inventorio
+```
 
-# Watch frontend assets
+### 2. Install Dependencies
+```bash
+# Backend
+composer install
+
+# Frontend
+npm install
+```
+
+### 3. Configure Environment
+Create your local environment file:
+```bash
+cp .env.example .env.local
+```
+
+Update `.env.local` with your credentials:
+```ini
+# Database
+DATABASE_URL="postgresql://db_user:db_pass@127.0.0.1:5432/inventorio?serverVersion=16&charset=utf8"
+
+# Mercure (Real-time)
+MERCURE_URL=http://127.0.0.1:8000/.well-known/mercure
+MERCURE_PUBLIC_URL=http://127.0.0.1:8000/.well-known/mercure
+MERCURE_JWT_SECRET="!ChangeThisSecretForProduction!"
+
+# OAuth (Optional for local dev, needed for social login)
+OAUTH_GOOGLE_ID=...
+OAUTH_GOOGLE_SECRET=...
+# nd other variables
+```
+
+### 4. Initialize Database
+```bash
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate
+# Load application fixtures (Initial categories and tags)
+php bin/console doctrine:fixtures:load --group=app
+
+# (Optional) Load Demo Data - Usage: Users, Inventories, Items
+php bin/console doctrine:fixtures:load --group=demo
+```
+
+### 5. Start Development Server
+**Terminal 1 (Backend & Mercure):**
+```bash
+symfony server:start
+```
+*Note: The Symfony CLI includes a built-in Mercure hub.*
+
+**Terminal 2 (Frontend Watcher):**
+```bash
 npm run watch
 ```
 
-### Code Quality
-
+**Terminal 3 (Async Messenger Worker):**
 ```bash
-# Run PHP tests
-php bin/phpunit
-
-# Clear cache
-php bin/console cache:clear
+php bin/console messenger:consume async -vv
 ```
 
----
+## License
 
-## Deployment
-
-### Server Requirements
-
-- PHP 8.2+ with extensions: `pdo_pgsql`, `intl`, `mbstring`
-- PostgreSQL 16+
-- Nginx or Apache
-- Supervisor (for background workers)
-
-### Production Build
-
-```bash
-# Install dependencies without dev packages
-composer install --no-dev --optimize-autoloader
-
-# Build optimized frontend
-npm run build
-
-# Warm cache
-php bin/console cache:warmup --env=prod
-```
-
-### Nginx Configuration
-
-See `_server/nginx.conf` for a sample Nginx configuration.
-
-### Supervisor Configuration
-
-See `_server/supervisord.conf` for background worker management.
-
+This project is licensed under the GPL-3.0 License.

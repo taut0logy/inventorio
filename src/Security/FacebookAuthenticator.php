@@ -55,6 +55,9 @@ class FacebookAuthenticator extends OAuth2Authenticator implements Authenticatio
                 $existingUser = $this->userRepository->findOneByOAuth('facebook', $facebookId);
 
                 if ($existingUser) {
+                    // Always sync avatar
+                    $existingUser->setAvatarUrl($facebookUser->getPictureUrl());
+                    $this->entityManager->flush();
                     return $existingUser;
                 }
 

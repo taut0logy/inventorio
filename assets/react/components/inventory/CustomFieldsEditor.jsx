@@ -12,7 +12,7 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
     useSortable,
-    verticalListSortingStrategy,
+    rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
@@ -275,7 +275,7 @@ export default function CustomFieldsEditor({ value, onChange }) {
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
             >
-                <SortableContext items={order} strategy={verticalListSortingStrategy}>
+                <SortableContext items={order} strategy={rectSortingStrategy}>
                     {orderedFields.map((field) => (
                         <SortableField
                             key={field.key}

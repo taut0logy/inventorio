@@ -158,6 +158,12 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                     'customString2' => ['enabled' => true, 'label' => 'Condition', 'visible' => true],
                     'customNumber1' => ['enabled' => true, 'label' => 'Asset Value', 'visible' => true],
                 ],
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ITEM-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ],
              // 3. Vehicles (Public, Date ID)
             [
@@ -197,6 +203,12 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                     'customNumber1' => ['enabled' => true, 'label' => 'Year', 'visible' => true],
                     'customNumber2' => ['enabled' => true, 'label' => 'Est. Value', 'visible' => true],
                 ],
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ITEM-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ],
             // 5. Medical Supplies (Private, Shared)
             [
@@ -211,6 +223,12 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                     'customString1' => ['enabled' => true, 'label' => 'Serial', 'visible' => true],
                     'customBool1' => ['enabled' => true, 'label' => 'Calibrated', 'visible' => true],
                 ],
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ITEM-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ],
             // 6. Food (Public)
             [
@@ -220,6 +238,12 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 'category' => 'Food & Beverages',
                 'tags' => ['eco-friendly'],
                 'creator' => 6, // Rachel
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ITEM-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ],
             // 7. Tools (Public)
             [
@@ -229,6 +253,12 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 'category' => 'Tools & Equipment',
                 'tags' => ['used', 'heavy'],
                 'creator' => 5, // Mike
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ITEM-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ],
              // 8. Clothing (Private, Personal)
             [
@@ -238,6 +268,12 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 'category' => 'Clothing & Accessories',
                 'tags' => ['vintage', 'fashion'],
                 'creator' => 3, // John
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ITEM-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ],
             // 9. Conference Attendees (Showcasing Validation & Select)
             [

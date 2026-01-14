@@ -90,11 +90,10 @@ class Inventory
         $this->likedBy = new ArrayCollection();
         // Default ID Config
         $this->idGenerationConfig = [
-            'type' => 'manual', // manual, auto
-            'prefix' => '',
-            'separator' => '-',
-            'minDigits' => 4,
-            'nextSequence' => 1
+            'elements' => [
+                ['type' => 'fixed', 'value' => 'ID-'],
+                ['type' => 'sequence', 'minDigits' => 4]
+            ]
         ];
     }
 

@@ -50,6 +50,9 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
                 $existingUser = $this->userRepository->findOneByOAuth('google', $googleId);
 
                 if ($existingUser) {
+                    // Always sync avatar
+                    $existingUser->setAvatarUrl($googleUser->getAvatar());
+                    $this->entityManager->flush();
                     return $existingUser;
                 }
 

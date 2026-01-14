@@ -190,7 +190,8 @@ export default function CustomIdBuilder({ value, onChange }) {
         }
         // Default: simple sequence
         return [
-            { id: 'el-0', type: 'sequence', minDigits: 4 }
+            { id: 'el-0', type: 'fixed', value: 'ID-' },
+            { id: 'el-1', type: 'sequence', minDigits: 4 }
         ];
     });
 
