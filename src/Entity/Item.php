@@ -101,6 +101,15 @@ class Item
 
     #[ORM\Column(nullable: true)]
     private ?bool $customBool3Value = null;
+    
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $customSelect1Value = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $customSelect2Value = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $customSelect3Value = null;
 
     // ========================================
     // Denormalized / Computed Fields
@@ -268,6 +277,14 @@ class Item
     public function setCustomBool2Value(?bool $value): static { $this->customBool2Value = $value; return $this; }
     public function getCustomBool3Value(): ?bool { return $this->customBool3Value; }
     public function setCustomBool3Value(?bool $value): static { $this->customBool3Value = $value; return $this; }
+
+    // Select fields
+    public function getCustomSelect1Value(): ?string { return $this->customSelect1Value; }
+    public function setCustomSelect1Value(?string $value): static { $this->customSelect1Value = $value; return $this; }
+    public function getCustomSelect2Value(): ?string { return $this->customSelect2Value; }
+    public function setCustomSelect2Value(?string $value): static { $this->customSelect2Value = $value; return $this; }
+    public function getCustomSelect3Value(): ?string { return $this->customSelect3Value; }
+    public function setCustomSelect3Value(?string $value): static { $this->customSelect3Value = $value; return $this; }
 
     // ========================================
     // Like Count

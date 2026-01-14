@@ -40,6 +40,13 @@ import {
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { LinkPreview } from '@/components/ui/link-preview';
+import ReactMarkdown from 'react-markdown';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useMercure } from '@/hooks/useMercure';
 import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
@@ -57,7 +64,8 @@ const DEFAULT_ORDER = [
     'number1', 'number2', 'number3',
     'text1', 'text2', 'text3',
     'link1', 'link2', 'link3',
-    'bool1', 'bool2', 'bool3'
+    'bool1', 'bool2', 'bool3',
+    'select1', 'select2', 'select3'
 ];
 
 // Default: only first 3 visible
@@ -281,6 +289,7 @@ export default function InventoryShowPage({
                 text1: 'Custom Text 1', text2: 'Custom Text 2', text3: 'Custom Text 3',
                 link1: 'Custom Link 1', link2: 'Custom Link 2', link3: 'Custom Link 3',
                 bool1: 'Custom Boolean 1', bool2: 'Custom Boolean 2', bool3: 'Custom Boolean 3',
+                select1: 'Custom Select 1', select2: 'Custom Select 2', select3: 'Custom Select 3',
             };
             return { key, label: getLabel(key, defaults[key] || key) };
         });
@@ -294,6 +303,7 @@ export default function InventoryShowPage({
             text1: 'customText1Value', text2: 'customText2Value', text3: 'customText3Value',
             link1: 'customLink1Value', link2: 'customLink2Value', link3: 'customLink3Value',
             bool1: 'customBool1Value', bool2: 'customBool2Value', bool3: 'customBool3Value',
+            select1: 'customSelect1Value', select2: 'customSelect2Value', select3: 'customSelect3Value',
         };
         const prop = propMap[key];
         return prop ? item[prop] : null;
@@ -438,6 +448,7 @@ export default function InventoryShowPage({
         <div className="min-h-[calc(100vh-4rem)] bg-background pb-10 px-4 md:px-6 lg:px-8">
             {/* Sticky Header */}
             <header className="sticky top-14 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+
                 <div className="container mx-auto px-4 py-3 min-h-16 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
                         <Button variant="ghost" size="icon" asChild className="shrink-0">
@@ -540,6 +551,24 @@ export default function InventoryShowPage({
             </header>
 
             <main className="container mx-auto px-4 py-4">
+                {inventory.description && (
+                    <Accordion type="single" collapsible className="mb-6 w-full border rounded-lg bg-card shadow-sm">
+                        <AccordionItem value="description" className="border-b-0 px-4">
+                            <AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl">📝</span>
+                                    {t('inventory.about', 'About this Inventory')}
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pb-4 pt-1">
+                                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                                    <ReactMarkdown>{inventory.description}</ReactMarkdown>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                )}
+
                 <Tabs defaultValue="items" className="">
                     <TabsList>
                         <TabsTrigger value="items" className="gap-2">

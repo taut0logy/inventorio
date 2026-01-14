@@ -107,7 +107,7 @@ export default function GlobalSearch({ className = '' }) {
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsOpen(true)}
                     onKeyDown={handleKeyDown}
-                    className="pl-9 pr-8 w-[280px] lg:w-[320px]"
+                    className="pl-9 pr-8 w-full"
                 />
                 {query && (
                     <button

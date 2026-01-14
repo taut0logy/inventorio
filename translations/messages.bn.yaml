@@ -141,12 +141,19 @@ auth.privacy: গোপনীয়তা নীতি
 auth.already_account: ইতিমধ্যে একটি অ্যাকাউন্ট আছে?
 auth.sign_in_link: প্রবেশ করুন
 
+# Error
+error.conflict: "দ্বন্দ্ব সনাক্ত হয়েছে: এই আইটেমটি অন্য ব্যবহারকারী দ্বারা পরিবর্তন করা হয়েছে। পৃষ্ঠাটি পুনরায় লোড হবে।"
+
 # Validation
 val.email_required: ইমেল প্রয়োজন
 val.email_invalid: একটি বৈধ ইমেল ঠিকানা লিখুন
 val.password_required: পাসওয়ার্ড প্রয়োজন
 val.name_required: নাম প্রয়োজন
 val.name_min: নাম অন্তত ২ অক্ষরের হতে হবে
+val.field_required: "{label} আবশ্যক"
+val.field_regex: "{label} এর বিন্যাস সঠিক নয়"
+val.field_min: "{label} অন্তত {min} হতে হবে"
+val.field_max: "{label} সর্বোচ্চ {max} হতে হবে"
 
 # Auth - Verification
 auth.verify.pending.title: আপনার ইমেল যাচাই করুন

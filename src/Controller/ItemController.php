@@ -103,6 +103,74 @@ class ItemController extends AbstractController
         }
     }
 
+    private function validateCustomFields(array $data, Inventory $inventory): array
+    {
+        $errors = [];
+        $config = $inventory->getCustomFieldsConfig();
+        $fields = $config['fields'] ?? [];
+
+        // Mapping from config key to data key
+        $keyMap = [
+            'string1' => 'customString1', 'string2' => 'customString2', 'string3' => 'customString3',
+            'number1' => 'customNumber1', 'number2' => 'customNumber2', 'number3' => 'customNumber3',
+            'text1' => 'customText1', 'text2' => 'customText2', 'text3' => 'customText3',
+            'link1' => 'customLink1', 'link2' => 'customLink2', 'link3' => 'customLink3',
+            'select1' => 'customSelect1', 'select2' => 'customSelect2', 'select3' => 'customSelect3',
+            'bool1' => 'customBool1', 'bool2' => 'customBool2', 'bool3' => 'customBool3',
+        ];
+
+        foreach ($fields as $key => $fieldConfig) {
+            // Skip if hidden or not configured
+            if (($fieldConfig['hidden'] ?? false)) {
+                continue;
+            }
+
+            $dataKey = $keyMap[$key] ?? null;
+            if (!$dataKey) continue;
+
+            $value = $data[$dataKey] ?? null;
+            $label = $fieldConfig['label'] ?? $key;
+
+            // Required Check
+            if (($fieldConfig['required'] ?? false) && ($value === '' || $value === null)) {
+                $errors[] = "$label is required.";
+                continue; // Stop further validation for this field if missing
+            }
+
+            if ($value === '' || $value === null) {
+                continue; // Skip other checks if empty and not required
+            }
+
+            // Regex Check (String, Text, Select)
+            if (!empty($fieldConfig['regex']) && in_array(substr($key, 0, 4), ['stri', 'text', 'sele'])) {
+                if (@preg_match('/' . str_replace('/', '\/', $fieldConfig['regex']) . '/', $value) !== 1) {
+                    $errors[] = "$label format is invalid.";
+                }
+            }
+
+            // Min/Max Check (Number)
+            if (substr($key, 0, 6) === 'number') {
+                $numVal = (float)$value;
+                if (isset($fieldConfig['min']) && $fieldConfig['min'] !== '' && $numVal < (float)$fieldConfig['min']) {
+                    $errors[] = "$label must be at least {$fieldConfig['min']}.";
+                }
+                if (isset($fieldConfig['max']) && $fieldConfig['max'] !== '' && $numVal > (float)$fieldConfig['max']) {
+                    $errors[] = "$label must be at most {$fieldConfig['max']}.";
+                }
+            }
+            
+            // Select Options Check
+            if (substr($key, 0, 6) === 'select' && !empty($fieldConfig['options'])) {
+                $validOptions = array_map('trim', explode(',', $fieldConfig['options']));
+                if (!in_array($value, $validOptions)) {
+                     $errors[] = "$label must be one of the valid options.";
+                }
+            }
+        }
+
+        return $errors;
+    }
+
     #[Route('/new/{inventory}', name: 'app_item_new', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function new(
@@ -140,6 +208,12 @@ class ItemController extends AbstractController
         // Check for duplicate Custom ID
         if ($itemRepository->customIdExists($inventory, $data['customId'])) {
             return $this->json(['error' => "Custom ID '{$data['customId']}' already exists. Please try again or check settings."], 409);
+        }
+
+        // Custom Field Validation
+        $validationErrors = $this->validateCustomFields($data, $inventory);
+        if (!empty($validationErrors)) {
+             return $this->json(['error' => implode("\n", $validationErrors)], 400); // 400 Bad Request
         }
 
         $item = new Item();
@@ -222,6 +296,12 @@ class ItemController extends AbstractController
                 return $this->json(['error' => 'Custom ID already exists'], 400);
             }
             $item->setCustomId($data['customId']);
+        }
+
+        // Custom Field Validation
+        $validationErrors = $this->validateCustomFields($data, $item->getInventory());
+        if (!empty($validationErrors)) {
+             return $this->json(['error' => implode("\n", $validationErrors)], 400); // 400 Bad Request
         }
 
         // Helper to convert empty strings to null for numeric fields

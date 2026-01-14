@@ -113,7 +113,7 @@ export default function Header({
                 {/* Right Side */}
                 <div className="flex flex-1 items-center justify-end space-x-2">
                     {/* Global Search */}
-                    <GlobalSearch className="hidden lg:block" />
+                    <GlobalSearch className="hidden lg:block w-[320px]" />
 
                     {/* Mobile Search Toggle */}
                     <Button 
@@ -218,15 +218,7 @@ export default function Header({
                         <SheetContent side="right" className="w-80 px-4 py-6">
                             <div className="flex flex-col space-y-4 mt-6">
                                 {/* Mobile Search */}
-                                <form action={searchPath} method="get" className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input 
-                                        type="search" 
-                                        name="q"
-                                        placeholder={t('nav.search', 'Search...')} 
-                                        className="pl-9"
-                                    />
-                                </form>
+                                <GlobalSearch className="w-full" />
 
                                 {/* Mobile Nav Links */}
                                 <NavLinks className="flex flex-col space-y-3 text-lg font-medium" />
@@ -274,16 +266,7 @@ export default function Header({
             {/* Mobile Search Bar (expandable) */}
             {isSearchOpen && (
                 <div className="lg:hidden border-t p-2">
-                    <form action={searchPath} method="get" className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            type="search" 
-                            name="q"
-                            placeholder={t('nav.search', 'Search inventories...')} 
-                            className="pl-9"
-                            autoFocus
-                        />
-                    </form>
+                    <GlobalSearch className="w-full" />
                 </div>
             )}
         </header>

@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { GripVertical, Eye, EyeOff } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 // All available field slots
 const ALL_FIELDS = [
@@ -35,6 +36,9 @@ const ALL_FIELDS = [
     { key: 'link1', type: 'Link', defaultLabel: 'Custom Link 1' },
     { key: 'link2', type: 'Link', defaultLabel: 'Custom Link 2' },
     { key: 'link3', type: 'Link', defaultLabel: 'Custom Link 3' },
+    { key: 'select1', type: 'Select', defaultLabel: 'Custom Select 1' },
+    { key: 'select2', type: 'Select', defaultLabel: 'Custom Select 2' },
+    { key: 'select3', type: 'Select', defaultLabel: 'Custom Select 3' },
     { key: 'bool1', type: 'Boolean', defaultLabel: 'Custom Boolean 1' },
     { key: 'bool2', type: 'Boolean', defaultLabel: 'Custom Boolean 2' },
     { key: 'bool3', type: 'Boolean', defaultLabel: 'Custom Boolean 3' },
@@ -61,50 +65,139 @@ function SortableField({ id, field, config, onUpdate }) {
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex items-center gap-3 p-3 border rounded-md bg-card mb-2 ${!isVisible ? 'opacity-50' : ''}`}
+            className={`group p-3 sm:p-4 border rounded-lg bg-card mb-3 transition-colors ${!isVisible ? 'opacity-60 bg-muted/30' : 'hover:border-primary/50'}`}
         >
-            <button {...attributes} {...listeners} className="cursor-grab p-1 hover:bg-muted rounded">
-                <GripVertical className="h-4 w-4 text-muted-foreground" />
-            </button>
-
-            <Checkbox
-                checked={isVisible}
-                onCheckedChange={(checked) => onUpdate(field.key, { ...config, hidden: !checked })}
-            />
-
-            <div className="flex-1 grid grid-cols-2 gap-2">
-                <div>
-                    <Label className="text-xs text-muted-foreground">Label</Label>
-                    <Input
-                        value={config?.label || ''}
-                        onChange={(e) => onUpdate(field.key, { ...config, label: e.target.value })}
-                        placeholder={field.defaultLabel}
-                        className="h-8"
-                    />
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-start">
+                
+                {/* Drag Handle & Visibility - Mobile: Row, Desktop: Left Column */}
+                <div className="flex items-center justify-between sm:justify-start sm:w-auto gap-2">
+                    <div className="flex items-center gap-2">
+                        <button 
+                            {...attributes} 
+                            {...listeners} 
+                            className="cursor-grab p-1.5 hover:bg-muted rounded-md touch-none active:cursor-grabbing"
+                            title="Drag to reorder"
+                        >
+                            <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        </button>
+                        <Checkbox
+                            checked={isVisible}
+                            onCheckedChange={(checked) => onUpdate(field.key, { ...config, hidden: !checked })}
+                            title="Toggle visibility"
+                        />
+                    </div>
+                    {/* Mobile-only type badge */}
+                    <span className="sm:hidden text-[10px] uppercase font-bold tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                        {field.type}
+                    </span>
                 </div>
-                <div>
-                    <Label className="text-xs text-muted-foreground">Description (tooltip)</Label>
-                    <Input
-                        value={config?.description || ''}
-                        onChange={(e) => onUpdate(field.key, { ...config, description: e.target.value })}
-                        placeholder="Hint for users..."
-                        className="h-8"
-                    />
+
+                {/* Main Inputs Area */}
+                <div className="flex-1 space-y-3 min-w-0">
+                    
+                    {/* Top Row: Label & Description */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_2fr] gap-3">
+                        <div className="space-y-1">
+                            <Label className="text-xs font-medium text-muted-foreground">Label</Label>
+                            <Input
+                                value={config?.label || ''}
+                                onChange={(e) => onUpdate(field.key, { ...config, label: e.target.value })}
+                                placeholder={field.defaultLabel}
+                                className="h-9 bg-background"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-xs font-medium text-muted-foreground">Description (Tooltip)</Label>
+                            <Input
+                                value={config?.description || ''}
+                                onChange={(e) => onUpdate(field.key, { ...config, description: e.target.value })}
+                                placeholder="Helper text for users..."
+                                className="h-9 bg-background"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Validation Limits Row - Only show if visible */}
+                    <div className={`pt-3 mt-1 border-t grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-end animate-in fade-in slide-in-from-top-1 ${!isVisible ? 'hidden' : ''}`}>
+                        
+                        {/* Required Checkbox */}
+                        <div className="flex items-center gap-2 h-9">
+                            <Checkbox 
+                                id={`req-${field.key}`}
+                                checked={config?.required || false}
+                                onCheckedChange={(checked) => onUpdate(field.key, { ...config, required: checked })}
+                            />
+                            <Label htmlFor={`req-${field.key}`} className="text-sm cursor-pointer select-none">Required Field</Label>
+                        </div>
+
+                        {/* Regex (String/Text/Select) */}
+                        {(field.type === 'String' || field.type === 'Text' || field.type === 'Select') && (
+                            <div className="space-y-1 xl:col-span-2">
+                                <Label className="text-xs text-muted-foreground">Validation Regex</Label>
+                                <Input 
+                                    value={config?.regex || ''}
+                                    onChange={(e) => onUpdate(field.key, { ...config, regex: e.target.value })}
+                                    placeholder="e.g. ^[A-Z]+$"
+                                    className="h-8 text-xs font-mono bg-background"
+                                />
+                            </div>
+                        )}
+
+                        {/* Min/Max (Number) */}
+                        {field.type === 'Number' && (
+                            <>
+                                <div className="space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Minimum Value</Label>
+                                    <Input 
+                                        type="number"
+                                        value={config?.min ?? ''}
+                                        onChange={(e) => onUpdate(field.key, { ...config, min: e.target.value })}
+                                        className="h-8 text-xs bg-background"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Maximum Value</Label>
+                                    <Input 
+                                        type="number"
+                                        value={config?.max ?? ''}
+                                        onChange={(e) => onUpdate(field.key, { ...config, max: e.target.value })}
+                                        className="h-8 text-xs bg-background"
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                     
+                    {/* Select Options - Full Width */}
+                     {field.type === 'Select' && isVisible && (
+                        <div className="space-y-1 pt-1 animate-in fade-in">
+                            <Label className="text-xs text-muted-foreground">Options (comma-separated)</Label>
+                            <Textarea 
+                                value={config?.options || ''}
+                                onChange={(e) => onUpdate(field.key, { ...config, options: e.target.value })}
+                                placeholder="Option 1, Option 2, Option 3..."
+                                className="min-h-[60px] text-xs bg-background resize-y"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Side Actions / Badge (Desktop) */}
+                <div className="hidden sm:flex flex-col items-end gap-2 pl-2 border-l">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground bg-muted/50 px-2 py-1 rounded w-full text-center">
+                        {field.type}
+                    </span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title={isVisible ? "Hide field" : "Show field"}
+                        onClick={() => onUpdate(field.key, { ...config, hidden: !config?.hidden })}
+                    >
+                        {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    </Button>
                 </div>
             </div>
-
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                {field.type}
-            </span>
-
-            <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => onUpdate(field.key, { ...config, hidden: !config?.hidden })}
-            >
-                {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-            </Button>
         </div>
     );
 }

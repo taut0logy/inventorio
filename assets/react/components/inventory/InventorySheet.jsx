@@ -238,7 +238,7 @@ export default function InventorySheet({
                 </SheetTrigger>
             )}
 
-            <SheetContent side="right" className="sm:max-w-[540px] w-full overflow-y-auto">
+            <SheetContent side="right" className="w-full max-w-none sm:max-w-2xl overflow-y-auto">
                 <SheetHeader>
                     <SheetTitle>
                         {isEdit 
@@ -255,7 +255,7 @@ export default function InventorySheet({
                     {renderAutoSaveStatus()}
                 </SheetHeader>
                 
-                <form onSubmit={handleSubmit} className="space-y-6 mt-6 px-4 md:px-6">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 px-4 md:px-6">
                     <div className="space-y-2">
                         <Label htmlFor="title">
                             {t('inventory.form.title', 'Title')} <span className="text-destructive">*</span>
@@ -294,7 +294,7 @@ export default function InventorySheet({
                         </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="description">
                             Description (Markdown supported)
                         </Label>
@@ -307,7 +307,7 @@ export default function InventorySheet({
                         />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                         <Label>Tags</Label>
                         <TagInput 
                             value={formData.tags}
@@ -316,7 +316,7 @@ export default function InventorySheet({
                         />
                     </div>
 
-                    <div className="flex items-center justify-between border p-4 rounded-lg">
+                    <div className="flex items-center justify-between border p-4 rounded-lg md:col-span-2">
                         <div className="space-y-0.5">
                             <Label htmlFor="isPublic" className="text-base">
                                 {t('inventory.form.public', 'Public Inventory')}
@@ -332,7 +332,7 @@ export default function InventorySheet({
                         />
                     </div>
 
-                    <SheetFooter className="mt-8 gap-2">
+                    <SheetFooter className="gap-2 md:col-span-2">
                         <SheetClose asChild>
                             <Button type="button" variant="outline">
                                 {t('inventory.form.cancel', 'Cancel')}

@@ -25,7 +25,6 @@ nav.register: Register
 home.hero.badge: Schema-Driven Inventory Management
 home.hero.title: Manage Your Inventory
 home.hero.title_line1: Manage Your Inventory
-home.hero.title_highlight: Effortlessly
 home.hero.highlight: Effortlessly
 home.hero.subtitle: Create custom inventories with flexible fields, unique ID formats, and powerful organization tools. Built for teams who need control over their data.
 home.hero.create: Create Inventory
@@ -141,12 +140,19 @@ auth.privacy: Privacy Policy
 auth.already_account: Already have an account?
 auth.sign_in_link: Sign in
 
+# Error
+error.conflict: "Conflict detected: This item has been modified by another user. The page will reload."
+
 # Validation
 val.email_required: Email is required
 val.email_invalid: Please enter a valid email address
 val.password_required: Password is required
 val.name_required: Name is required
 val.name_min: Name must be at least 2 characters
+val.field_required: "{label} is required"
+val.field_regex: "{label} format is invalid"
+val.field_min: "{label} must be at least {min}"
+val.field_max: "{label} must be at most {max}"
 
 # Auth - Verification
 auth.verify.pending.title: Verify your email

@@ -238,6 +238,29 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 'category' => 'Clothing & Accessories',
                 'tags' => ['vintage', 'fashion'],
                 'creator' => 3, // John
+            ],
+            // 9. Conference Attendees (Showcasing Validation & Select)
+            [
+                'title' => 'Conference Attendees 2024',
+                'description' => "Registration list for the **Annual Tech Summit**. Uses extensive field validation.",
+                'isPublic' => true,
+                'category' => 'Books & Media', // Placeholder
+                'creator' => 1, // Alex
+                'customFields' => [
+                    'order' => ['string1', 'string2', 'number1', 'select1'],
+                    'fields' => [
+                        'string1' => ['label' => 'Full Name', 'required' => true],
+                        'string2' => ['label' => 'Email', 'required' => true, 'regex' => '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$', 'description' => 'Official work email'],
+                        'number1' => ['label' => 'Age', 'min' => 18, 'max' => 99],
+                        'select1' => ['label' => 'Dietary Preference', 'options' => 'None, Vegetarian, Vegan, Gluten-Free, Halal', 'required' => true],
+                    ]
+                ],
+                'idConfig' => [
+                    'elements' => [
+                        ['type' => 'fixed', 'value' => 'ATT-'],
+                        ['type' => 'sequence', 'minDigits' => 4],
+                    ]
+                ],
             ]
         ];
 
@@ -313,13 +336,22 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 ]
             ],
              // Inventory 2: Vehicles
-             [
+            [
                 'inv' => 2,
                 'items' => [
                     ['Ford F-150', 'Mike', 45000, false],
                     ['Toyota Camry', 'Sales', 25000, true],
                     ['Honda Civic', 'Pool', 15000, true],
                     ['Chevy Bolt', 'Eco Team', 10000, false],
+                ]
+            ],
+            // Inventory 8: Conference Attendees
+            [
+                'inv' => 8,
+                'items' => [
+                    ['ATT-0001', 'John Doe', 'john.doe@example.com', 34, 'Vegetarian'],
+                    ['ATT-0002', 'Jane Smith', 'jane.smith@work.org', 29, 'None'],
+                    ['ATT-0003', 'Bob Wilson', 'bob@tech.net', 45, 'Vegan'],
                 ]
             ]
         ];
@@ -375,6 +407,19 @@ class DemoFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                     $item->setCustomString2Value($rawItem[1]); // Driver
                     $item->setCustomNumber1Value($rawItem[2]); // Mileage
                     $item->setCustomBool1Value($rawItem[3]); // Service Due
+                } elseif ($group['inv'] === 8) {
+                    // Conference: ID, Name, Email, Age, Diet
+                    // Items array: [ID, Name, Email, Age, Diet]
+                    // ID is handled below but let's override or let it generate? 
+                    // The raw item has explicit ID at index 0, Name at 1...
+                    // My general logic above generates ID. I should overwrite it if provided, or adjust logic.
+                    // Let's use specific logic here.
+                    
+                    $item->setCustomId($rawItem[0]); 
+                    $item->setCustomString1Value($rawItem[1]); // Name
+                    $item->setCustomString2Value($rawItem[2]); // Email
+                    $item->setCustomNumber1Value($rawItem[3]); // Age
+                    $item->setCustomSelect1Value($rawItem[4]); // Diet
                 }
 
                 $manager->persist($item);
