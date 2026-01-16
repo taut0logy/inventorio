@@ -57,7 +57,6 @@ class ActivityRepository extends ServiceEntityRepository
             ->setParameter('inv', $inventory)
             ->orderBy('a.createdAt', 'DESC');
 
-        // Hide access-related events from non-collaborators
         if (!$isCollaborator) {
             $qb->andWhere('a.type NOT IN (:accessTypes)')
                ->setParameter('accessTypes', [
@@ -69,18 +68,15 @@ class ActivityRepository extends ServiceEntityRepository
                ]);
         }
 
-        // Type filter
         if (!empty($types)) {
             $qb->andWhere('a.type IN (:types)')
                ->setParameter('types', $types);
         }
 
-        // Count total (reset orderBy to avoid GROUP BY conflicts)
         $countQb = clone $qb;
         $countQb->resetDQLPart('orderBy');
         $total = (int) $countQb->select('COUNT(a.id)')->getQuery()->getSingleScalarResult();
 
-        // Get paginated results
         $activities = $qb->setFirstResult(($page - 1) * $limit)
                          ->setMaxResults($limit)
                          ->getQuery()
@@ -164,5 +160,75 @@ class ActivityRepository extends ServiceEntityRepository
             ->setParameter('type', 'permission_request')
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * Find activities for a user across all their inventories with pagination
+     * Access-related events hidden unless viewer is owner/admin
+     */
+    public function findByUserPaginated(
+        User $user,
+        bool $accessEvent,
+        array $types = [],
+        int $page = 1,
+        int $limit = 20
+    ): array {
+        $qb = $this->createQueryBuilder('a')
+            ->where('a.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('a.createdAt', 'DESC');
+
+        if (!$accessEvent) {
+            $qb->andWhere('a.type NOT IN (:accessTypes)')
+               ->setParameter('accessTypes', [
+                   'permission_request',
+                   'permission_granted',
+                   'permission_denied',
+                   'collaborator_added',
+                   'collaborator_removed'
+               ]);
+        }
+
+        if (!empty($types)) {
+            $qb->andWhere('a.type IN (:types)')
+               ->setParameter('types', $types);
+        }
+
+        $countQb = clone $qb;
+        $countQb->resetDQLPart('orderBy');
+        $total = (int) $countQb->select('COUNT(a.id)')->getQuery()->getSingleScalarResult();
+
+        $activities = $qb->setFirstResult(($page - 1) * $limit)
+                         ->setMaxResults($limit)
+                         ->getQuery()
+                         ->getResult();
+
+        return [
+            'data' => $activities,
+            'total' => $total,
+            'pages' => (int) ceil($total / $limit),
+            'page' => $page
+        ];
+    }
+
+    /**
+     * Get aggregated stats per activity type for a user
+     */
+    public function getStatsForUser(User $user): array
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->select('a.type, COUNT(a.id) as count')
+            ->where('a.user = :user')
+            ->setParameter('user', $user)
+            ->groupBy('a.type');
+
+        $results = $qb->getQuery()->getResult();
+
+        $stats = [];
+        foreach ($results as $row) {
+            $stats[$row['type']] = (int) $row['count'];
+        }
+
+        return $stats;
     }
 }

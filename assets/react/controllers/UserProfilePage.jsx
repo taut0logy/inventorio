@@ -24,6 +24,7 @@ import { TrashToggle } from '@/components/common/TrashToggle';
 import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
 import box from '@/../images/box-icon.svg';
+import UserActivityTab from '@/components/profile/UserActivityTab';
 
 export default function UserProfilePage({
     profileUser,
@@ -326,16 +327,10 @@ export default function UserProfilePage({
                 </TabsContent>
 
                 <TabsContent value="activity">
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <Activity className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                                <p className="text-muted-foreground">
-                                    {t('profile.activity_coming_soon', 'Activity log coming soon')}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <UserActivityTab
+                        userId={profileUser.id}
+                        canSeeAccessEvents={isOwner || isAdmin}
+                    />
                 </TabsContent>
             </Tabs>
         </div>

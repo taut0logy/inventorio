@@ -1,29 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import logo from '@/../images/logo.png';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import GlobalSearch from '@/components/search/GlobalSearch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
-    DropdownMenuLabel, 
-    DropdownMenuSeparator, 
-    DropdownMenuTrigger 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { 
-    Package, 
-    Search, 
-    Menu, 
-    User, 
-    Settings, 
-    LogOut, 
-    Moon, 
-    Sun, 
+import {
+    Package,
+    Search,
+    Menu,
+    User,
+    Settings,
+    LogOut,
+    Moon,
+    Sun,
     Globe,
     LayoutDashboard,
     Shield
@@ -31,8 +30,8 @@ import {
 
 import { t } from '@/lib/i18n';
 
-export default function Header({ 
-    user, 
+export default function Header({
+    user,
     locale = 'en',
     theme = 'light',
     homePath = '/',
@@ -50,6 +49,21 @@ export default function Header({
 
     const isLoggedIn = !!user;
     const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+
+    useEffect(() => {
+        const f = () => {
+            const pageData = document.querySelector('[data-user-id]');
+            const pageId = pageData?.getAttribute('data-user-id') || null;
+            const id = user?.id || null;
+
+            if ((id && !pageId) || (!id && pageId)) {
+                window.location.reload();
+            }
+        };
+
+        document.addEventListener('turbo:render', f);
+        return () => document.removeEventListener('turbo:render', f);
+    }, [user]);
 
     const toggleTheme = () => {
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -70,16 +84,16 @@ export default function Header({
 
     const NavLinks = ({ className = '', onClick = () => {} }) => (
         <nav className={className}>
-            <a 
-                href={homePath} 
+            <a
+                href={homePath}
                 onClick={onClick}
                 className="transition-colors hover:text-foreground text-foreground/60"
             >
                 {t('nav.home', 'Home')}
             </a>
             {isLoggedIn && (
-                <a 
-                    href={myInventoriesPath} 
+                <a
+                    href={myInventoriesPath}
                     onClick={onClick}
                     className="transition-colors hover:text-foreground text-foreground/60"
                 >
@@ -87,8 +101,8 @@ export default function Header({
                 </a>
             )}
             {isAdmin && (
-                <a 
-                    href={adminPath} 
+                <a
+                    href={adminPath}
                     onClick={onClick}
                     className="transition-colors hover:text-foreground text-foreground/60"
                 >
@@ -116,9 +130,9 @@ export default function Header({
                     <GlobalSearch className="hidden lg:block w-[320px]" />
 
                     {/* Mobile Search Toggle */}
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         className="lg:hidden"
                         onClick={() => setIsSearchOpen(!isSearchOpen)}
                     >
@@ -190,7 +204,7 @@ export default function Header({
                                 )}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
-                                    <a href={logoutPath} className="cursor-pointer text-destructive">
+                                    <a href={logoutPath} data-turbo="false" className="cursor-pointer text-destructive">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         {t('nav.logout', 'Log out')}
                                     </a>
@@ -241,7 +255,7 @@ export default function Header({
                                             {currentTheme === 'light' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                                             {t('nav.dark_mode', 'Dark Mode')}
                                         </Label>
-                                        <Switch 
+                                        <Switch
                                             id="mobile-theme"
                                             checked={currentTheme === 'dark'}
                                             onCheckedChange={toggleTheme}

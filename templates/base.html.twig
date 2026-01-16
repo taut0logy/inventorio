@@ -6,6 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Inventorio{% endblock %}</title>
         <link rel="icon" href="{{ asset('build/images/logo.png') }}">
+        <meta name="turbo-cache-control" content="no-preview">
+        <meta name="turbo-refresh-method" content="replace">
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
@@ -13,9 +15,9 @@
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
-    <body class="min-h-screen bg-background text-foreground">
+    <body class="min-h-screen bg-background text-foreground" {% if app.user %}data-user-id="{{ app.user.id }}"{% endif %}>
         <div class="flex flex-col min-h-screen">
-        <div class="sticky top-0 z-50" {{ react_component('Header', {
+        <div id="header-container" data-turbo-permanent class="sticky top-0 z-50" {{ react_component('Header', {
             user: app.user ? {
                 id: app.user.id ~ '',
                 name: app.user.name,
@@ -34,7 +36,7 @@
             adminPath: is_granted('ROLE_ADMIN') ? path('app_admin') : '#',
             myInventoriesPath: app.user ? path('app_inventory_index') : '#',
             searchPath: '#'
-        }) }}>
+        }, {permanent: true}) }}>
             <script>
                 window.INVENTORY_TRANSLATIONS = {
                     // General
@@ -437,7 +439,7 @@
         </div>
 
         {# React Flash Messages & Toaster #}
-        <div {{ react_component('FlashHandler', { messages: app.flashes }) }}></div>
+        <div id="flash-handler" data-turbo-permanent {{ react_component('FlashHandler', { messages: app.flashes }, {permanent: true}) }}></div>
 
         {# Main Content #}
         <main class="flex-1">
@@ -445,12 +447,12 @@
         </main>
         </div>
 
-        <div {{ react_component('Footer', {
+        <div id="footer-container" data-turbo-permanent {{ react_component('Footer', {
             locale: app.request.locale,
             translations: {
                 app_name: 'app_name'|trans
             }
-        }) }}>
+        }, {permanent: true}) }}>
         </div>
     </body>
 </html>

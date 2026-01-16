@@ -9,7 +9,7 @@ export default function Footer({ locale = 'en' }) {
 
     return (
         <footer className="border-t bg-background">
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
+            <div className="container mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-1">

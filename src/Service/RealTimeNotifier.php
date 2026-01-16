@@ -44,31 +44,28 @@ class RealTimeNotifier
     }
 
     /**
-     * Publish a new activity
+     * Publish a new activity (to both inventory and user topics)
      */
     public function notifyNewActivity(string $inventoryId, object $activity): void
     {
-        // Serialize manually or use groups to avoid circular refs/too much data
-        $data = [
-            'id' => $activity->getId(),
-            'type' => $activity->getType(),
-            'description' => $activity->getType(), // Or translated description if possible, but frontend handles translation
-            'user' => [
-                'fullName' => $activity->getUser()->getName(),
-                'email' => $activity->getUser()->getEmail(),
-                'avatar' => $activity->getUser()->getAvatarUrl()
-            ],
-            'createdAt' => $activity->getCreatedAt()->format('c'),
-            'metadata' => $activity->getMetadata()
-        ];
+        $data = $this->formatActivityData($activity);
 
-        $update = new Update(
+        // Publish to inventory topic
+        $inventoryUpdate = new Update(
             "/inventory/{$inventoryId}/activities",
             json_encode(['type' => 'activity', 'data' => $data]),
             false
         );
+        $this->hub->publish($inventoryUpdate);
 
-        $this->hub->publish($update);
+        // Also publish to user topic
+        $userId = $activity->getUser()->getId()->toRfc4122();
+        $userUpdate = new Update(
+            "/user/{$userId}/activities",
+            json_encode(['type' => 'activity', 'data' => $data]),
+            false
+        );
+        $this->hub->publish($userUpdate);
     }
 
     /**
@@ -87,5 +84,28 @@ class RealTimeNotifier
         );
 
         $this->hub->publish($update);
+    }
+
+    /**
+     * Format activity data for Mercure
+     */
+    private function formatActivityData(object $activity): array
+    {
+        return [
+            'id' => $activity->getId()->toRfc4122(),
+            'type' => $activity->getType(),
+            'user' => [
+                'id' => $activity->getUser()->getId()->toRfc4122(),
+                'name' => $activity->getUser()->getName(),
+                'avatarUrl' => $activity->getUser()->getAvatarUrl()
+            ],
+            'inventory' => [
+                'id' => $activity->getInventory()->getId()->toRfc4122(),
+                'title' => $activity->getInventory()->getTitle(),
+            ],
+            'isAdminAction' => $activity->isAdminAction(),
+            'metadata' => $activity->getMetadata(),
+            'createdAt' => $activity->getCreatedAt()->format('c')
+        ];
     }
 }
