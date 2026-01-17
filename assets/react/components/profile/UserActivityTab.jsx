@@ -9,7 +9,7 @@ import {
     Activity as ActivityIcon, UserMinus, UserCheck, Package
 } from 'lucide-react';
 import { t } from '@/lib/i18n';
-import { useMercure } from '@/hooks/useMercure';
+import { useMercure } from '@/hooks/use-mercure';
 
 const ACTIVITY_TYPES = [
     { key: 'view', labelKey: 'filter.views', fallback: 'Views', icon: Eye },

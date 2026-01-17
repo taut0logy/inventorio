@@ -6,13 +6,13 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-    Eye, Heart, Plus, Pencil, Trash2, Settings, 
+import {
+    Eye, Heart, Plus, Pencil, Trash2, Settings,
     UserPlus, Check, X, Loader2, ChevronLeft, ChevronRight,
     Activity as ActivityIcon, UserMinus, UserCheck
 } from 'lucide-react';
 import { t } from '@/lib/i18n';
-import { useMercure } from '@/hooks/useMercure';
+import { useMercure } from '@/hooks/use-mercure';
 
 const ACTIVITY_TYPES = [
     { key: 'view', labelKey: 'filter.views', fallback: 'Views', icon: Eye },
@@ -35,7 +35,7 @@ function formatRelativeTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -46,7 +46,7 @@ function formatRelativeTime(dateString) {
 function getActivityText(activity) {
     const type = activity.type;
     const meta = activity.metadata || {};
-    
+
     switch (type) {
         case 'view':
             return t('activity.viewed', 'viewed this inventory');
@@ -99,7 +99,7 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
             if (activeTypes.length > 0) {
                 activeTypes.forEach(t => params.append('types[]', t));
             }
-            
+
             const res = await fetch(`/inventory/${inventoryId}/activities?${params}`);
             if (res.ok) {
                 const data = await res.json();
@@ -139,7 +139,7 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
         // Handle Activity
         if (type === 'activity') {
             const activity = data;
-            
+
             // Only prepend if it matches current filter
             if (activeTypes.length > 0 && !activeTypes.includes(activity.type)) {
                 return;
@@ -162,8 +162,8 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
     });
 
     const toggleType = (type) => {
-        setActiveTypes(prev => 
-            prev.includes(type) 
+        setActiveTypes(prev =>
+            prev.includes(type)
                 ? prev.filter(t => t !== type)
                 : [...prev, type]
         );
@@ -344,8 +344,8 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
                             {activities.map(activity => {
                                 const Icon = getActivityIcon(activity.type);
                                 return (
-                                    <div 
-                                        key={activity.id} 
+                                    <div
+                                        key={activity.id}
                                         className="flex items-center gap-3 py-3 border-b last:border-0"
                                     >
                                         <Avatar className="h-8 w-8">
@@ -356,13 +356,12 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
                                         </Avatar>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm">
-                                                <a 
+                                                <a
                                                     href={`/user/${activity.user.id}`}
-                                                    className={`font-medium hover:underline ${
-                                                        activity.isAdminAction 
-                                                            ? 'text-green-600 dark:text-green-400' 
+                                                    className={`font-medium hover:underline ${activity.isAdminAction
+                                                            ? 'text-green-600 dark:text-green-400'
                                                             : ''
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {activity.user.name}
                                                 </a>

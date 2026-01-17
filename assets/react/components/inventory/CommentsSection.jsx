@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
-import { useMercure } from '@/hooks/useMercure';
+import { useMercure } from '@/hooks/use-mercure';
 import { t } from '@/lib/i18n';
 
 export default function CommentsSection({ inventoryId, currentUser }) {
@@ -85,7 +85,7 @@ export default function CommentsSection({ inventoryId, currentUser }) {
     };
 
     // Group comments? No, requirement says "Linear".
-    
+
     return (
         <Card className="h-[480px] flex flex-col">
             <CardHeader className="border-b">
@@ -94,10 +94,10 @@ export default function CommentsSection({ inventoryId, currentUser }) {
                     {t('comments.title', 'Discussion')}
                 </CardTitle>
             </CardHeader>
-            
+
             <CardContent className="flex-1 p-0 flex flex-col min-h-0">
                 {/* Comments List */}
-                <div 
+                <div
                     ref={scrollRef}
                     className="flex-1 overflow-y-auto p-4 space-y-4"
                 >
@@ -127,11 +127,10 @@ export default function CommentsSection({ inventoryId, currentUser }) {
                                                 {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
-                                        <div className={`rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
-                                            isMe 
-                                                ? 'bg-primary text-primary-foreground rounded-tr-none' 
+                                        <div className={`rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${isMe
+                                                ? 'bg-primary text-primary-foreground rounded-tr-none'
                                                 : 'bg-muted rounded-tl-none'
-                                        }`}>
+                                            }`}>
                                             {comment.content}
                                         </div>
                                     </div>

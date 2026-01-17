@@ -48,7 +48,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useMercure } from '@/hooks/useMercure';
+import { useMercure } from '@/hooks/use-mercure';
 import { t } from '@/lib/i18n';
 import ItemSheet from '@/components/inventory/ItemSheet';
 import InventorySettingsSheet from '@/components/inventory/InventorySettingsSheet';
@@ -78,8 +78,8 @@ const getDefaultFields = () => {
     return fields;
 };
 
-export default function InventoryShowPage({ 
-    inventory, 
+export default function InventoryShowPage({
+    inventory,
     currentUser,
     isCreator,
     isCollaborator = false,
@@ -126,7 +126,7 @@ export default function InventoryShowPage({
             window.location.href = '/login';
             return;
         }
-        
+
         const wasLiked = isInventoryLiked;
         setIsInventoryLiked(!wasLiked);
         setInvLikeCount(prev => wasLiked ? prev - 1 : prev + 1);
@@ -161,8 +161,8 @@ export default function InventoryShowPage({
     const handleToggleLike = async (itemId) => {
         const isLiked = !likes[itemId];
         setLikes(prev => ({ ...prev, [itemId]: isLiked }));
-        setLocalCounts(prev => ({ 
-            ...prev, 
+        setLocalCounts(prev => ({
+            ...prev,
             [itemId]: isLiked ? (prev[itemId] || 0) + 1 : Math.max(0, (prev[itemId] || 0) - 1)
         }));
 
@@ -174,8 +174,8 @@ export default function InventoryShowPage({
             setLocalCounts(prev => ({ ...prev, [itemId]: data.likeCount }));
         } catch (e) {
             setLikes(prev => ({ ...prev, [itemId]: !isLiked }));
-            setLocalCounts(prev => ({ 
-                ...prev, 
+            setLocalCounts(prev => ({
+                ...prev,
                 [itemId]: !isLiked ? (prev[itemId] || 0) + 1 : Math.max(0, (prev[itemId] || 0) - 1)
             }));
             toast.error(t('error.action_failed', 'Failed to update like'));
@@ -239,7 +239,7 @@ export default function InventoryShowPage({
         const config = inventory.customFieldsConfig || {};
         const fields = config?.fields || config;
         const order = (config?.order && config.order.length > 0) ? config.order : DEFAULT_ORDER;
-        
+
         // Apply defaults if no explicit config
         const normalizedFields = {};
         DEFAULT_ORDER.forEach((key, index) => {
@@ -249,9 +249,9 @@ export default function InventoryShowPage({
                 normalizedFields[key] = { hidden: index >= 3 };
             }
         });
-        
-        return { 
-            order, 
+
+        return {
+            order,
             fields: normalizedFields,
             sortBy: config?.sortBy || 'customId',
             sortDir: config?.sortDir || 'asc'
@@ -332,7 +332,7 @@ export default function InventoryShowPage({
                 sortBy: newSortBy,
                 sortDir: newSortDir
             };
-            
+
             await fetch(`/inventory/${inventory.id}/settings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -341,7 +341,7 @@ export default function InventoryShowPage({
                     idGenerationConfig: idConfig
                 })
             });
-            
+
             // Update local state
             setFieldsConfig(updatedFieldsConfig);
             toast.success(t('inventory.settings.updated', 'Sort order saved'));
@@ -355,15 +355,15 @@ export default function InventoryShowPage({
     const handleSort = (key) => {
         let newSortBy = key;
         let newSortDir = 'asc';
-        
+
         if (sortBy === key) {
             // Toggle direction
             newSortDir = sortDir === 'asc' ? 'desc' : 'asc';
         }
-        
+
         setSortBy(newSortBy);
         setSortDir(newSortDir);
-        
+
         // Persist to database
         saveSortOrder(newSortBy, newSortDir);
     };
@@ -374,12 +374,12 @@ export default function InventoryShowPage({
         .sort((a, b) => {
             const valA = getItemValue(a, sortBy);
             const valB = getItemValue(b, sortBy);
-            
+
             // Handle nulls
             if (valA == null && valB == null) return 0;
             if (valA == null) return sortDir === 'asc' ? 1 : -1;
             if (valB == null) return sortDir === 'asc' ? -1 : 1;
-            
+
             // Compare based on type
             let comparison = 0;
             if (typeof valA === 'number' && typeof valB === 'number') {
@@ -389,7 +389,7 @@ export default function InventoryShowPage({
             } else {
                 comparison = String(valA).localeCompare(String(valB));
             }
-            
+
             return sortDir === 'asc' ? comparison : -comparison;
         });
 
@@ -422,7 +422,7 @@ export default function InventoryShowPage({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids: selectedIds })
             });
-            
+
             if (response.ok) {
                 toast.success(t('item.action.batch_deleted', 'Items deleted'));
                 window.location.reload();
@@ -446,7 +446,7 @@ export default function InventoryShowPage({
             const response = await fetch(`/api/items/${id}`, {
                 method: 'DELETE'
             });
-            
+
             if (response.ok) {
                 toast.success(t('item.action.deleted', 'Item deleted'));
                 window.location.reload();
@@ -493,8 +493,8 @@ export default function InventoryShowPage({
                                     {!isCreator && inventory.creator && (
                                         <>
                                             <span>•</span>
-                                            <a 
-                                                href={`/user/${inventory.creator.id}`} 
+                                            <a
+                                                href={`/user/${inventory.creator.id}`}
                                                 className="flex items-center gap-1 hover:underline"
                                             >
                                                 {t('inventory.by', 'by')}
@@ -511,12 +511,12 @@ export default function InventoryShowPage({
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Likes and Views - Always visible, grouped to wrap together */}
                         <div className="flex items-center gap-3 pl-4 border-l border-border/50 shrink-0">
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className={`h-8 px-2 gap-1.5 ${isInventoryLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground'}`}
                                 onClick={handleToggleInventoryLike}
                             >
@@ -529,11 +529,11 @@ export default function InventoryShowPage({
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                         {canAddItem && (
-                            <ItemSheet 
-                                inventoryId={inventory.id} 
+                            <ItemSheet
+                                inventoryId={inventory.id}
                                 fieldConfig={fieldsConfig}
                                 idConfig={idConfig}
                             />
@@ -544,14 +544,14 @@ export default function InventoryShowPage({
                             </Button>
                         )}
                         {!isCollaborator && currentUser && (
-                            <RequestAccessButton 
-                                inventoryId={inventory.id} 
-                                hasRequested={hasRequestedAccess} 
+                            <RequestAccessButton
+                                inventoryId={inventory.id}
+                                hasRequested={hasRequestedAccess}
                             />
                         )}
                         {canEditInventory && (
-                            <InventorySettingsSheet 
-                                inventory={inventory} 
+                            <InventorySettingsSheet
+                                inventory={inventory}
                                 currentFieldsConfig={fieldsConfig}
                                 currentIdConfig={idConfig}
                                 onSettingsChange={(newFieldsConfig, newIdConfig) => {
@@ -617,7 +617,7 @@ export default function InventoryShowPage({
                                 </Button>
                             </div>
 
-                            
+
                             {/* Batch Actions Toolbar */}
                             {selectedIds.length > 0 && canAddItem && (
                                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-md border animate-in fade-in slide-in-from-right-4">
@@ -638,12 +638,12 @@ export default function InventoryShowPage({
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[40px]">
-                                            <Checkbox 
+                                            <Checkbox
                                                 checked={filteredItems.length > 0 && selectedIds.length === filteredItems.length}
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </TableHead>
-                                        <TableHead 
+                                        <TableHead
                                             className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
                                             onClick={() => handleSort('customId')}
                                         >
@@ -657,7 +657,7 @@ export default function InventoryShowPage({
                                             </div>
                                         </TableHead>
                                         {tableColumns.map(col => (
-                                            <TableHead 
+                                            <TableHead
                                                 key={col.key}
                                                 className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
                                                 onClick={() => handleSort(col.key)}
@@ -679,8 +679,8 @@ export default function InventoryShowPage({
                                     {filteredItems.length > 0 ? (
                                         filteredItems.map(item => (
                                             <TableRow key={item.id} data-state={selectedIds.includes(item.id) ? "selected" : undefined}>
-                                                 <TableCell>
-                                                    <Checkbox 
+                                                <TableCell>
+                                                    <Checkbox
                                                         checked={selectedIds.includes(item.id)}
                                                         onCheckedChange={() => toggleSelectOne(item.id)}
                                                     />
@@ -688,9 +688,9 @@ export default function InventoryShowPage({
                                                 <TableCell className="font-medium font-mono">
                                                     <div className="flex items-center gap-2">
                                                         {item.customId}
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="sm" 
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
                                                             className={`h-7 px-2 gap-1 ${likes[item.id] ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
                                                             onClick={(e) => { e.stopPropagation(); handleToggleLike(item.id); }}
                                                             title={likes[item.id] ? "Unlike" : "Like"}
@@ -742,11 +742,11 @@ export default function InventoryShowPage({
                                                             )}
                                                             {(!showDeleted && canAddItem) && (
                                                                 <>
-                                                                    <ItemSheet 
-                                                                        inventoryId={inventory.id} 
+                                                                    <ItemSheet
+                                                                        inventoryId={inventory.id}
                                                                         item={item}
                                                                         fieldConfig={fieldsConfig}
-                                                                        idConfig={idConfig} 
+                                                                        idConfig={idConfig}
                                                                         trigger={
                                                                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                                                                 <Pencil className="mr-2 h-4 w-4" />
@@ -778,14 +778,14 @@ export default function InventoryShowPage({
                                                 <div className="flex flex-col items-center justify-center gap-2 py-4">
                                                     <Package className="h-10 w-10 text-muted-foreground/30" />
                                                     <p className="text-muted-foreground">
-                                                        {canAddItem 
+                                                        {canAddItem
                                                             ? t('inventory.no_items_can_add', 'Start by adding your first item to this inventory.')
                                                             : t('inventory.no_items_view_only', 'This inventory has no items yet.')
                                                         }
                                                     </p>
                                                     {canAddItem && (
-                                                        <ItemSheet 
-                                                            inventoryId={inventory.id} 
+                                                        <ItemSheet
+                                                            inventoryId={inventory.id}
                                                             fieldConfig={fieldsConfig}
                                                             idConfig={idConfig}
                                                             trigger={
@@ -810,8 +810,8 @@ export default function InventoryShowPage({
                     </TabsContent>
 
                     <TabsContent value="activity">
-                        <ActivityTab 
-                            inventoryId={inventory.id} 
+                        <ActivityTab
+                            inventoryId={inventory.id}
                             isCollaborator={isCollaborator}
                             canManageAccess={canManageAccess}
                         />
@@ -823,7 +823,7 @@ export default function InventoryShowPage({
                 </Tabs>
             </main>
             <ConfirmDialog />
-            <AccessControlModal 
+            <AccessControlModal
                 inventoryId={inventory.id}
                 initialSharedUsers={inventory.sharedWith || []}
                 open={isAccessModalOpen}
