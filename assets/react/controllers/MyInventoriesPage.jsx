@@ -6,23 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { 
-    Package, 
-    Search, 
-    Plus, 
-    MoreHorizontal, 
-    Pencil, 
-    Trash2, 
+import {
+    Package,
+    Search,
+    Plus,
+    MoreHorizontal,
+    Pencil,
+    Trash2,
     Eye,
     Grid,
     List as ListIcon,
     RefreshCcw,
     XCircle
 } from 'lucide-react';
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
@@ -32,8 +32,8 @@ import InventorySheet from '@/components/inventory/InventorySheet';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { useConfirm } from '@/components/common/useConfirm';
 
-export default function MyInventoriesPage({ 
-    inventories = [], 
+export default function MyInventoriesPage({
+    inventories = [],
     sharedInventories = [],
     categories = [],
     createEndpoint,
@@ -66,12 +66,16 @@ export default function MyInventoriesPage({
             variant: 'default'
         })) return;
         try {
-            const res = await fetch(`/inventory/${id}/restore`, { method: 'POST' });
+            const res = await fetch(`/inventory/${id}/restore`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('inventory.action.restored', 'Inventory restored'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to restore'));
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to restore'));
             }
         } catch (e) {
             console.error(e);
@@ -87,12 +91,16 @@ export default function MyInventoriesPage({
             variant: 'destructive'
         })) return;
         try {
-            const res = await fetch(`/inventory/${id}/permanent`, { method: 'DELETE' });
+            const res = await fetch(`/inventory/${id}/permanent`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('inventory.action.deleted_forever', 'Inventory permanently deleted'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete permanently'));
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete permanently'));
             }
         } catch (e) {
             console.error(e);
@@ -102,7 +110,7 @@ export default function MyInventoriesPage({
 
     const sourceInventories = showDeleted ? inventories : (activeTab === 'owned' ? inventories : sharedInventories);
 
-    const filteredInventories = sourceInventories.filter(inv => 
+    const filteredInventories = sourceInventories.filter(inv =>
         inv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         inv.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -133,15 +141,16 @@ export default function MyInventoriesPage({
         try {
             const response = await fetch('/inventory/batch-delete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ ids: selectedIds })
             });
-            
+
             if (response.ok) {
                 toast.success(t('inventory.action.batch_deleted', 'Items deleted'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete items'));
+                const err = await response.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete items'));
             }
         } catch (error) {
             console.error('Batch delete error:', error);
@@ -169,16 +178,16 @@ export default function MyInventoriesPage({
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <TrashToggle showDeleted={showDeleted} onToggle={toggleDeletedMode} />
                     {!showDeleted && (
-                        <InventorySheet 
-                            categories={categories} 
-                            open={isCreateOpen} 
+                        <InventorySheet
+                            categories={categories}
+                            open={isCreateOpen}
                             onOpenChange={setIsCreateOpen}
                             trigger={
                                 <Button>
                                     <Plus className="mr-2 h-4 w-4" />
                                     {t('home.hero.create', 'Create Inventory')}
                                 </Button>
-                            } 
+                            }
                         />
                     )}
                 </div>
@@ -211,7 +220,7 @@ export default function MyInventoriesPage({
                                 </TabsList>
                             </Tabs>
                         )}
-                        
+
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="relative w-full sm:w-96">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -223,17 +232,17 @@ export default function MyInventoriesPage({
                                 />
                             </div>
                             <div className="flex items-center border rounded-md p-1">
-                                <Button 
-                                    variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
-                                    size="sm" 
+                                <Button
+                                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                                    size="sm"
                                     className="h-8 px-2"
                                     onClick={() => setViewMode('list')}
                                 >
                                     <ListIcon className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
-                                    size="sm" 
+                                <Button
+                                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                                    size="sm"
                                     className="h-8 px-2"
                                     onClick={() => setViewMode('grid')}
                                 >
@@ -252,7 +261,7 @@ export default function MyInventoriesPage({
                                         <TableRow>
                                             <TableHead className="w-[50px]">
                                                 {activeTab === 'owned' && (
-                                                    <Checkbox 
+                                                    <Checkbox
                                                         checked={filteredInventories.length > 0 && selectedIds.length === filteredInventories.length}
                                                         onCheckedChange={toggleSelectAll}
                                                     />
@@ -271,7 +280,7 @@ export default function MyInventoriesPage({
                                             <TableRow key={inventory.id} className="group" data-state={selectedIds.includes(inventory.id) ? "selected" : undefined}>
                                                 <TableCell>
                                                     {activeTab === 'owned' && (
-                                                        <Checkbox 
+                                                        <Checkbox
                                                             checked={selectedIds.includes(inventory.id)}
                                                             onCheckedChange={() => toggleSelectOne(inventory.id)}
                                                         />
@@ -384,7 +393,7 @@ export default function MyInventoriesPage({
                             </div>
                             <h3 className="text-lg font-semibold mb-2">{t('home.no_inventories', 'No inventories found')}</h3>
                             <p className="text-muted-foreground max-w-sm mx-auto mb-6">
-                                {activeTab === 'shared' 
+                                {activeTab === 'shared'
                                     ? t('my_inv.no_shared', 'No inventories have been shared with you.')
                                     : t('inventory.empty_description', 'Start by adding your first inventory.')
                                 }
@@ -397,10 +406,10 @@ export default function MyInventoriesPage({
                 </CardContent>
             </Card>
             <ConfirmDialog />
-            
+
             {/* Edit Sheet */}
             {editingInventory && (
-                <InventorySheet 
+                <InventorySheet
                     categories={categories}
                     inventory={editingInventory}
                     open={!!editingInventory}

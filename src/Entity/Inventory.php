@@ -54,8 +54,9 @@ class Inventory
     #[ORM\JoinTable(name: 'inventory_tags')]
     private Collection $tags;
 
-    #[ORM\Column(nullable: true)]
-    private ?array $customFieldsConfig = null;
+    #[ORM\OneToMany(targetEntity: InventoryField::class, mappedBy: 'inventory', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $fields;
 
     #[ORM\Column(nullable: true)]
     private ?array $idGenerationConfig = null;
@@ -86,8 +87,10 @@ class Inventory
         $this->items = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->fields = new ArrayCollection();
         $this->sharedWith = new ArrayCollection();
         $this->likedBy = new ArrayCollection();
+        
         // Default ID Config
         $this->idGenerationConfig = [
             'elements' => [
@@ -97,15 +100,22 @@ class Inventory
         ];
     }
 
-    public function getCustomFieldsConfig(): ?array
+    /**
+     * Create default fields for a new inventory
+     */
+    public function createDefaultFields(): void
     {
-        return $this->customFieldsConfig;
-    }
+        $nameField = new InventoryField('Name', InventoryField::TYPE_STRING, 0);
+        $nameField->setInventory($this);
+        $this->fields->add($nameField);
 
-    public function setCustomFieldsConfig(?array $customFieldsConfig): static
-    {
-        $this->customFieldsConfig = $customFieldsConfig;
-        return $this;
+        $activeField = new InventoryField('Active', InventoryField::TYPE_BOOLEAN, 1);
+        $activeField->setInventory($this);
+        $this->fields->add($activeField);
+
+        $quantityField = new InventoryField('Quantity', InventoryField::TYPE_NUMBER, 2);
+        $quantityField->setInventory($this);
+        $this->fields->add($quantityField);
     }
 
     public function getIdGenerationConfig(): ?array
@@ -228,7 +238,6 @@ class Inventory
     public function removeItem(Item $item): static
     {
         if ($this->items->removeElement($item)) {
-            // set the owning side to null (unless already changed)
             if ($item->getInventory() === $this) {
                 $item->setInventory(null);
             }
@@ -271,19 +280,16 @@ class Inventory
             $this->comments->add($comment);
             $comment->setInventory($this);
         }
-
         return $this;
     }
 
     public function removeComment(Comment $comment): static
     {
         if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
             if ($comment->getInventory() === $this) {
                 $comment->setInventory(null);
             }
         }
-
         return $this;
     }
 
@@ -300,15 +306,48 @@ class Inventory
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
         }
-
         return $this;
     }
 
     public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
-
         return $this;
+    }
+
+    /**
+     * @return Collection<int, InventoryField>
+     */
+    public function getFields(): Collection
+    {
+        return $this->fields;
+    }
+
+    public function addField(InventoryField $field): static
+    {
+        if (!$this->fields->contains($field)) {
+            $this->fields->add($field);
+            $field->setInventory($this);
+        }
+        return $this;
+    }
+
+    public function removeField(InventoryField $field): static
+    {
+        if ($this->fields->removeElement($field)) {
+            if ($field->getInventory() === $this) {
+                $field->setInventory(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Get visible (non-hidden) fields ordered by position
+     */
+    public function getVisibleFields(): array
+    {
+        return $this->fields->filter(fn($f) => !$f->isHidden())->toArray();
     }
 
     /**
@@ -324,14 +363,12 @@ class Inventory
         if (!$this->sharedWith->contains($user)) {
             $this->sharedWith->add($user);
         }
-
         return $this;
     }
 
     public function removeSharedWith(User $user): static
     {
         $this->sharedWith->removeElement($user);
-
         return $this;
     }
 
@@ -403,4 +440,3 @@ class Inventory
         return ($this->getLikeCount() * 3) + $this->viewCount;
     }
 }
-

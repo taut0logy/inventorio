@@ -3,12 +3,20 @@
 namespace App\DataFixtures;
 
 use App\Entity\Category;
+use App\Entity\Inventory;
+use App\Entity\InventoryField;
 use App\Entity\Tag;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    public function __construct(
+        private UserPasswordHasherInterface $passwordHasher
+    ) {}
+
     public function load(ObjectManager $manager): void
     {
         // Create default categories with SVG icon URLs (from Iconify CDN)
@@ -37,21 +45,9 @@ class AppFixtures extends Fixture
 
         // Create predefined tags
         $tags = [
-            'new',
-            'used',
-            'refurbished',
-            'limited',
-            'discontinued',
-            'popular',
-            'sale',
-            'premium',
-            'eco-friendly',
-            'vintage',
-            'imported',
-            'local',
-            'handmade',
-            'certified',
-            'warranty',
+            'new', 'used', 'refurbished', 'limited', 'discontinued',
+            'popular', 'sale', 'premium', 'eco-friendly', 'vintage',
+            'imported', 'local', 'handmade', 'certified', 'warranty',
         ];
 
         foreach ($tags as $tagName) {
@@ -62,41 +58,41 @@ class AppFixtures extends Fixture
         }
 
         // Create Users
-        $admin = new \App\Entity\User();
+        $admin = new User();
         $admin->setEmail('admin@example.com');
         $admin->setName('Admin User');
-        $admin->setPassword('$2y$13$XyQk.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'); // bcrypt hash for 'password'
+        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'password'));
         $admin->setRoles(['ROLE_ADMIN']);
         $admin->setEmailVerified(true);
         $manager->persist($admin);
 
-        $user = new \App\Entity\User();
+        $user = new User();
         $user->setEmail('user@example.com');
         $user->setName('John Doe');
-        $user->setPassword('$2y$13$XyQk.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'); // bcrypt hash for 'password'
+        $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
         $user->setEmailVerified(true);
         $manager->persist($user);
 
-        $manager->flush(); // Flush users to get IDs
+        $manager->flush();
 
-        // Create Inventories
+        // Create Inventories with default fields
         $inventoryTitles = [
             'Main Warehouse', 'Office Storage', 'Garage Tools', 'Home Library',
             'Kitchen Pantry', 'Vehicle Fleet', 'Project Alpha', 'Backup Supplies'
         ];
 
+        $otherCategory = $manager->getRepository(Category::class)->findOneBy(['name' => 'Other']);
+
         foreach ($inventoryTitles as $i => $title) {
-            $inventory = new \App\Entity\Inventory();
+            $inventory = new Inventory();
             $inventory->setTitle($title);
             $inventory->setDescription("Description for $title. This simulates a Markdown *description*.");
             $inventory->setPublic($i % 2 === 0);
-            $inventory->setCategory($manager->getRepository(Category::class)->findOneBy(['name' => 'Other'])); // Fallback
-            
-            // Assign random category
-            // We can't easily get random category without querying all, so let's just pick one we created
-            // Effectively we just use one for now or loop
-            
+            $inventory->setCategory($otherCategory);
             $inventory->setCreator($i % 3 === 0 ? $admin : $user);
+            
+            // Create default fields for this inventory
+            $inventory->createDefaultFields();
             
             $manager->persist($inventory);
         }

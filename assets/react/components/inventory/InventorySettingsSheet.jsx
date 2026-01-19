@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Sheet,
@@ -14,17 +12,15 @@ import {
     SheetFooter,
     SheetClose,
 } from '@/components/ui/sheet';
-import { Settings, Loader2, Hash, List, Sliders } from 'lucide-react';
+import { Settings, Loader2, Hash, List } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import CustomIdBuilder from './CustomIdBuilder';
 import CustomFieldsEditor from './CustomFieldsEditor';
 
-export default function InventorySettingsSheet({ 
-    inventory, 
-    trigger, 
-    currentFieldsConfig,
-    currentIdConfig,
-    onSettingsChange 
+export default function InventorySettingsSheet({
+    inventory,
+    trigger,
+    onSettingsChange
 }) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +28,7 @@ export default function InventorySettingsSheet({
 
     // Default configurations
     const DEFAULT_ID_CONFIG = { elements: [{ type: 'sequence', minDigits: 4 }] };
-    
+
     // Helper to parse ID config (handles empty/old formats)
     const parseIdConfig = (cfg) => {
         if (!cfg || Object.keys(cfg).length === 0) {
@@ -55,35 +51,28 @@ export default function InventorySettingsSheet({
         return DEFAULT_ID_CONFIG;
     };
 
-    // Helper to parse fields config
-    const parseFieldsConfig = (cfg) => {
-        if (!cfg || Object.keys(cfg).length === 0) {
-            return { order: [], fields: {} };
-        }
-        if (cfg.order && cfg.fields) {
-            return cfg;
-        }
-        if (!cfg.order && Object.keys(cfg).length > 0) {
-            return { order: Object.keys(cfg), fields: cfg };
-        }
-        return { order: [], fields: {} };
-    };
-
     // Initialize with proper values from props/inventory
-    const getInitialIdConfig = () => parseIdConfig(currentIdConfig || inventory.idGenerationConfig);
-    const getInitialFieldsConfig = () => parseFieldsConfig(currentFieldsConfig || inventory.customFieldsConfig);
+    const getInitialIdConfig = () => parseIdConfig(inventory.idGenerationConfig);
+
+    // Fields are now an array directly from inventory
+    const getInitialFields = () => {
+        if (inventory.fields && Array.isArray(inventory.fields)) {
+            return [...inventory.fields];
+        }
+        return [];
+    };
 
     // Working copies of config (initialized with actual values)
     const [idConfig, setIdConfig] = useState(getInitialIdConfig);
-    const [fieldsConfig, setFieldsConfig] = useState(getInitialFieldsConfig);
+    const [fields, setFields] = useState(getInitialFields);
 
     // Sync state when sheet opens (in case parent state changed)
     useEffect(() => {
         if (open) {
             setIdConfig(getInitialIdConfig());
-            setFieldsConfig(getInitialFieldsConfig());
+            setFields(getInitialFields());
         }
-    }, [open]);
+    }, [open, inventory]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -94,21 +83,26 @@ export default function InventorySettingsSheet({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({
-                    customFieldsConfig: fieldsConfig,
+                    fields: fields,
                     idGenerationConfig: idConfig,
                     version: inventory?.version
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to save settings');
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.detail || result.error || result.title || 'Failed to save settings');
+            }
 
             // Call the callback to update parent state instantly
             if (onSettingsChange) {
-                onSettingsChange(fieldsConfig, idConfig);
+                onSettingsChange(result.fields || fields, idConfig);
             }
-            
+
             toast.success(t('settings.saved', 'Settings saved successfully'));
             setOpen(false);
         } catch (error) {
@@ -151,8 +145,7 @@ export default function InventorySettingsSheet({
 
                         <TabsContent value="id" className="mt-4 space-y-4">
                             <div className="text-sm text-muted-foreground mb-4">
-                                Build your custom ID format using drag-and-drop elements.
-                                IDs are generated automatically when items are created.
+                                {t('settings.id_desc', 'Build your custom ID format using drag-and-drop elements. IDs are generated automatically when items are created.')}
                             </div>
                             <CustomIdBuilder
                                 value={idConfig}
@@ -162,12 +155,11 @@ export default function InventorySettingsSheet({
 
                         <TabsContent value="fields" className="mt-4 space-y-4">
                             <div className="text-sm text-muted-foreground mb-4">
-                                Customize field labels, add descriptions, and reorder fields.
-                                Only visible fields will appear in forms and tables.
+                                {t('settings.fields_desc', 'Add unlimited custom fields to your inventory. Drag to reorder, click the eye to toggle visibility.')}
                             </div>
                             <CustomFieldsEditor
-                                value={fieldsConfig}
-                                onChange={setFieldsConfig}
+                                fields={fields}
+                                onChange={setFields}
                             />
                         </TabsContent>
                     </Tabs>

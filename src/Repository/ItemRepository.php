@@ -48,14 +48,12 @@ class ItemRepository extends ServiceEntityRepository
 
         // Search across multiple fields (only if query is provided)
         if (!empty($query)) {
+            // Join field values for search
+            $qb->leftJoin('i.fieldValues', 'fv');
+            
             $searchCondition = $qb->expr()->orX(
                 $qb->expr()->like('LOWER(i.customId)', 'LOWER(:query)'),
-                $qb->expr()->like('LOWER(i.customString1Value)', 'LOWER(:query)'),
-                $qb->expr()->like('LOWER(i.customString2Value)', 'LOWER(:query)'),
-                $qb->expr()->like('LOWER(i.customString3Value)', 'LOWER(:query)'),
-                $qb->expr()->like('LOWER(i.customText1Value)', 'LOWER(:query)'),
-                $qb->expr()->like('LOWER(i.customText2Value)', 'LOWER(:query)'),
-                $qb->expr()->like('LOWER(i.customText3Value)', 'LOWER(:query)'),
+                $qb->expr()->like('LOWER(fv.stringValue)', 'LOWER(:query)'),
                 $qb->expr()->like('LOWER(t.name)', 'LOWER(:query)')
             );
             $qb->andWhere($searchCondition)

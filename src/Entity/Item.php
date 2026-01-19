@@ -43,84 +43,9 @@ class Item
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $sequenceNumber = 0;
 
-    // ========================================
-    // Custom String Fields (3 max)
-    // ========================================
-    #[ORM\Column(length: 500, nullable: true)]
-    private ?string $customString1Value = null;
-
-    #[ORM\Column(length: 500, nullable: true)]
-    private ?string $customString2Value = null;
-
-    #[ORM\Column(length: 500, nullable: true)]
-    private ?string $customString3Value = null;
-
-    // ========================================
-    // Custom Text Fields (3 max) - Multi-line
-    // ========================================
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $customText1Value = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $customText2Value = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $customText3Value = null;
-
-    // ========================================
-    // Custom Number Fields (3 max)
-    // ========================================
-    #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 4, nullable: true)]
-    private ?string $customNumber1Value = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 4, nullable: true)]
-    private ?string $customNumber2Value = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 4, nullable: true)]
-    private ?string $customNumber3Value = null;
-
-    // ========================================
-    // Custom Link Fields (3 max) - Document/Image URLs
-    // ========================================
-    #[ORM\Column(length: 1000, nullable: true)]
-    private ?string $customLink1Value = null;
-
-    #[ORM\Column(length: 1000, nullable: true)]
-    private ?string $customLink2Value = null;
-
-    #[ORM\Column(length: 1000, nullable: true)]
-    private ?string $customLink3Value = null;
-
-    // ========================================
-    // Custom Boolean Fields (3 max)
-    // ========================================
-    #[ORM\Column(nullable: true)]
-    private ?bool $customBool1Value = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?bool $customBool2Value = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?bool $customBool3Value = null;
-    
-    #[ORM\Column(length: 500, nullable: true)]
-    private ?string $customSelect1Value = null;
-
-    #[ORM\Column(length: 500, nullable: true)]
-    private ?string $customSelect2Value = null;
-
-    #[ORM\Column(length: 500, nullable: true)]
-    private ?string $customSelect3Value = null;
-
-    // ========================================
-    // Denormalized / Computed Fields
-    // ========================================
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $likeCount = 0;
 
-    // ========================================
-    // Timestamps
-    // ========================================
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -134,11 +59,15 @@ class Item
     #[ORM\JoinTable(name: 'item_tags')]
     private Collection $tags;
 
+    #[ORM\OneToMany(targetEntity: ItemFieldValue::class, mappedBy: 'item', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $fieldValues;
+
     public function __construct()
     {
         $this->id = Uuid::v7();
         $this->tags = new ArrayCollection();
         $this->likedBy = new ArrayCollection();
+        $this->fieldValues = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -153,10 +82,6 @@ class Item
     {
         $this->updatedAt = new \DateTime();
     }
-
-    // ========================================
-    // ID & Relations Getters/Setters
-    // ========================================
 
     public function getId(): ?Uuid
     {
@@ -196,10 +121,6 @@ class Item
         return $this;
     }
 
-    // ========================================
-    // Version & Sequence
-    // ========================================
-
     public function getVersion(): int
     {
         return $this->version;
@@ -222,75 +143,6 @@ class Item
         return $this;
     }
 
-    // ========================================
-    // Custom Field Getters/Setters (Dynamic)
-    // ========================================
-
-    public function getCustomField(string $type, int $index): mixed
-    {
-        $property = "custom{$type}{$index}Value";
-        return $this->$property ?? null;
-    }
-
-    public function setCustomField(string $type, int $index, mixed $value): static
-    {
-        $property = "custom{$type}{$index}Value";
-        $this->$property = $value;
-        return $this;
-    }
-
-    // String fields
-    public function getCustomString1Value(): ?string { return $this->customString1Value; }
-    public function setCustomString1Value(?string $value): static { $this->customString1Value = $value; return $this; }
-    public function getCustomString2Value(): ?string { return $this->customString2Value; }
-    public function setCustomString2Value(?string $value): static { $this->customString2Value = $value; return $this; }
-    public function getCustomString3Value(): ?string { return $this->customString3Value; }
-    public function setCustomString3Value(?string $value): static { $this->customString3Value = $value; return $this; }
-
-    // Text fields
-    public function getCustomText1Value(): ?string { return $this->customText1Value; }
-    public function setCustomText1Value(?string $value): static { $this->customText1Value = $value; return $this; }
-    public function getCustomText2Value(): ?string { return $this->customText2Value; }
-    public function setCustomText2Value(?string $value): static { $this->customText2Value = $value; return $this; }
-    public function getCustomText3Value(): ?string { return $this->customText3Value; }
-    public function setCustomText3Value(?string $value): static { $this->customText3Value = $value; return $this; }
-
-    // Number fields
-    public function getCustomNumber1Value(): ?string { return $this->customNumber1Value; }
-    public function setCustomNumber1Value(?string $value): static { $this->customNumber1Value = $value; return $this; }
-    public function getCustomNumber2Value(): ?string { return $this->customNumber2Value; }
-    public function setCustomNumber2Value(?string $value): static { $this->customNumber2Value = $value; return $this; }
-    public function getCustomNumber3Value(): ?string { return $this->customNumber3Value; }
-    public function setCustomNumber3Value(?string $value): static { $this->customNumber3Value = $value; return $this; }
-
-    // Link fields
-    public function getCustomLink1Value(): ?string { return $this->customLink1Value; }
-    public function setCustomLink1Value(?string $value): static { $this->customLink1Value = $value; return $this; }
-    public function getCustomLink2Value(): ?string { return $this->customLink2Value; }
-    public function setCustomLink2Value(?string $value): static { $this->customLink2Value = $value; return $this; }
-    public function getCustomLink3Value(): ?string { return $this->customLink3Value; }
-    public function setCustomLink3Value(?string $value): static { $this->customLink3Value = $value; return $this; }
-
-    // Boolean fields
-    public function getCustomBool1Value(): ?bool { return $this->customBool1Value; }
-    public function setCustomBool1Value(?bool $value): static { $this->customBool1Value = $value; return $this; }
-    public function getCustomBool2Value(): ?bool { return $this->customBool2Value; }
-    public function setCustomBool2Value(?bool $value): static { $this->customBool2Value = $value; return $this; }
-    public function getCustomBool3Value(): ?bool { return $this->customBool3Value; }
-    public function setCustomBool3Value(?bool $value): static { $this->customBool3Value = $value; return $this; }
-
-    // Select fields
-    public function getCustomSelect1Value(): ?string { return $this->customSelect1Value; }
-    public function setCustomSelect1Value(?string $value): static { $this->customSelect1Value = $value; return $this; }
-    public function getCustomSelect2Value(): ?string { return $this->customSelect2Value; }
-    public function setCustomSelect2Value(?string $value): static { $this->customSelect2Value = $value; return $this; }
-    public function getCustomSelect3Value(): ?string { return $this->customSelect3Value; }
-    public function setCustomSelect3Value(?string $value): static { $this->customSelect3Value = $value; return $this; }
-
-    // ========================================
-    // Like Count
-    // ========================================
-
     public function getLikeCount(): int
     {
         return $this->likeCount;
@@ -309,10 +161,6 @@ class Item
         }
         return $this;
     }
-
-    // ========================================
-    // Timestamps & Soft Delete
-    // ========================================
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
@@ -365,14 +213,12 @@ class Item
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
         }
-
         return $this;
     }
 
     public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
-
         return $this;
     }
 
@@ -390,16 +236,14 @@ class Item
             $this->likedBy->add($user);
             $this->likeCount++;
         }
-
         return $this;
     }
 
     public function removeLikedBy(User $user): static
     {
         if ($this->likedBy->removeElement($user)) {
-             $this->likeCount = max(0, $this->likeCount - 1);
+            $this->likeCount = max(0, $this->likeCount - 1);
         }
-
         return $this;
     }
 
@@ -408,5 +252,93 @@ class Item
         return $this->likedBy->contains($user);
     }
 
+    /**
+     * @return Collection<int, ItemFieldValue>
+     */
+    public function getFieldValues(): Collection
+    {
+        return $this->fieldValues;
+    }
 
+    public function addFieldValue(ItemFieldValue $fieldValue): static
+    {
+        if (!$this->fieldValues->contains($fieldValue)) {
+            $this->fieldValues->add($fieldValue);
+            $fieldValue->setItem($this);
+        }
+        return $this;
+    }
+
+    public function removeFieldValue(ItemFieldValue $fieldValue): static
+    {
+        if ($this->fieldValues->removeElement($fieldValue)) {
+            if ($fieldValue->getItem() === $this) {
+                $fieldValue->setItem(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Get field value by field entity
+     */
+    public function getFieldValue(InventoryField $field): mixed
+    {
+        foreach ($this->fieldValues as $fv) {
+            if ($fv->getField()?->getId()?->equals($field->getId())) {
+                return $fv->getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get field value by field ID string
+     */
+    public function getFieldValueById(string $fieldId): mixed
+    {
+        foreach ($this->fieldValues as $fv) {
+            if ($fv->getField()?->getId()?->toRfc4122() === $fieldId) {
+                return $fv->getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Set or create a field value
+     */
+    public function setFieldValue(InventoryField $field, mixed $value): static
+    {
+        // Find existing value
+        foreach ($this->fieldValues as $fv) {
+            if ($fv->getField()?->getId()?->equals($field->getId())) {
+                $fv->setValue($value);
+                return $this;
+            }
+        }
+
+        // Create new value
+        $fv = new ItemFieldValue();
+        $fv->setField($field);
+        $fv->setValue($value);
+        $this->addFieldValue($fv);
+
+        return $this;
+    }
+
+    /**
+     * Get all field values as associative array [fieldId => value]
+     */
+    public function getFieldValuesArray(): array
+    {
+        $result = [];
+        foreach ($this->fieldValues as $fv) {
+            $fieldId = $fv->getField()?->getId()?->toRfc4122();
+            if ($fieldId) {
+                $result[$fieldId] = $fv->getValue();
+            }
+        }
+        return $result;
+    }
 }

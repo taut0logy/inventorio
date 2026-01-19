@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -27,7 +27,7 @@ export default function RequestAccessButton({ inventoryId, hasRequested: initial
         try {
             const res = await fetch(`/inventory/${inventoryId}/request-access`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ message: message.trim() || null })
             });
 
@@ -40,7 +40,7 @@ export default function RequestAccessButton({ inventoryId, hasRequested: initial
                 }, 1500);
             } else {
                 const data = await res.json();
-                toast.error(data.error || 'Failed to send request');
+                toast.error(data.detail || data.error || data.title || 'Failed to send request');
             }
         } catch (err) {
             console.error('Error requesting access:', err);
@@ -102,8 +102,8 @@ export default function RequestAccessButton({ inventoryId, hasRequested: initial
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => setDialogOpen(false)}
                                 disabled={loading}
                             >

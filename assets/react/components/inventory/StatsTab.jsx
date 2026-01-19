@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
     TrendingUp, TrendingDown, Hash, Type, Loader2, BarChart3,
     ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
@@ -49,7 +49,7 @@ function CircularProgress({ value, size = 60, strokeWidth = 6, color = 'hsl(var(
 // Horizontal bar for frequency display
 function FrequencyBar({ value, maxValue, label, count }) {
     const percentage = maxValue > 0 ? (count / maxValue) * 100 : 0;
-    
+
     return (
         <div className="space-y-1">
             <div className="flex justify-between items-center text-sm">
@@ -93,7 +93,7 @@ function NumericGauge({ label, min, max, avg, sum, count }) {
                     <div className="w-full h-1 bg-gradient-to-r from-blue-500/20 via-blue-500 to-blue-500/20 mx-3" />
                 </div>
                 {/* Average marker */}
-                <motion.div 
+                <motion.div
                     className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full border-2 border-background shadow-lg"
                     initial={{ left: '50%' }}
                     animate={{ left: `${avgPosition}%` }}
@@ -166,7 +166,7 @@ export default function StatsTab({ inventoryId }) {
         const fetchStats = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/inventory/${inventoryId}/stats`);
+                const res = await fetch(`/inventory/${inventoryId}/stats`, { headers: { 'Accept': 'application/json' } });
                 if (res.ok) {
                     const data = await res.json();
                     setStats(data);
@@ -239,8 +239,8 @@ export default function StatsTab({ inventoryId }) {
                     <div className="flex flex-wrap gap-4">
                         {Object.entries(completionRates).map(([key, { label, rate }]) => (
                             <div key={key} className="flex items-center gap-3">
-                                <CircularProgress 
-                                    value={rate} 
+                                <CircularProgress
+                                    value={rate}
                                     size={56}
                                     color={rate >= 80 ? 'hsl(142, 76%, 36%)' : rate >= 50 ? 'hsl(48, 100%, 50%)' : 'hsl(0, 84%, 60%)'}
                                 />

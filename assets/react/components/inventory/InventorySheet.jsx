@@ -5,15 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { 
-    Sheet, 
-    SheetContent, 
-    SheetDescription, 
-    SheetHeader, 
-    SheetTitle, 
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
     SheetTrigger,
     SheetFooter,
-    SheetClose 
+    SheetClose
 } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Loader2, Pencil, Check, AlertCircle, Cloud } from 'lucide-react';
@@ -21,16 +21,16 @@ import { t } from '@/lib/i18n';
 import TagInput from '@/components/inventory/TagInput';
 import box from '@/../images/box-icon.svg'
 
-export default function InventorySheet({ 
-    categories = [], 
-    inventory = null, 
-    trigger = null, 
-    open, 
-    onOpenChange 
+export default function InventorySheet({
+    categories = [],
+    inventory = null,
+    trigger = null,
+    open,
+    onOpenChange
 }) {
     const isEdit = !!inventory;
     const [isLoading, setIsLoading] = useState(false);
-    
+
     // Auto-save states
     const [version, setVersion] = useState(inventory?.version || 1);
     const [isDirty, setIsDirty] = useState(false);
@@ -38,7 +38,7 @@ export default function InventorySheet({
     const [conflictError, setConflictError] = useState(null);
     const autoSaveTimerRef = useRef(null);
     const initialFormDataRef = useRef(null);
-    
+
     // Form state
     const [formData, setFormData] = useState({
         title: '',
@@ -53,8 +53,8 @@ export default function InventorySheet({
         if (inventory) {
             const initial = {
                 title: inventory.title || '',
-                category: typeof inventory.categoryId === 'string' ? inventory.categoryId : 
-                          categories.find(c => c.name === inventory.category)?.id || '', 
+                category: typeof inventory.categoryId === 'string' ? inventory.categoryId :
+                    categories.find(c => c.name === inventory.category)?.id || '',
                 description: inventory.description || '',
                 isPublic: inventory.isPublic || false,
                 tags: inventory.tags ? inventory.tags.map(t => t.name || t) : []
@@ -122,7 +122,7 @@ export default function InventorySheet({
         try {
             const response = await fetch(`/inventory/${inventory.id}/auto-save`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
                     expectedVersion: version
@@ -136,7 +136,7 @@ export default function InventorySheet({
                 setAutoSaveStatus('saved');
                 setConflictError(null);
                 initialFormDataRef.current = JSON.stringify(formData);
-                
+
                 // Reset status after 3 seconds
                 setTimeout(() => {
                     setAutoSaveStatus('idle');
@@ -156,13 +156,14 @@ export default function InventorySheet({
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        
+
         try {
             const url = isEdit ? `/inventory/${inventory.id}/edit` : '/inventory/new';
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({
                     ...formData,
@@ -179,7 +180,7 @@ export default function InventorySheet({
             }
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to save inventory');
+                throw new Error(data.detail || data.error || data.title || 'Failed to save inventory');
             }
 
             // Success
@@ -192,14 +193,14 @@ export default function InventorySheet({
             }
         } catch (error) {
             console.error('Error saving inventory:', error);
-            toast.error(error.message || t('error.save_failed', 'Failed to save inventory')); 
+            toast.error(error.message || t('error.save_failed', 'Failed to save inventory'));
             setIsLoading(false);
         }
     };
 
     const renderAutoSaveStatus = () => {
         if (!isEdit) return null;
-        
+
         return (
             <div className="flex items-center gap-2 text-sm">
                 {autoSaveStatus === 'saving' && (
@@ -234,7 +235,7 @@ export default function InventorySheet({
         <Sheet open={open} onOpenChange={onOpenChange}>
             {/* If managed externally (open prop), we might not need trigger. But if provided... */}
             {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
-            
+
             {/* Default Trigger for Create Mode if no trigger provided & controlled externally */}
             {!trigger && !isEdit && !onOpenChange && (
                 <SheetTrigger asChild>
@@ -248,8 +249,8 @@ export default function InventorySheet({
             <SheetContent side="right" className="w-full max-w-none sm:max-w-2xl overflow-y-auto">
                 <SheetHeader>
                     <SheetTitle>
-                        {isEdit 
-                            ? t('inventory.edit_title', 'Edit Inventory') 
+                        {isEdit
+                            ? t('inventory.edit_title', 'Edit Inventory')
                             : t('inventory.create_title', 'Create New Inventory')
                         }
                     </SheetTitle>
@@ -261,15 +262,15 @@ export default function InventorySheet({
                     </SheetDescription>
                     {renderAutoSaveStatus()}
                 </SheetHeader>
-                
+
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 px-4 md:px-6">
                     <div className="space-y-2">
                         <Label htmlFor="title">
                             {t('inventory.form.title', 'Title')} <span className="text-destructive">*</span>
                         </Label>
-                        <Input 
-                            id="title" 
-                            required 
+                        <Input
+                            id="title"
+                            required
                             placeholder="e.g. My Rare Coins"
                             value={formData.title}
                             onChange={(e) => updateFormData({ title: e.target.value })}
@@ -280,9 +281,9 @@ export default function InventorySheet({
                         <Label htmlFor="category">
                             {t('inventory.form.category', 'Category')} <span className="text-destructive">*</span>
                         </Label>
-                        <Select 
+                        <Select
                             required
-                            value={formData.category} 
+                            value={formData.category}
                             onValueChange={(val) => updateFormData({ category: val })}
                         >
                             <SelectTrigger>
@@ -292,7 +293,7 @@ export default function InventorySheet({
                                 {categories.map((cat) => (
                                     <SelectItem key={cat.id} value={cat.id}>
                                         <span className="flex items-center gap-2">
-                                            <span 
+                                            <span
                                                 className="w-6 h-6 bg-primary rounded"
                                                 style={{
                                                     maskImage: `url(${cat.icon || box})`,
@@ -317,8 +318,8 @@ export default function InventorySheet({
                         <Label htmlFor="description">
                             Description (Markdown supported)
                         </Label>
-                        <Textarea 
-                            id="description" 
+                        <Textarea
+                            id="description"
                             className="min-h-[120px]"
                             placeholder="Describe your inventory..."
                             value={formData.description}
@@ -328,7 +329,7 @@ export default function InventorySheet({
 
                     <div className="space-y-2 md:col-span-2">
                         <Label>Tags</Label>
-                        <TagInput 
+                        <TagInput
                             value={formData.tags}
                             onChange={(tags) => updateFormData({ tags })}
                             placeholder="Add tags (e.g. rare, vintage)"
@@ -344,7 +345,7 @@ export default function InventorySheet({
                                 Anyone can view this inventory if enabled.
                             </p>
                         </div>
-                        <Switch 
+                        <Switch
                             id="isPublic"
                             checked={formData.isPublic}
                             onCheckedChange={(checked) => updateFormData({ isPublic: checked })}

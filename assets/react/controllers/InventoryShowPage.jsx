@@ -64,23 +64,12 @@ import { useConfirm } from '@/components/common/useConfirm';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-// Default order includes all fields
-const DEFAULT_ORDER = [
-    'string1', 'string2', 'string3',
-    'number1', 'number2', 'number3',
-    'text1', 'text2', 'text3',
-    'link1', 'link2', 'link3',
-    'bool1', 'bool2', 'bool3',
-    'select1', 'select2', 'select3'
-];
-
-// Default: only first 3 visible
-const getDefaultFields = () => {
-    const fields = {};
-    DEFAULT_ORDER.forEach((key, index) => {
-        fields[key] = { hidden: index >= 3 };
-    });
-    return fields;
+// Get visible fields from inventory, sorted by position
+const getVisibleFields = (fields) => {
+    if (!fields || !Array.isArray(fields)) return [];
+    return fields
+        .filter(f => !f.hidden)
+        .sort((a, b) => (a.position || 0) - (b.position || 0));
 };
 
 export default function InventoryShowPage({
@@ -136,7 +125,10 @@ export default function InventoryShowPage({
         setInvLikeCount(prev => wasLiked ? prev - 1 : prev + 1);
 
         try {
-            const res = await fetch(`/inventory/${inventory.id}/like`, { method: 'POST' });
+            const res = await fetch(`/inventory/${inventory.id}/like`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (!res.ok) throw new Error();
             const data = await res.json();
             setIsInventoryLiked(data.liked);
@@ -171,7 +163,10 @@ export default function InventoryShowPage({
         }));
 
         try {
-            const res = await fetch(`/api/items/${itemId}/like`, { method: 'POST' });
+            const res = await fetch(`/api/items/${itemId}/like`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (!res.ok) throw new Error();
             const data = await res.json();
             setLikes(prev => ({ ...prev, [itemId]: data.isLiked }));
@@ -204,12 +199,16 @@ export default function InventoryShowPage({
             variant: 'default'
         })) return;
         try {
-            const res = await fetch(`/api/items/${id}/restore`, { method: 'POST' });
+            const res = await fetch(`/api/items/${id}/restore`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('item.action.restored', 'Item restored'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to restore item'));
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to restore item'));
             }
         } catch (e) {
             console.error(e);
@@ -225,12 +224,16 @@ export default function InventoryShowPage({
             variant: 'destructive'
         })) return;
         try {
-            const res = await fetch(`/api/items/${id}/permanent`, { method: 'DELETE' });
+            const res = await fetch(`/api/items/${id}/permanent`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('item.action.deleted_forever', 'Item permanently deleted'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete permanently'));
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete permanently'));
             }
         } catch (e) {
             console.error(e);
@@ -238,110 +241,32 @@ export default function InventoryShowPage({
         }
     };
 
-    const [fieldsConfig, setFieldsConfig] = useState(() => {
-        const config = inventory.customFieldsConfig || {};
-        const fields = config?.fields || config;
-        const order = (config?.order && config.order.length > 0) ? config.order : DEFAULT_ORDER;
+    // Fields from inventory (EAV)
+    const [fields, setFields] = useState(() => inventory.fields || []);
+    const [idConfig, setIdConfig] = useState(() => inventory.idGenerationConfig || {});
 
-        const normalizedFields = {};
-        DEFAULT_ORDER.forEach((key, index) => {
-            if (fields[key] !== undefined) {
-                normalizedFields[key] = fields[key];
-            } else {
-                normalizedFields[key] = { hidden: index >= 3 };
-            }
-        });
+    // Visible fields ordered by position
+    const visibleFields = getVisibleFields(fields);
 
-        return {
-            order,
-            fields: normalizedFields,
-            sortBy: config?.sortBy || 'customId',
-            sortDir: config?.sortDir || 'asc'
-        };
-    });
-
-    const [idConfig, setIdConfig] = useState(() => {
-        return inventory.idGenerationConfig || {};
-    });
-
-    const fieldsData = fieldsConfig.fields;
-    const fieldsOrder = fieldsConfig.order;
-
-    const getLabel = (key, defaultLabel) => {
-        const config = fieldsData[key];
-        if (config?.label) {
-            return config.label;
-        }
-        return defaultLabel;
-    };
-
-    const isVisible = (key) => {
-        const config = fieldsData[key];
-        if (config?.hidden === true) {
-            return false;
-        }
-        if (config?.hidden === false) {
-            return true;
-        }
-        const defaultVisibleFields = ['string1', 'string2', 'string3'];
-        return defaultVisibleFields.includes(key);
-    };
-
-    const tableColumns = fieldsOrder
-        .filter(key => isVisible(key))
-        .map(key => {
-            const defaults = {
-                string1: 'Custom String 1', string2: 'Custom String 2', string3: 'Custom String 3',
-                number1: 'Custom Number 1', number2: 'Custom Number 2', number3: 'Custom Number 3',
-                text1: 'Custom Text 1', text2: 'Custom Text 2', text3: 'Custom Text 3',
-                link1: 'Custom Link 1', link2: 'Custom Link 2', link3: 'Custom Link 3',
-                bool1: 'Custom Boolean 1', bool2: 'Custom Boolean 2', bool3: 'Custom Boolean 3',
-                select1: 'Custom Select 1', select2: 'Custom Select 2', select3: 'Custom Select 3',
-            };
-            return { key, label: getLabel(key, defaults[key] || key) };
-        });
+    // Table columns from visible fields
+    const tableColumns = visibleFields.map(f => ({
+        key: f.id,
+        label: f.label,
+        type: f.type
+    }));
 
     const getItemValue = (item, key) => {
         if (key === 'customId') return item.customId;
-        const propMap = {
-            string1: 'customString1Value', string2: 'customString2Value', string3: 'customString3Value',
-            number1: 'customNumber1Value', number2: 'customNumber2Value', number3: 'customNumber3Value',
-            text1: 'customText1Value', text2: 'customText2Value', text3: 'customText3Value',
-            link1: 'customLink1Value', link2: 'customLink2Value', link3: 'customLink3Value',
-            bool1: 'customBool1Value', bool2: 'customBool2Value', bool3: 'customBool3Value',
-            select1: 'customSelect1Value', select2: 'customSelect2Value', select3: 'customSelect3Value',
-        };
-        const prop = propMap[key];
-        return prop ? item[prop] : null;
+        // Look up in fieldValues by field ID
+        return item.fieldValues?.[key] ?? null;
     };
 
-    const [sortBy, setSortBy] = useState(() => fieldsConfig.sortBy || 'customId');
-    const [sortDir, setSortDir] = useState(() => fieldsConfig.sortDir || 'asc');
+    const [sortBy, setSortBy] = useState('customId');
+    const [sortDir, setSortDir] = useState('asc');
 
     const saveSortOrder = async (newSortBy, newSortDir) => {
-        try {
-            const updatedFieldsConfig = {
-                ...fieldsConfig,
-                sortBy: newSortBy,
-                sortDir: newSortDir
-            };
-
-            await fetch(`/inventory/${inventory.id}/settings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customFieldsConfig: updatedFieldsConfig,
-                    idGenerationConfig: idConfig
-                })
-            });
-
-            // Update local state
-            setFieldsConfig(updatedFieldsConfig);
-            toast.success(t('inventory.settings.updated', 'Sort order saved'));
-        } catch (error) {
-            console.error('Failed to save sort order:', error);
-            toast.error(t('error.save_failed', 'Failed to save sort order'));
-        }
+        // Sort order is now client-side only, no longer persisted
+        toast.success(t('inventory.settings.sorted', 'Sorted'));
     };
 
     const handleSort = (key) => {
@@ -406,7 +331,7 @@ export default function InventoryShowPage({
         try {
             const response = await fetch('/api/items/batch-delete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ ids: selectedIds })
             });
 
@@ -414,7 +339,8 @@ export default function InventoryShowPage({
                 toast.success(t('item.action.batch_deleted', 'Items deleted'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete items'));
+                const err = await response.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete items'));
             }
         } catch (error) {
             console.error('Batch delete error:', error);
@@ -431,14 +357,16 @@ export default function InventoryShowPage({
 
         try {
             const response = await fetch(`/api/items/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
             });
 
             if (response.ok) {
                 toast.success(t('item.action.deleted', 'Item deleted'));
                 window.location.reload();
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete item'));
+                const err = await response.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete item'));
             }
         } catch (error) {
             console.error('Delete error:', error);
@@ -595,7 +523,7 @@ export default function InventoryShowPage({
                         {canAddItem && (
                             <ItemSheet
                                 inventoryId={inventory.id}
-                                fieldConfig={fieldsConfig}
+                                fields={fields}
                                 idConfig={idConfig}
                             />
                         )}
@@ -612,11 +540,9 @@ export default function InventoryShowPage({
                         )}
                         {canEditInventory && (
                             <InventorySettingsSheet
-                                inventory={inventory}
-                                currentFieldsConfig={fieldsConfig}
-                                currentIdConfig={idConfig}
-                                onSettingsChange={(newFieldsConfig, newIdConfig) => {
-                                    setFieldsConfig(newFieldsConfig);
+                                inventory={{ ...inventory, fields: fields }}
+                                onSettingsChange={(newFields, newIdConfig) => {
+                                    setFields(newFields);
                                     setIdConfig(newIdConfig);
                                 }}
                             />
@@ -786,7 +712,9 @@ export default function InventoryShowPage({
                                                 </TableCell>
                                                 {tableColumns.map(col => {
                                                     const val = getItemValue(item, col.key);
-                                                    if (col.key.startsWith('link') && val) {
+
+                                                    // Link fields
+                                                    if (col.type === 'link' && val) {
                                                         return (
                                                             <TableCell key={col.key}>
                                                                 <LinkPreview url={val} className="font-medium text-primary hover:underline">
@@ -795,6 +723,32 @@ export default function InventoryShowPage({
                                                             </TableCell>
                                                         );
                                                     }
+
+                                                    // Boolean fields
+                                                    if (col.type === 'boolean') {
+                                                        return (
+                                                            <TableCell key={col.key}>
+                                                                {val === true || val === 'true' || val === 1 ? (
+                                                                    <Badge variant="default" className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">Yes</Badge>
+                                                                ) : val === false || val === 'false' || val === 0 ? (
+                                                                    <Badge variant="secondary" className="text-muted-foreground">No</Badge>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground">-</span>
+                                                                )}
+                                                            </TableCell>
+                                                        );
+                                                    }
+
+                                                    // Number fields - format nicely
+                                                    if (col.type === 'number' && val !== null && val !== undefined) {
+                                                        return (
+                                                            <TableCell key={col.key}>
+                                                                {typeof val === 'number' ? val.toLocaleString() : val}
+                                                            </TableCell>
+                                                        );
+                                                    }
+
+                                                    // Default: string/text/select
                                                     return (
                                                         <TableCell key={col.key}>
                                                             {val ?? '-'}
@@ -827,7 +781,7 @@ export default function InventoryShowPage({
                                                                     <ItemSheet
                                                                         inventoryId={inventory.id}
                                                                         item={item}
-                                                                        fieldConfig={fieldsConfig}
+                                                                        fields={fields}
                                                                         idConfig={idConfig}
                                                                         trigger={
                                                                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -868,7 +822,7 @@ export default function InventoryShowPage({
                                                     {canAddItem && (
                                                         <ItemSheet
                                                             inventoryId={inventory.id}
-                                                            fieldConfig={fieldsConfig}
+                                                            fields={fields}
                                                             idConfig={idConfig}
                                                             trigger={
                                                                 <Button size="sm">

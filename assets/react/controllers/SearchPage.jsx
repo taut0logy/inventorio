@@ -22,7 +22,7 @@ export default function SearchPage({ initialQuery = '' }) {
 
     const performSearch = async (q, category = null, append = false, type = 'all') => {
         if ((!q || q.length < 2) && !category) return;
-        
+
         if (append) {
             setLoadingMore(true);
         } else {
@@ -38,9 +38,9 @@ export default function SearchPage({ initialQuery = '' }) {
             if (category) url += `&category=${encodeURIComponent(category)}`;
             if (append && type !== 'all') url += `&type=${type}`;
 
-            const res = await fetch(url);
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
             const data = await res.json();
-            
+
             if (append) {
                 if (type === 'inventories') {
                     setResults(prev => ({
@@ -62,11 +62,11 @@ export default function SearchPage({ initialQuery = '' }) {
                 setInventoryOffset(data.inventories.length);
                 setItemOffset(data.items.length);
                 setSearched(true);
-                
+
                 const browserUrl = new URL(window.location);
                 if (q) browserUrl.searchParams.set('q', q);
                 else browserUrl.searchParams.delete('q');
-                
+
                 if (category) browserUrl.searchParams.set('category', category);
                 else browserUrl.searchParams.delete('category');
 
@@ -140,11 +140,11 @@ export default function SearchPage({ initialQuery = '' }) {
                     />
                 </div>
                 {activeCategory && (
-                     <div className="flex items-center gap-2 px-3 py-1 bg-secondary rounded-md h-12">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-secondary rounded-md h-12">
                         <span className="text-sm font-medium whitespace-nowrap">{t('search.category', 'Category')}: {activeCategory}</span>
                         <button type="button" onClick={clearCategory} className="text-muted-foreground hover:text-foreground">
                             <span className="sr-only">Remove filter</span>
-                             ✕
+                            ✕
                         </button>
                     </div>
                 )}
@@ -157,12 +157,12 @@ export default function SearchPage({ initialQuery = '' }) {
             {searched && (
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-muted-foreground">
-                        {results.total === 0 
+                        {results.total === 0
                             ? t('search.no_results', 'No results found')
-                            : (query 
+                            : (query
                                 ? t('search.results_for', { count: results.total, query }, `Found ${results.total} results for "${query}"`)
                                 : t('search.results_count', { count: results.total }, `Found ${results.total} results`)
-                              )
+                            )
                         }
                     </h2>
                     <div className="flex items-center gap-2">
@@ -230,8 +230,8 @@ export default function SearchPage({ initialQuery = '' }) {
                             </div>
                             {results.hasMoreInventories && (
                                 <div className="flex justify-center mt-6">
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         onClick={loadMoreInventories}
                                         disabled={loadingMore}
                                     >
@@ -285,8 +285,8 @@ export default function SearchPage({ initialQuery = '' }) {
                             </div>
                             {results.hasMoreItems && (
                                 <div className="flex justify-center mt-6">
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         onClick={loadMoreItems}
                                         disabled={loadingMore}
                                     >
@@ -341,7 +341,7 @@ export default function SearchPage({ initialQuery = '' }) {
                     )}
                 </div>
             ) : (
-                 <div className="text-center py-20">
+                <div className="text-center py-20">
                     <Search className="h-16 w-16 mx-auto text-muted-foreground/20 mb-6" />
                     <h2 className="text-xl font-medium text-muted-foreground">
                         {t('search.start_typing', 'Enter a keyword to start searching')}

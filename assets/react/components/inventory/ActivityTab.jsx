@@ -100,7 +100,7 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
                 activeTypes.forEach(t => params.append('types[]', t));
             }
 
-            const res = await fetch(`/inventory/${inventoryId}/activities?${params}`);
+            const res = await fetch(`/inventory/${inventoryId}/activities?${params}`, { headers: { 'Accept': 'application/json' } });
             if (res.ok) {
                 const data = await res.json();
                 setActivities(data.activities);
@@ -116,7 +116,7 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
     const fetchAccessRequests = useCallback(async () => {
         if (!canManageAccess) return;
         try {
-            const res = await fetch(`/inventory/${inventoryId}/access-requests`);
+            const res = await fetch(`/inventory/${inventoryId}/access-requests`, { headers: { 'Accept': 'application/json' } });
             if (res.ok) {
                 const data = await res.json();
                 setAccessRequests(data.requests);
@@ -174,7 +174,8 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
         setProcessingRequest(userId);
         try {
             const res = await fetch(`/inventory/${inventoryId}/access-requests/${userId}/approve`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
             });
             if (res.ok) {
                 setAccessRequests(prev => prev.filter(r => r.user.id !== userId));
@@ -190,7 +191,8 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
         setProcessingRequest(userId);
         try {
             const res = await fetch(`/inventory/${inventoryId}/access-requests/${userId}/deny`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
             });
             if (res.ok) {
                 setAccessRequests(prev => prev.filter(r => r.user.id !== userId));
@@ -359,8 +361,8 @@ export default function ActivityTab({ inventoryId, isCollaborator, canManageAcce
                                                 <a
                                                     href={`/user/${activity.user.id}`}
                                                     className={`font-medium hover:underline ${activity.isAdminAction
-                                                            ? 'text-green-600 dark:text-green-400'
-                                                            : ''
+                                                        ? 'text-green-600 dark:text-green-400'
+                                                        : ''
                                                         }`}
                                                 >
                                                     {activity.user.name}

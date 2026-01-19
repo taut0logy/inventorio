@@ -105,6 +105,9 @@ class InventoryController extends AbstractController
                 }
             }
 
+            // Create default fields
+            $inventory->createDefaultFields();
+
             $entityManager->persist($inventory);
             $entityManager->flush();
 
@@ -217,7 +220,8 @@ class InventoryController extends AbstractController
     public function settings(
         Inventory $inventory,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        \App\Repository\InventoryFieldRepository $fieldRepository
     ): Response {
         $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
 
@@ -228,12 +232,54 @@ class InventoryController extends AbstractController
             return $this->json(['error' => 'Conflict detected. The settings have been modified by another user.'], 409);
         }
 
-        if (isset($data['customFieldsConfig'])) {
-            $inventory->setCustomFieldsConfig($data['customFieldsConfig']);
-        }
-
+        // Handle ID Generation Config
         if (isset($data['idGenerationConfig'])) {
             $inventory->setIdGenerationConfig($data['idGenerationConfig']);
+        }
+
+        // Handle Fields Config (EAV)
+        if (isset($data['fields']) && is_array($data['fields'])) {
+            $existingFieldIds = [];
+            foreach ($inventory->getFields() as $f) {
+                $existingFieldIds[$f->getId()->toRfc4122()] = $f;
+            }
+
+            $processedIds = [];
+            foreach ($data['fields'] as $position => $fieldData) {
+                $fieldId = $fieldData['id'] ?? null;
+                
+                if ($fieldId && isset($existingFieldIds[$fieldId])) {
+                    // Update existing field
+                    $field = $existingFieldIds[$fieldId];
+                } else {
+                    // Create new field
+                    $field = new \App\Entity\InventoryField();
+                    $field->setInventory($inventory);
+                    $inventory->addField($field);
+                }
+                
+                $field->setLabel($fieldData['label'] ?? 'Unnamed Field');
+                $field->setType($fieldData['type'] ?? 'string');
+                $field->setDescription($fieldData['description'] ?? null);
+                $field->setPosition((int)$position);
+                $field->setHidden((bool)($fieldData['hidden'] ?? false));
+                $field->setRequired((bool)($fieldData['required'] ?? false));
+                $field->setRegex($fieldData['regex'] ?? null);
+                $field->setMin(isset($fieldData['min']) && $fieldData['min'] !== '' ? (float)$fieldData['min'] : null);
+                $field->setMax(isset($fieldData['max']) && $fieldData['max'] !== '' ? (float)$fieldData['max'] : null);
+                $field->setOptions($fieldData['options'] ?? null);
+                
+                $entityManager->persist($field);
+                $processedIds[] = $field->getId()->toRfc4122();
+            }
+            
+            // Remove fields that were deleted
+            foreach ($existingFieldIds as $id => $field) {
+                if (!in_array($id, $processedIds)) {
+                    $inventory->removeField($field);
+                    $entityManager->remove($field);
+                }
+            }
         }
 
         try {
@@ -244,7 +290,8 @@ class InventoryController extends AbstractController
 
         return $this->json([
             'message' => 'Settings updated successfully',
-            'version' => $inventory->getVersion()
+            'version' => $inventory->getVersion(),
+            'fields' => array_map(fn($f) => $f->toArray(), $inventory->getFields()->toArray())
         ]);
     }
 
@@ -756,7 +803,7 @@ class InventoryController extends AbstractController
         $this->denyAccessUnlessGranted('INVENTORY_VIEW', $inventory);
 
         $items = $inventory->getItems();
-        $fieldsConfig = $inventory->getCustomFieldsConfig() ?? [];
+        $fields = $inventory->getFields();
         $totalItems = count($items);
 
         if ($totalItems === 0) {
@@ -772,75 +819,49 @@ class InventoryController extends AbstractController
         $stringStats = [];
         $completionRates = [];
 
-        // Define field mappings
-        $numericFields = ['number1', 'number2', 'number3'];
-        $stringFields = ['string1', 'string2', 'string3'];
-
-        // Calculate numeric stats
-        foreach ($numericFields as $field) {
-            $fieldKey = $field;
-            $config = $fieldsConfig[$fieldKey] ?? null;
-            
-            // Skip hidden fields
-            if ($config && ($config['hidden'] ?? false)) {
+        // Process each field
+        foreach ($fields as $field) {
+            if ($field->isHidden()) {
                 continue;
             }
 
-            $getter = 'getCustom' . ucfirst(str_replace('number', 'Number', $field)) . 'Value';
+            $fieldId = $field->getId()->toRfc4122();
+            $fieldType = $field->getType();
+            $fieldLabel = $field->getLabel();
+
             $values = [];
             $nonNullCount = 0;
 
+            // Collect values from all items
             foreach ($items as $item) {
-                $val = $item->$getter();
-                if ($val !== null) {
+                $val = $item->getFieldValue($field);
+                if ($val !== null && $val !== '') {
                     $values[] = $val;
                     $nonNullCount++;
                 }
             }
 
-            if (count($values) > 0) {
-                $numericStats[$fieldKey] = [
-                    'label' => $config['label'] ?? ucfirst($field),
-                    'min' => min($values),
-                    'max' => max($values),
-                    'avg' => round(array_sum($values) / count($values), 2),
-                    'sum' => array_sum($values),
-                    'count' => count($values)
+            // Calculate numeric stats
+            if ($fieldType === 'number' && count($values) > 0) {
+                $numericValues = array_map('floatval', $values);
+                $numericStats[$fieldId] = [
+                    'label' => $fieldLabel,
+                    'min' => min($numericValues),
+                    'max' => max($numericValues),
+                    'avg' => round(array_sum($numericValues) / count($numericValues), 2),
+                    'sum' => array_sum($numericValues),
+                    'count' => count($numericValues)
                 ];
             }
 
-            $completionRates[$fieldKey] = [
-                'label' => $config['label'] ?? ucfirst($field),
-                'rate' => round(($nonNullCount / $totalItems) * 100)
-            ];
-        }
-
-        // Calculate string stats (top 5 most frequent values)
-        foreach ($stringFields as $field) {
-            $fieldKey = $field;
-            $config = $fieldsConfig[$fieldKey] ?? null;
-            
-            if ($config && ($config['hidden'] ?? false)) {
-                continue;
-            }
-
-            $getter = 'getCustom' . ucfirst(str_replace('string', 'String', $field)) . 'Value';
-            $valueCounts = [];
-            $nonNullCount = 0;
-
-            foreach ($items as $item) {
-                $val = $item->$getter();
-                if ($val !== null && $val !== '') {
-                    $valueCounts[$val] = ($valueCounts[$val] ?? 0) + 1;
-                    $nonNullCount++;
-                }
-            }
-
-            if (count($valueCounts) > 0) {
+            // Calculate string stats (top 5 most frequent values)
+            if (in_array($fieldType, ['string', 'text', 'select']) && count($values) > 0) {
+                $valueCounts = array_count_values($values);
                 arsort($valueCounts);
                 $topValues = array_slice($valueCounts, 0, 5, true);
-                $stringStats[$fieldKey] = [
-                    'label' => $config['label'] ?? ucfirst($field),
+                
+                $stringStats[$fieldId] = [
+                    'label' => $fieldLabel,
                     'topValues' => array_map(function($val, $count) use ($totalItems) {
                         return [
                             'value' => $val,
@@ -851,8 +872,9 @@ class InventoryController extends AbstractController
                 ];
             }
 
-            $completionRates[$fieldKey] = [
-                'label' => $config['label'] ?? ucfirst($field),
+            // Calculate completion rate for all visible fields
+            $completionRates[$fieldId] = [
+                'label' => $fieldLabel,
                 'rate' => round(($nonNullCount / $totalItems) * 100)
             ];
         }

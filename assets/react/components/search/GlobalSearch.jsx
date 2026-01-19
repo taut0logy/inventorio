@@ -23,7 +23,7 @@ export default function GlobalSearch({ className = '' }) {
 
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
+            const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=5`, { headers: { 'Accept': 'application/json' } });
             const data = await response.json();
             setResults(data);
         } catch (error) {
@@ -130,7 +130,7 @@ export default function GlobalSearch({ className = '' }) {
                         </div>
                     ) : results.total === 0 ? (
                         <div className="py-8 text-center text-muted-foreground">
-                            {query.length < 2 
+                            {query.length < 2
                                 ? t('search.min_chars', 'Type at least 2 characters')
                                 : t('search.no_results', 'No results found')
                             }
@@ -154,9 +154,9 @@ export default function GlobalSearch({ className = '' }) {
                                             className="w-full px-3 py-2.5 text-left hover:bg-accent transition-colors flex items-start gap-3"
                                         >
                                             {inv.imageUrl ? (
-                                                <img 
-                                                    src={inv.imageUrl} 
-                                                    alt="" 
+                                                <img
+                                                    src={inv.imageUrl}
+                                                    alt=""
                                                     className="w-10 h-10 rounded object-cover flex-shrink-0"
                                                 />
                                             ) : (
@@ -237,7 +237,7 @@ export default function GlobalSearch({ className = '' }) {
                             )}
                         </>
                     )}
-                    
+
                     {/* View All Link */}
                     {query.length >= 2 && (
                         <div className="p-2 border-t bg-muted/20">

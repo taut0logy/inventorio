@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { 
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
-import { 
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator 
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-    MoreHorizontal, Trash2, Search, Loader2, RefreshCcw, XCircle, Plus, Pencil, Tag 
+import {
+    MoreHorizontal, Trash2, Search, Loader2, RefreshCcw, XCircle, Plus, Pencil, Tag
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { t } from '@/lib/i18n';
@@ -29,7 +29,7 @@ export default function AdminTagsTab() {
     const [selectedIds, setSelectedIds] = useState([]);
     const [showDeleted, setShowDeleted] = useState(false);
     const [ConfirmDialog, confirm] = useConfirm();
-    
+
     // Form State
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
@@ -41,7 +41,7 @@ export default function AdminTagsTab() {
             const params = new URLSearchParams({
                 page, limit: 10, q: search, deleted: showDeleted ? '1' : '0', sort: 'name', dir: 'asc'
             });
-            const res = await fetch(`/api/admin/tags?${params}`);
+            const res = await fetch(`/api/admin/tags?${params}`, { headers: { 'Accept': 'application/json' } });
             const data = await res.json();
             setItems(data.data);
             setMeta(data.meta);
@@ -79,7 +79,10 @@ export default function AdminTagsTab() {
 
         setActionLoading(item.id);
         try {
-            const res = await fetch(`/api/admin/tags/${item.id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/admin/tags/${item.id}`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('tag.action.deleted', 'Tag deleted'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
@@ -87,7 +90,7 @@ export default function AdminTagsTab() {
             } else {
                 toast.error(t('error.action_failed', 'Failed to delete tag'));
             }
-        } catch (e) { 
+        } catch (e) {
             console.error(e);
             toast.error(t('error.network', 'Network error'));
         }
@@ -97,7 +100,10 @@ export default function AdminTagsTab() {
     const handleRestore = async (item) => {
         setActionLoading(item.id);
         try {
-            const res = await fetch(`/api/admin/tags/${item.id}/restore`, { method: 'POST' });
+            const res = await fetch(`/api/admin/tags/${item.id}/restore`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('tag.action.restored', 'Tag restored'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
@@ -105,7 +111,7 @@ export default function AdminTagsTab() {
             } else {
                 toast.error(t('error.action_failed', 'Failed to restore tag'));
             }
-        } catch (e) { 
+        } catch (e) {
             console.error(e);
             toast.error(t('error.network', 'Network error'));
         }
@@ -122,16 +128,19 @@ export default function AdminTagsTab() {
 
         setActionLoading(item.id);
         try {
-            const res = await fetch(`/api/admin/tags/${item.id}/permanent`, { method: 'DELETE' });
+            const res = await fetch(`/api/admin/tags/${item.id}/permanent`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('tag.action.deleted_forever', 'Tag permanently deleted'));
                 setItems(prev => prev.filter(i => i.id !== item.id));
                 setSelectedIds(prev => prev.filter(id => id !== item.id));
             } else {
                 const err = await res.json();
-                toast.error(err.error || t('error.action_failed', 'Failed to delete'));
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete'));
             }
-        } catch (e) { 
+        } catch (e) {
             console.error(e);
             toast.error(t('error.network', 'Network error'));
         }
@@ -146,10 +155,10 @@ export default function AdminTagsTab() {
         try {
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            
+
             if (res.ok) {
                 toast.success(editingItem ? t('tag.action.updated', 'Tag updated') : t('tag.action.created', 'Tag created'));
                 setIsSheetOpen(false);
@@ -158,9 +167,9 @@ export default function AdminTagsTab() {
                 fetchItems();
             } else {
                 const err = await res.json();
-                toast.error(err.error || t('error.save_failed', 'Failed to save'));
+                toast.error(err.detail || err.error || err.title || t('error.save_failed', 'Failed to save'));
             }
-        } catch (e) { 
+        } catch (e) {
             console.error(e);
             toast.error(t('error.network', 'Network error'));
         }
@@ -186,21 +195,21 @@ export default function AdminTagsTab() {
             confirmText: 'Delete',
             variant: 'destructive'
         })) return;
-        
+
         try {
-           const res = await fetch('/api/admin/tags/bulk/delete', {
-               method: 'POST',
-               headers: {'Content-Type': 'application/json'},
-               body: JSON.stringify({ ids: selectedIds })
-           });
-           if (res.ok) {
-               toast.success(t('tag.action.bulk_deleted', 'Tags deleted'));
-               fetchItems();
-               setSelectedIds([]);
-           } else {
-               toast.error(t('error.bulk_action_failed', 'Bulk action failed'));
-           }
-        } catch(e) { 
+            const res = await fetch('/api/admin/tags/bulk/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ ids: selectedIds })
+            });
+            if (res.ok) {
+                toast.success(t('tag.action.bulk_deleted', 'Tags deleted'));
+                fetchItems();
+                setSelectedIds([]);
+            } else {
+                toast.error(t('error.bulk_action_failed', 'Bulk action failed'));
+            }
+        } catch (e) {
             console.error(e);
             toast.error(t('error.network', 'Network error'));
         }
@@ -210,7 +219,7 @@ export default function AdminTagsTab() {
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                     <div className="relative w-full max-w-sm">
+                    <div className="relative w-full max-w-sm">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder={t('admin.search_tags', 'Search tags...')}
@@ -229,10 +238,10 @@ export default function AdminTagsTab() {
 
             {selectedIds.length > 0 && !showDeleted && (
                 <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg border">
-                     <span className="text-sm font-medium px-2">{selectedIds.length} selected</span>
-                     <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                         <Trash2 className="mr-2 h-4 w-4" /> Delete
-                     </Button>
+                    <span className="text-sm font-medium px-2">{selectedIds.length} selected</span>
+                    <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </Button>
                 </div>
             )}
 
@@ -241,7 +250,7 @@ export default function AdminTagsTab() {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-12">
-                                <Checkbox 
+                                <Checkbox
                                     checked={items.length > 0 && selectedIds.length === items.length}
                                     onCheckedChange={handleSelectAll}
                                 />
@@ -255,14 +264,14 @@ export default function AdminTagsTab() {
                     </TableHeader>
                     <TableBody>
                         {loading ? (
-                             <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="animate-spin mx-auto" /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="animate-spin mx-auto" /></TableCell></TableRow>
                         ) : items.length === 0 ? (
-                             <TableRow><TableCell colSpan={6} className="h-24 text-center">No results</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={6} className="h-24 text-center">No results</TableCell></TableRow>
                         ) : (
                             items.map(item => (
                                 <TableRow key={item.id}>
                                     <TableCell>
-                                        <Checkbox 
+                                        <Checkbox
                                             checked={selectedIds.includes(item.id)}
                                             onCheckedChange={(c) => handleSelectOne(item.id, c)}
                                         />
@@ -324,18 +333,18 @@ export default function AdminTagsTab() {
                     <form onSubmit={handleSave} className="space-y-4 mt-4">
                         <div className="space-y-2">
                             <Label htmlFor="tag-name">Name</Label>
-                            <Input 
-                                id="tag-name" 
-                                value={formData.name} 
-                                onChange={e => setFormData({...formData, name: e.target.value})} 
-                                required 
+                            <Input
+                                id="tag-name"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                required
                             />
                         </div>
                         <div className="flex items-center space-x-2">
-                            <Checkbox 
-                                id="is-predefined" 
-                                checked={formData.isPredefined} 
-                                onCheckedChange={c => setFormData({...formData, isPredefined: c})} 
+                            <Checkbox
+                                id="is-predefined"
+                                checked={formData.isPredefined}
+                                onCheckedChange={c => setFormData({ ...formData, isPredefined: c })}
                             />
                             <Label htmlFor="is-predefined">Is Predefined (Global)</Label>
                         </div>

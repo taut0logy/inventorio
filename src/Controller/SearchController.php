@@ -125,22 +125,20 @@ class SearchController extends AbstractController
     }
 
     /**
-     * Get a preview string from item's first non-empty string field
+     * Get a preview string from item's first non-empty string field value
      */
     private function getItemPreview($item): ?string
     {
-        $fields = [
-            $item->getCustomString1Value(),
-            $item->getCustomString2Value(),
-            $item->getCustomString3Value(),
-        ];
-
-        foreach ($fields as $value) {
-            if (!empty($value)) {
-                return mb_substr($value, 0, 80);
+        // Get first non-empty string field value
+        foreach ($item->getFieldValues() as $fv) {
+            $field = $fv->getField();
+            if ($field && in_array($field->getType(), ['string', 'text', 'link', 'select'])) {
+                $value = $fv->getStringValue();
+                if (!empty($value)) {
+                    return mb_substr($value, 0, 80);
+                }
             }
         }
-
         return null;
     }
 }

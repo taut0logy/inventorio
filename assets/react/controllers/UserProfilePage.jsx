@@ -74,9 +74,15 @@ export default function UserProfilePage({
     const handleRestore = async (id) => {
         if (!confirm(t('confirm.restore', 'Are you sure you want to restore this inventory?'))) return;
         try {
-            const res = await fetch(`/inventory/${id}/restore`, { method: 'POST' });
+            const res = await fetch(`/inventory/${id}/restore`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) window.location.reload();
-            else toast.error(t('error.restore_failed', 'Failed to restore inventory'));
+            else {
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.restore_failed', 'Failed to restore inventory'));
+            }
         } catch (e) {
             console.error(e);
             toast.error(t('error.restore_error', 'Error restoring inventory'));

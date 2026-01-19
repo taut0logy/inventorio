@@ -96,7 +96,7 @@ export default function UserActivityTab({ userId, canSeeAccessEvents }) {
                 activeTypes.forEach(t => params.append('types[]', t));
             }
 
-            const res = await fetch(`/user/${userId}/activities?${params}`);
+            const res = await fetch(`/user/${userId}/activities?${params}`, { headers: { 'Accept': 'application/json' } });
             if (res.ok) {
                 const data = await res.json();
                 setActivities(data.activities);

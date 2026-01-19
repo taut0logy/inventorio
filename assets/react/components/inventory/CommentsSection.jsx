@@ -64,7 +64,7 @@ export default function CommentsSection({ inventoryId, currentUser }) {
         try {
             const response = await fetch(`/api/inventories/${inventoryId}/comments`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ content: content.trim() })
             });
 
@@ -76,9 +76,13 @@ export default function CommentsSection({ inventoryId, currentUser }) {
                 });
                 setContent('');
                 setTimeout(scrollToBottom, 100);
+            } else {
+                const data = await response.json();
+                throw new Error(data.detail || data.error || data.title || 'Failed to send comment');
             }
         } catch (error) {
             console.error('Failed to send comment:', error);
+            toast.error(error.message);
         } finally {
             setSending(false);
         }
@@ -128,8 +132,8 @@ export default function CommentsSection({ inventoryId, currentUser }) {
                                             </span>
                                         </div>
                                         <div className={`rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${isMe
-                                                ? 'bg-primary text-primary-foreground rounded-tr-none'
-                                                : 'bg-muted rounded-tl-none'
+                                            ? 'bg-primary text-primary-foreground rounded-tr-none'
+                                            : 'bg-muted rounded-tl-none'
                                             }`}>
                                             {comment.content}
                                         </div>

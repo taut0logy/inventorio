@@ -21,99 +21,63 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Plus, Loader2, Pencil, HelpCircle } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
-// All field definitions
-const ALL_FIELDS = [
-    { key: 'string1', formKey: 'customString1', type: 'string', defaultLabel: 'Custom String 1' },
-    { key: 'string2', formKey: 'customString2', type: 'string', defaultLabel: 'Custom String 2' },
-    { key: 'string3', formKey: 'customString3', type: 'string', defaultLabel: 'Custom String 3' },
-    { key: 'number1', formKey: 'customNumber1', type: 'number', defaultLabel: 'Custom Number 1' },
-    { key: 'number2', formKey: 'customNumber2', type: 'number', defaultLabel: 'Custom Number 2' },
-    { key: 'number3', formKey: 'customNumber3', type: 'number', defaultLabel: 'Custom Number 3' },
-    { key: 'text1', formKey: 'customText1', type: 'text', defaultLabel: 'Custom Text 1' },
-    { key: 'text2', formKey: 'customText2', type: 'text', defaultLabel: 'Custom Text 2' },
-    { key: 'text3', formKey: 'customText3', type: 'text', defaultLabel: 'Custom Text 3' },
-    { key: 'link1', formKey: 'customLink1', type: 'link', defaultLabel: 'Custom Link 1' },
-    { key: 'link2', formKey: 'customLink2', type: 'link', defaultLabel: 'Custom Link 2' },
-    { key: 'link3', formKey: 'customLink3', type: 'link', defaultLabel: 'Custom Link 3' },
-    { key: 'select1', formKey: 'customSelect1', type: 'select', defaultLabel: 'Custom Select 1' },
-    { key: 'select2', formKey: 'customSelect2', type: 'select', defaultLabel: 'Custom Select 2' },
-    { key: 'select3', formKey: 'customSelect3', type: 'select', defaultLabel: 'Custom Select 3' },
-    { key: 'bool1', formKey: 'customBool1', type: 'boolean', defaultLabel: 'Custom Boolean 1' },
-    { key: 'bool2', formKey: 'customBool2', type: 'boolean', defaultLabel: 'Custom Boolean 2' },
-    { key: 'bool3', formKey: 'customBool3', type: 'boolean', defaultLabel: 'Custom Boolean 3' },
-];
-
-export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}, idConfig = {} }) {
+export default function ItemSheet({ inventoryId, item, trigger, fields = [], idConfig = {} }) {
     const isEditMode = !!item;
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    
-    // Initialize form data with all fields
-    const [formData, setFormData] = useState({});
 
-    // Detect if auto-ID is configured (new elements format or old auto type)
+    // Form data: customId + fieldValues keyed by field ID
+    const [formData, setFormData] = useState({ customId: '', fieldValues: {} });
+
+    // Detect if auto-ID is configured
     const hasElements = idConfig?.elements && Array.isArray(idConfig.elements) && idConfig.elements.length > 0;
     const isOldAutoFormat = idConfig?.type === 'auto' && !hasElements;
     const isAutoId = hasElements || isOldAutoFormat;
-    
-    // Get field order from config, or use default order
-    const fieldOrder = fieldConfig?.order || ALL_FIELDS.map(f => f.key);
-    const fields = fieldConfig?.fields || {};
-    
-    // Helper to get label
-    const getLabel = (key, defaultLabel) => {
-        const config = fields[key];
-        if (config?.label) {
-            return config.label;
-        }
-        return defaultLabel;
-    };
 
-    // Helper to get description for tooltip
-    const getDescription = (key) => {
-        const config = fields[key];
-        return config?.description || null;
-    };
-
-    // Helper to check visibility
-    const isVisible = (key) => {
-        const config = fields[key];
-        if (config?.hidden === true) {
-            return false;
-        }
-        return true;
-    };
-
-    // Get ordered and visible fields
-    const orderedFields = fieldOrder
-        .map(key => ALL_FIELDS.find(f => f.key === key))
-        .filter(Boolean)
-        .filter(field => isVisible(field.key));
+    // Get visible fields ordered by position
+    const visibleFields = fields
+        .filter(f => !f.hidden)
+        .sort((a, b) => (a.position || 0) - (b.position || 0));
 
     // Reset or populate form on open/change
     useEffect(() => {
         if (open) {
-            const newFormData = { customId: '' };
-            ALL_FIELDS.forEach(f => {
-                newFormData[f.formKey] = '';
+            const newFormData = {
+                customId: '',
+                fieldValues: {}
+            };
+
+            // Initialize all fields with empty values
+            fields.forEach(f => {
+                newFormData.fieldValues[f.id] = '';
             });
-            
+
             if (isEditMode && item) {
                 newFormData.customId = item.customId || '';
-                ALL_FIELDS.forEach(f => {
-                    newFormData[f.formKey] = item[f.formKey + 'Value'] ?? '';
-                });
+                // Populate field values from item
+                if (item.fieldValues) {
+                    Object.keys(item.fieldValues).forEach(fieldId => {
+                        newFormData.fieldValues[fieldId] = item.fieldValues[fieldId] ?? '';
+                    });
+                }
                 newFormData.tags = item.tags ? item.tags.map(t => typeof t === 'string' ? t : t.name) : [];
             } else {
                 newFormData.tags = [];
             }
-            
+
             setFormData(newFormData);
         }
-    }, [open, isEditMode, item]);
+    }, [open, isEditMode, item, fields]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -123,10 +87,13 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
         }));
     };
 
-    const handleBoolChange = (key, checked) => {
+    const handleFieldChange = (fieldId, value) => {
         setFormData(prev => ({
             ...prev,
-            [key]: checked
+            fieldValues: {
+                ...prev.fieldValues,
+                [fieldId]: value
+            }
         }));
     };
 
@@ -136,36 +103,40 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
 
         // Validation
         const errors = [];
-        orderedFields.forEach(field => {
-            const config = fields[field.key] || {};
-            const value = formData[field.formKey];
-            const label = getLabel(field.key, field.defaultLabel);
+        visibleFields.forEach(field => {
+            const value = formData.fieldValues[field.id];
+            const label = field.label;
 
             // Required check
-            if (config.required && (value === '' || value === null || value === undefined)) {
+            if (field.required && (value === '' || value === null || value === undefined)) {
                 errors.push(t('val.field_required', { label }, `${label} is required.`));
             }
 
+            // Skip further validation if empty
+            if (value === '' || value === null || value === undefined) {
+                return;
+            }
+
             // Regex check
-            if (config.regex && value && (field.type === 'string' || field.type === 'text')) {
+            if (field.regex && ['string', 'text', 'link', 'select'].includes(field.type)) {
                 try {
-                    const regex = new RegExp(config.regex);
+                    const regex = new RegExp(field.regex);
                     if (!regex.test(value)) {
                         errors.push(t('val.field_regex', { label }, `${label} format is invalid.`));
                     }
                 } catch (e) {
-                    console.error("Invalid Regex:", config.regex);
+                    console.error("Invalid Regex:", field.regex);
                 }
             }
 
             // Min/Max check (Numbers)
             if (field.type === 'number' && value !== '') {
                 const numVal = parseFloat(value);
-                if (config.min !== undefined && config.min !== '' && numVal < parseFloat(config.min)) {
-                    errors.push(t('val.field_min', { label, min: config.min }, `${label} must be at least ${config.min}.`));
+                if (field.min !== undefined && field.min !== null && numVal < field.min) {
+                    errors.push(t('val.field_min', { label, min: field.min }, `${label} must be at least ${field.min}.`));
                 }
-                if (config.max !== undefined && config.max !== '' && numVal > parseFloat(config.max)) {
-                    errors.push(t('val.field_max', { label, max: config.max }, `${label} must be at most ${config.max}.`));
+                if (field.max !== undefined && field.max !== null && numVal > field.max) {
+                    errors.push(t('val.field_max', { label, max: field.max }, `${label} must be at most ${field.max}.`));
                 }
             }
         });
@@ -177,19 +148,22 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
         }
 
         try {
-            const url = isEditMode 
-                ? `/api/items/${item.id}` 
+            const url = isEditMode
+                ? `/api/items/${item.id}`
                 : `/api/items/new/${inventoryId}`;
-            
+
             const method = isEditMode ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...formData,
+                    customId: formData.customId,
+                    fieldValues: formData.fieldValues,
+                    tags: formData.tags,
                     version: item?.version
                 })
             });
@@ -197,19 +171,20 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
             const data = await response.json();
 
             if (response.status === 409) {
-                toast.error(t('error.conflict', 'Conflict detected: This item has been modified by another user. The page will reload.'));
+                const msg = data.detail || data.error || t('error.conflict', 'Conflict detected: Item modified by another user.');
+                toast.error(msg);
                 setTimeout(() => window.location.reload(), 1500);
                 return;
             }
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to save item');
+                throw new Error(data.detail || data.error || data.title || `Failed to save item (${response.status})`);
             }
 
             // Success
             setOpen(false);
             toast.success(isEditMode ? t('item.action.updated', 'Item updated') : t('item.action.created', 'Item created'));
-            window.location.reload(); 
+            window.location.reload();
         } catch (error) {
             console.error('Error saving item:', error);
             toast.error(error.message || t('error.save_failed', 'Failed to save item'));
@@ -220,21 +195,22 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
 
     // Render a field based on its type
     const renderField = (field) => {
-        const label = getLabel(field.key, field.defaultLabel);
-        const description = getDescription(field.key);
-        const value = formData[field.formKey];
+        const value = formData.fieldValues[field.id] ?? '';
 
         const labelElement = (
             <div className="flex items-center gap-1">
-                <Label htmlFor={field.formKey}>{label}</Label>
-                {description && (
+                <Label htmlFor={field.id}>
+                    {field.label}
+                    {field.required && <span className="text-destructive ml-0.5">*</span>}
+                </Label>
+                {field.description && (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p className="max-w-[200px] text-xs">{description}</p>
+                                <p className="max-w-[200px] text-xs">{field.description}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
@@ -246,31 +222,31 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
             case 'string':
             case 'link':
                 return (
-                    <div key={field.key} className="grid gap-2">
+                    <div key={field.id} className="grid gap-2">
                         {labelElement}
                         <Input
-                            id={field.formKey}
-                            name={field.formKey}
+                            id={field.id}
                             type={field.type === 'link' ? 'url' : 'text'}
-                            value={value || ''}
-                            onChange={handleChange}
-                            placeholder={field.type === 'link' ? 'https://...' : 'Enter text...'}
+                            value={value}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            placeholder={field.type === 'link' ? 'https://...' : t('item.enter_text', 'Enter text...')}
                         />
                     </div>
                 );
 
             case 'number':
                 return (
-                    <div key={field.key} className="grid gap-2">
+                    <div key={field.id} className="grid gap-2">
                         {labelElement}
                         <Input
-                            id={field.formKey}
-                            name={field.formKey}
+                            id={field.id}
                             type="number"
                             step="any"
-                            value={value || ''}
-                            onChange={handleChange}
-                            placeholder="Enter number..."
+                            value={value}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            placeholder={t('item.enter_number', 'Enter number...')}
+                            min={field.min}
+                            max={field.max}
                         />
                     </div>
                 );
@@ -278,14 +254,13 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
             case 'text':
                 // Text areas span full width
                 return (
-                    <div key={field.key} className="grid gap-2 md:col-span-2">
+                    <div key={field.id} className="grid gap-2 md:col-span-2">
                         {labelElement}
                         <Textarea
-                            id={field.formKey}
-                            name={field.formKey}
-                            value={value || ''}
-                            onChange={handleChange}
-                            placeholder="Enter multi-line text..."
+                            id={field.id}
+                            value={value}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            placeholder={t('item.enter_multiline', 'Enter multi-line text...')}
                             className="min-h-[80px]"
                         />
                     </div>
@@ -293,37 +268,35 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
 
             case 'boolean':
                 return (
-                    <div key={field.key} className="flex items-center gap-3 py-2">
+                    <div key={field.id} className="flex items-center gap-3 py-2">
                         <Checkbox
-                            id={field.formKey}
+                            id={field.id}
                             checked={!!value}
-                            onCheckedChange={(checked) => handleBoolChange(field.formKey, checked)}
+                            onCheckedChange={(checked) => handleFieldChange(field.id, checked)}
                         />
                         {labelElement}
                     </div>
                 );
 
             case 'select':
-                const config = fields[field.key] || {};
-                const options = config.options 
-                    ? config.options.split(',').map(o => o.trim()).filter(o => o) 
-                    : [];
-                
+                const options = field.options || [];
+
                 return (
-                    <div key={field.key} className="grid gap-2">
+                    <div key={field.id} className="grid gap-2">
                         {labelElement}
-                        <select
-                            id={field.formKey}
-                            name={field.formKey}
+                        <Select
                             value={value || ''}
-                            onChange={handleChange}
-                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            onValueChange={(val) => handleFieldChange(field.id, val)}
                         >
-                            <option value="">Select an option...</option>
-                            {options.map((opt, i) => (
-                                <option key={i} value={opt}>{opt}</option>
-                            ))}
-                        </select>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('item.select_option', 'Select an option...')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {options.map((opt, i) => (
+                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 );
 
@@ -363,7 +336,7 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
                         {/* Custom ID Field - Full width */}
                         <div className="grid gap-2 md:col-span-2">
                             <Label htmlFor="customId">
-                                {t('item.id_label', 'Item ID')} {isAutoId && !isEditMode ? `(${t('item.id_auto', 'Auto-generated on save')})` : ''} 
+                                {t('item.id_label', 'Item ID')} {isAutoId && !isEditMode ? `(${t('item.id_auto', 'Auto-generated on save')})` : ''}
                                 {!isAutoId && <span className="text-destructive ml-1">*</span>}
                             </Label>
                             <Input
@@ -373,23 +346,23 @@ export default function ItemSheet({ inventoryId, item, trigger, fieldConfig = {}
                                 onChange={handleChange}
                                 placeholder="e.g. A-001"
                                 required={!isAutoId}
-                                disabled={isAutoId && !isEditMode} 
+                                disabled={isAutoId && !isEditMode}
                                 className={isAutoId && !isEditMode ? "bg-muted text-muted-foreground" : ""}
                             />
                         </div>
 
                         {/* Render all visible fields in order */}
-                        {orderedFields.map(renderField)}
+                        {visibleFields.map(renderField)}
                     </div>
                     <SheetFooter>
-                         <SheetClose asChild>
+                        <SheetClose asChild>
                             <Button type="button" variant="outline">
                                 {t('action.cancel', 'Cancel')}
                             </Button>
                         </SheetClose>
                         <Button type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isLoading ? (isEditMode ? t('item.saving', 'Saving...') : t('item.creating', 'Creating...')) : 
+                            {isLoading ? (isEditMode ? t('item.saving', 'Saving...') : t('item.creating', 'Creating...')) :
                                 (isEditMode ? t('item.update_btn', 'Save Changes') : t('item.create_btn', 'Create Item'))}
                         </Button>
                     </SheetFooter>

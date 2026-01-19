@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { 
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
-import { 
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator 
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
+import {
     MoreHorizontal, Shield, ShieldOff, Trash2, Ban, CheckCircle, Search, Loader2, RefreshCcw, XCircle
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
@@ -24,7 +24,7 @@ export default function AdminUsersTab({ currentUser }) {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState({ total: 0, pages: 1 });
-    const [actionLoading, setActionLoading] = useState(null); 
+    const [actionLoading, setActionLoading] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkLoading, setBulkLoading] = useState(false);
     const [showDeleted, setShowDeleted] = useState(false);
@@ -39,11 +39,11 @@ export default function AdminUsersTab({ currentUser }) {
                 q: search,
                 deleted: showDeleted ? '1' : '0'
             });
-            const response = await fetch(`/api/admin/users?${params}`);
+            const response = await fetch(`/api/admin/users?${params}`, { headers: { 'Accept': 'application/json' } });
             const data = await response.json();
             setUsers(data.data);
             setMeta(data.meta);
-            setSelectedIds([]); 
+            setSelectedIds([]);
         } catch (error) {
             console.error('Failed to fetch users:', error);
             toast.error(t('error.fetch_failed', 'Failed to load users'));
@@ -81,7 +81,7 @@ export default function AdminUsersTab({ currentUser }) {
 
         let confirmMsg = '';
         let url = '';
-        
+
         switch (action) {
             case 'block':
                 confirmMsg = t('admin.bulk.confirm.block', { count: selectedIds.length }, `Block ${selectedIds.length} users?`);
@@ -105,7 +105,10 @@ export default function AdminUsersTab({ currentUser }) {
                 setBulkLoading(true);
                 try {
                     for (const id of selectedIds) {
-                        await fetch(`/api/admin/users/${id}/restore`, { method: 'POST' });
+                        await fetch(`/api/admin/users/${id}/restore`, {
+                            method: 'POST',
+                            headers: { 'Accept': 'application/json' }
+                        });
                     }
                     fetchUsers();
                     setSelectedIds([]);
@@ -124,13 +127,13 @@ export default function AdminUsersTab({ currentUser }) {
         try {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ ids: selectedIds })
             });
 
             if (response.ok) {
                 const data = await response.json();
-                
+
                 toast.success(data.message || t('action.success', 'Action completed'));
 
                 if (data.logoutRequired) {
@@ -142,7 +145,7 @@ export default function AdminUsersTab({ currentUser }) {
                 setSelectedIds([]);
             } else {
                 const errorData = await response.json().catch(() => ({}));
-                toast.error(errorData.message || t('error.generic', 'Action failed'));
+                toast.error(errorData.detail || errorData.message || errorData.title || t('error.generic', 'Action failed'));
             }
         } catch (error) {
             console.error('Bulk action failed:', error);
@@ -158,10 +161,13 @@ export default function AdminUsersTab({ currentUser }) {
             confirmText: user.isBlocked ? 'Unblock' : 'Block',
             variant: user.isBlocked ? 'default' : 'destructive'
         })) return;
-        
+
         setActionLoading(user.id);
         try {
-            const response = await fetch(`/api/admin/users/${user.id}/block`, { method: 'POST' });
+            const response = await fetch(`/api/admin/users/${user.id}/block`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (response.ok) {
                 const data = await response.json();
                 toast.success(data.message);
@@ -171,7 +177,8 @@ export default function AdminUsersTab({ currentUser }) {
                 }
                 setUsers(users.map(u => u.id === user.id ? { ...u, isBlocked: data.isBlocked } : u));
             } else {
-                toast.error(t('error.action_failed', 'Failed to update block status'));
+                const err = await response.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to update block status'));
             }
         } catch (error) {
             console.error('Error blocking user:', error);
@@ -184,19 +191,23 @@ export default function AdminUsersTab({ currentUser }) {
     const handleRole = async (user) => {
         setActionLoading(user.id);
         try {
-            const response = await fetch(`/api/admin/users/${user.id}/role`, { method: 'POST' });
+            const response = await fetch(`/api/admin/users/${user.id}/role`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (response.ok) {
                 const data = await response.json();
                 toast.success(data.message);
-                
+
                 if (data.redirectRequired) {
                     window.location.href = '/';
                     return;
                 }
-                
+
                 setUsers(users.map(u => u.id === user.id ? { ...u, roles: data.roles } : u));
             } else {
-                toast.error(t('error.action_failed', 'Failed to update role'));
+                const err = await response.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to update role'));
             }
         } catch (error) {
             console.error('Error updating role:', error);
@@ -216,7 +227,10 @@ export default function AdminUsersTab({ currentUser }) {
 
         setActionLoading(user.id);
         try {
-            const response = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
+            const response = await fetch(`/api/admin/users/${user.id}`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
+            });
             if (response.ok) {
                 const data = await response.json();
                 toast.success(data.message);
@@ -227,7 +241,8 @@ export default function AdminUsersTab({ currentUser }) {
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete user'));
+                const err = await response.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete user'));
             }
         } catch (error) {
             console.error('Error deleting user:', error);
@@ -246,18 +261,22 @@ export default function AdminUsersTab({ currentUser }) {
         })) return;
         setActionLoading(user.id);
         try {
-            const res = await fetch(`/api/admin/users/${user.id}/restore`, { method: 'POST' });
+            const res = await fetch(`/api/admin/users/${user.id}/restore`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('action.restored', 'User restored'));
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
             } else {
-                toast.error(t('error.action_failed', 'Failed to restore user'));
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to restore user'));
             }
-        } catch (error) { 
-            console.error(error); 
+        } catch (error) {
+            console.error(error);
             toast.error(t('error.network', 'Network error'));
-        } 
+        }
         finally { setActionLoading(null); }
     };
 
@@ -270,16 +289,20 @@ export default function AdminUsersTab({ currentUser }) {
         })) return;
         setActionLoading(user.id);
         try {
-            const res = await fetch(`/api/admin/users/${user.id}/permanent`, { method: 'DELETE' });
+            const res = await fetch(`/api/admin/users/${user.id}/permanent`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json' }
+            });
             if (res.ok) {
                 toast.success(t('action.deleted_forever', 'User permanently deleted'));
                 setUsers(users.filter(u => u.id !== user.id));
                 setSelectedIds(prev => prev.filter(id => id !== user.id));
             } else {
-                toast.error(t('error.action_failed', 'Failed to delete user permanently'));
+                const err = await res.json();
+                toast.error(err.detail || err.error || err.title || t('error.action_failed', 'Failed to delete user permanently'));
             }
-        } catch (error) { 
-            console.error(error); 
+        } catch (error) {
+            console.error(error);
             toast.error(t('error.network', 'Network error'));
         }
         finally { setActionLoading(null); }
@@ -300,7 +323,7 @@ export default function AdminUsersTab({ currentUser }) {
                         className="pl-9"
                     />
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                     <TrashToggle showDeleted={showDeleted} onToggle={() => { setShowDeleted(!showDeleted); setPage(1); }} />
                 </div>
@@ -310,7 +333,7 @@ export default function AdminUsersTab({ currentUser }) {
                         <span className="text-sm font-medium px-2">
                             {t('admin.bulk.selected', { count: selectedIds.length }, `${selectedIds.length} selected`)}
                         </span>
-                        
+
                         {showDeleted ? (
                             <Button variant="outline" size="sm" onClick={() => handleBulkAction('restore')} disabled={bulkLoading}>
                                 <RefreshCcw className="h-4 w-4 mr-2" />
@@ -341,7 +364,7 @@ export default function AdminUsersTab({ currentUser }) {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-12">
-                                <Checkbox 
+                                <Checkbox
                                     checked={isAllSelected}
                                     onCheckedChange={handleSelectAll}
                                     disabled={loading || selectableUsersCount === 0}
@@ -367,7 +390,7 @@ export default function AdminUsersTab({ currentUser }) {
                                 return (
                                     <TableRow key={user.id} data-state={selectedIds.includes(user.id) ? "selected" : undefined}>
                                         <TableCell>
-                                            <Checkbox 
+                                            <Checkbox
                                                 checked={selectedIds.includes(user.id)}
                                                 onCheckedChange={(checked) => handleSelectOne(user.id, checked)}
                                             />

@@ -3,10 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Inventory;
+use App\Entity\InventoryField;
 use App\Entity\Item;
+use App\Entity\ItemFieldValue;
 use App\Entity\User;
 use App\Repository\ActivityRepository;
+use App\Repository\InventoryFieldRepository;
 use App\Repository\ItemRepository;
+use App\Repository\ItemFieldValueRepository;
 use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -103,72 +107,83 @@ class ItemController extends AbstractController
         }
     }
 
-    private function validateCustomFields(array $data, Inventory $inventory): array
+    /**
+     * Validate custom field values against field definitions
+     */
+    private function validateFieldValues(array $fieldValues, Inventory $inventory): array
     {
         $errors = [];
-        $config = $inventory->getCustomFieldsConfig();
-        $fields = $config['fields'] ?? [];
-
-        // Mapping from config key to data key
-        $keyMap = [
-            'string1' => 'customString1', 'string2' => 'customString2', 'string3' => 'customString3',
-            'number1' => 'customNumber1', 'number2' => 'customNumber2', 'number3' => 'customNumber3',
-            'text1' => 'customText1', 'text2' => 'customText2', 'text3' => 'customText3',
-            'link1' => 'customLink1', 'link2' => 'customLink2', 'link3' => 'customLink3',
-            'select1' => 'customSelect1', 'select2' => 'customSelect2', 'select3' => 'customSelect3',
-            'bool1' => 'customBool1', 'bool2' => 'customBool2', 'bool3' => 'customBool3',
-        ];
-
-        foreach ($fields as $key => $fieldConfig) {
-            // Skip if hidden or not configured
-            if (($fieldConfig['hidden'] ?? false)) {
+        
+        foreach ($inventory->getFields() as $field) {
+            if ($field->isHidden()) {
                 continue;
             }
-
-            $dataKey = $keyMap[$key] ?? null;
-            if (!$dataKey) continue;
-
-            $value = $data[$dataKey] ?? null;
-            $label = $fieldConfig['label'] ?? $key;
-
-            // Required Check
-            if (($fieldConfig['required'] ?? false) && ($value === '' || $value === null)) {
+            
+            $fieldId = $field->getId()->toRfc4122();
+            $value = $fieldValues[$fieldId] ?? null;
+            $label = $field->getLabel();
+            
+            // Required check
+            if ($field->isRequired() && ($value === '' || $value === null)) {
                 $errors[] = "$label is required.";
-                continue; // Stop further validation for this field if missing
+                continue;
             }
-
+            
             if ($value === '' || $value === null) {
-                continue; // Skip other checks if empty and not required
+                continue;
             }
-
-            // Regex Check (String, Text, Select)
-            if (!empty($fieldConfig['regex']) && in_array(substr($key, 0, 4), ['stri', 'text', 'sele'])) {
-                if (@preg_match('/' . str_replace('/', '\/', $fieldConfig['regex']) . '/', $value) !== 1) {
+            
+            $type = $field->getType();
+            
+            // Regex check (string, text, link)
+            if ($field->getRegex() && in_array($type, ['string', 'text', 'link'])) {
+                $pattern = '/' . str_replace('/', '\\/', $field->getRegex()) . '/';
+                if (@preg_match($pattern, $value) !== 1) {
                     $errors[] = "$label format is invalid.";
                 }
             }
-
-            // Min/Max Check (Number)
-            if (substr($key, 0, 6) === 'number') {
+            
+            // Min/Max check (number)
+            if ($type === 'number') {
                 $numVal = (float)$value;
-                if (isset($fieldConfig['min']) && $fieldConfig['min'] !== '' && $numVal < (float)$fieldConfig['min']) {
-                    $errors[] = "$label must be at least {$fieldConfig['min']}.";
+                $min = $field->getMin();
+                $max = $field->getMax();
+                
+                if ($min !== null && $numVal < $min) {
+                    $errors[] = "$label must be at least $min.";
                 }
-                if (isset($fieldConfig['max']) && $fieldConfig['max'] !== '' && $numVal > (float)$fieldConfig['max']) {
-                    $errors[] = "$label must be at most {$fieldConfig['max']}.";
+                if ($max !== null && $numVal > $max) {
+                    $errors[] = "$label must be at most $max.";
                 }
             }
             
-            // Select Options Check
-            if (substr($key, 0, 6) === 'select' && !empty($fieldConfig['options'])) {
-                $validOptions = array_map('trim', explode(',', $fieldConfig['options']));
-                if (!in_array($value, $validOptions)) {
-                     $errors[] = "$label must be one of the valid options.";
+            // Select options check
+            if ($type === 'select') {
+                $options = $field->getOptions() ?? [];
+                if (!empty($options) && !in_array($value, $options)) {
+                    $errors[] = "$label must be one of the valid options.";
                 }
             }
         }
-
+        
         return $errors;
+    }
+
+    /**
+     * Save field values for an item
+     */
+    private function saveFieldValues(Item $item, array $fieldValues, Inventory $inventory, EntityManagerInterface $em): void
+    {
+        foreach ($inventory->getFields() as $field) {
+            $fieldId = $field->getId()->toRfc4122();
+            
+            if (!array_key_exists($fieldId, $fieldValues)) {
+                continue;
+            }
+            
+            $value = $fieldValues[$fieldId];
+            $item->setFieldValue($field, $value);
+        }
     }
 
     #[Route('/new/{inventory}', name: 'app_item_new', methods: ['POST'])]
@@ -210,10 +225,13 @@ class ItemController extends AbstractController
             return $this->json(['error' => "Custom ID '{$data['customId']}' already exists. Please try again or check settings."], 409);
         }
 
+        // Extract field values from data
+        $fieldValues = $data['fieldValues'] ?? [];
+        
         // Custom Field Validation
-        $validationErrors = $this->validateCustomFields($data, $inventory);
+        $validationErrors = $this->validateFieldValues($fieldValues, $inventory);
         if (!empty($validationErrors)) {
-             return $this->json(['error' => implode("\n", $validationErrors)], 400); // 400 Bad Request
+            return $this->json(['error' => implode("\n", $validationErrors)], 400);
         }
 
         $item = new Item();
@@ -222,27 +240,8 @@ class ItemController extends AbstractController
         $item->setCustomId($data['customId']);
         $item->setSequenceNumber($itemRepository->getNextSequenceNumber($inventory));
 
-        // Map all custom fields
-        // Helper to convert empty strings to null for numeric fields
-        $toNumber = fn($val) => ($val === '' || $val === null) ? null : (float)$val;
-        $toString = fn($val) => ($val === null) ? null : (string)$val;
-        $toBool = fn($val) => ($val === null) ? null : (bool)$val;
-        
-        if (isset($data['customString1'])) $item->setCustomString1Value($toString($data['customString1']));
-        if (isset($data['customString2'])) $item->setCustomString2Value($toString($data['customString2']));
-        if (isset($data['customString3'])) $item->setCustomString3Value($toString($data['customString3']));
-        if (array_key_exists('customNumber1', $data)) $item->setCustomNumber1Value($toNumber($data['customNumber1']));
-        if (array_key_exists('customNumber2', $data)) $item->setCustomNumber2Value($toNumber($data['customNumber2']));
-        if (array_key_exists('customNumber3', $data)) $item->setCustomNumber3Value($toNumber($data['customNumber3']));
-        if (isset($data['customText1'])) $item->setCustomText1Value($toString($data['customText1']));
-        if (isset($data['customText2'])) $item->setCustomText2Value($toString($data['customText2']));
-        if (isset($data['customText3'])) $item->setCustomText3Value($toString($data['customText3']));
-        if (isset($data['customLink1'])) $item->setCustomLink1Value($toString($data['customLink1']));
-        if (isset($data['customLink2'])) $item->setCustomLink2Value($toString($data['customLink2']));
-        if (isset($data['customLink3'])) $item->setCustomLink3Value($toString($data['customLink3']));
-        if (array_key_exists('customBool1', $data)) $item->setCustomBool1Value($toBool($data['customBool1']));
-        if (array_key_exists('customBool2', $data)) $item->setCustomBool2Value($toBool($data['customBool2']));
-        if (array_key_exists('customBool3', $data)) $item->setCustomBool3Value($toBool($data['customBool3']));
+        // Save field values
+        $this->saveFieldValues($item, $fieldValues, $inventory, $entityManager);
 
         // Handle Tags
         if (isset($data['tags']) && is_array($data['tags'])) {
@@ -289,48 +288,32 @@ class ItemController extends AbstractController
         $this->denyAccessUnlessGranted('ITEM_EDIT', $item->getInventory());
 
         $data = json_decode($request->getContent(), true);
+        $inventory = $item->getInventory();
         
         // Validation: Check customId uniqueness if changed
         if (isset($data['customId']) && $data['customId'] !== $item->getCustomId()) {
-            if ($itemRepository->customIdExists($item->getInventory(), $data['customId'], $item->getId()->toRfc4122())) {
+            if ($itemRepository->customIdExists($inventory, $data['customId'], $item->getId()->toRfc4122())) {
                 return $this->json(['error' => 'Custom ID already exists'], 400);
             }
             $item->setCustomId($data['customId']);
         }
 
+        // Extract field values from data
+        $fieldValues = $data['fieldValues'] ?? [];
+
         // Custom Field Validation
-        $validationErrors = $this->validateCustomFields($data, $item->getInventory());
+        $validationErrors = $this->validateFieldValues($fieldValues, $inventory);
         if (!empty($validationErrors)) {
-             return $this->json(['error' => implode("\n", $validationErrors)], 400); // 400 Bad Request
+            return $this->json(['error' => implode("\n", $validationErrors)], 400);
         }
 
         // Optimistic Locking Check
-        // If version is provided, ensure it matches the current DB version
         if (isset($data['version']) && $item->getVersion() !== (int)$data['version']) {
             return $this->json(['error' => 'Conflict detected. The item has been modified by another user.'], 409);
         }
 
-        // Helper to convert empty strings to null for numeric fields
-        $toNumber = fn($val) => ($val === '' || $val === null) ? null : (float)$val;
-        $toString = fn($val) => ($val === null) ? null : (string)$val;
-        $toBool = fn($val) => ($val === null) ? null : (bool)$val;
-
-        if (isset($data['customString1'])) $item->setCustomString1Value($toString($data['customString1']));
-        if (isset($data['customString2'])) $item->setCustomString2Value($toString($data['customString2']));
-        if (isset($data['customString3'])) $item->setCustomString3Value($toString($data['customString3']));
-        if (array_key_exists('customNumber1', $data)) $item->setCustomNumber1Value($toNumber($data['customNumber1']));
-        if (array_key_exists('customNumber2', $data)) $item->setCustomNumber2Value($toNumber($data['customNumber2']));
-        if (array_key_exists('customNumber3', $data)) $item->setCustomNumber3Value($toNumber($data['customNumber3']));
-        if (isset($data['customText1'])) $item->setCustomText1Value($toString($data['customText1']));
-        if (isset($data['customText2'])) $item->setCustomText2Value($toString($data['customText2']));
-        if (isset($data['customText3'])) $item->setCustomText3Value($toString($data['customText3']));
-        if (isset($data['customLink1'])) $item->setCustomLink1Value($toString($data['customLink1']));
-        if (isset($data['customLink2'])) $item->setCustomLink2Value($toString($data['customLink2']));
-        if (isset($data['customLink3'])) $item->setCustomLink3Value($toString($data['customLink3']));
-        if (array_key_exists('customBool1', $data)) $item->setCustomBool1Value($toBool($data['customBool1']));
-        if (array_key_exists('customBool2', $data)) $item->setCustomBool2Value($toBool($data['customBool2']));
-        if (array_key_exists('customBool2', $data)) $item->setCustomBool2Value($toBool($data['customBool2']));
-        if (array_key_exists('customBool3', $data)) $item->setCustomBool3Value($toBool($data['customBool3']));
+        // Save field values
+        $this->saveFieldValues($item, $fieldValues, $inventory, $entityManager);
 
         // Handle Tags (Sync)
         if (isset($data['tags']) && is_array($data['tags'])) {
@@ -365,7 +348,10 @@ class ItemController extends AbstractController
         
         $notifier->notifyNewActivity($item->getInventory()->getId()->toRfc4122(), $activity);
 
-        return $this->json(['message' => 'Item updated successfully']);
+        return $this->json([
+            'message' => 'Item updated successfully',
+            'version' => $item->getVersion()
+        ]);
     }
 
     #[Route('/{id}', name: 'app_item_delete', methods: ['DELETE'])]
@@ -419,7 +405,6 @@ class ItemController extends AbstractController
         }
 
         // Fetch all items to verify ownership
-        // Optimization: Could use DQL DELETE for speed, but standard loop is safer for listeners
         foreach ($ids as $id) {
             $item = $itemRepository->find($id);
             if ($item && $this->isGranted('ITEM_DELETE', $item->getInventory())) {
