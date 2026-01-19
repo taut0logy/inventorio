@@ -886,4 +886,63 @@ class InventoryController extends AbstractController
             'completionRates' => $completionRates
         ]);
     }
+
+    /**
+     * Generate a new API token for external integrations (Odoo).
+     */
+    #[Route('/{id}/api-token/generate', name: 'app_inventory_generate_api_token', methods: ['POST'])]
+    public function generateApiToken(
+        Inventory $inventory,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+
+        $token = $inventory->generateApiToken();
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'apiToken' => $token,
+            'createdAt' => $inventory->getApiTokenCreatedAt()?->format('Y-m-d H:i:s'),
+            'apiUrl' => $this->generateUrl('api_external_inventory', ['token' => $token], 0),
+        ]);
+    }
+
+    /**
+     * Revoke the current API token.
+     */
+    #[Route('/{id}/api-token/revoke', name: 'app_inventory_revoke_api_token', methods: ['POST'])]
+    public function revokeApiToken(
+        Inventory $inventory,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+
+        $inventory->setApiToken(null);
+        $inventory->setApiTokenCreatedAt(null);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'API token revoked successfully.',
+        ]);
+    }
+
+    /**
+     * Get current API token info (without revealing the full token).
+     */
+    #[Route('/{id}/api-token', name: 'app_inventory_get_api_token', methods: ['GET'])]
+    public function getApiTokenInfo(Inventory $inventory): Response
+    {
+        $this->denyAccessUnlessGranted('INVENTORY_EDIT', $inventory);
+
+        $token = $inventory->getApiToken();
+
+        return $this->json([
+            'hasToken' => $token !== null,
+            'createdAt' => $inventory->getApiTokenCreatedAt()?->format('Y-m-d H:i:s'),
+            'tokenPreview' => $token ? substr($token, 0, 8) . '...' : null,
+        ]);
+    }
 }
+

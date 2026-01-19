@@ -81,6 +81,12 @@ class Inventory
     #[ORM\JoinTable(name: 'inventory_likes')]
     private Collection $likedBy;
 
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    private ?string $apiToken = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $apiTokenCreatedAt = null;
+
     public function __construct()
     {
         $this->id = Uuid::v7();
@@ -438,5 +444,37 @@ class Inventory
     public function getPopularityScore(): int
     {
         return ($this->getLikeCount() * 3) + $this->viewCount;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(?string $apiToken): static
+    {
+        $this->apiToken = $apiToken;
+        return $this;
+    }
+
+    public function getApiTokenCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->apiTokenCreatedAt;
+    }
+
+    public function setApiTokenCreatedAt(?\DateTimeInterface $apiTokenCreatedAt): static
+    {
+        $this->apiTokenCreatedAt = $apiTokenCreatedAt;
+        return $this;
+    }
+
+    /**
+     * Generate a new API token for external integrations (e.g., Odoo).
+     */
+    public function generateApiToken(): string
+    {
+        $this->apiToken = bin2hex(random_bytes(32));
+        $this->apiTokenCreatedAt = new \DateTime();
+        return $this->apiToken;
     }
 }
