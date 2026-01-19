@@ -25,7 +25,7 @@ Powered by the **Mercure Protocol**, Inventorio keeps everyone in sync.
 Every inventory is unique. Our custom field engine allows you to map your specific needs to optimized database columns:
 - **Rich Text**: Markdown-supported descriptions.
 - **Custom IDs**: Configurable generators (e.g., `INV-2024-001`, Random Hex, UUID).
-- **Typed Fields**: Define up to 15 custom fields per inventory including:
+- **Typed Fields**: Define **unlimited** custom fields per inventory using our optimized EAV schema, including:
     - **Scalars**: Text, Numbers, Booleans.
     - **Selects**: Dropdowns with validation ("One from list").
     - **Links**: URLs for documentation or external resources.
@@ -74,6 +74,7 @@ Create inventories that match your mental model.
 - **Responsive Tables**: detailed data views that adapt to mobile and desktop.
 - **Smart Filters**: Filter by any custom field value.
 - **Auto-Save**: Never lose your work; forms save draft progress automatically.
+- **Export**: Export your entire inventory to Excel (.xlsx) or CSV for offline analysis.
 
 ### 3. Analytics & Visualization
 - **Stats Dashboard**: breakdown of item counts, field completion rates, and numeric sums.
