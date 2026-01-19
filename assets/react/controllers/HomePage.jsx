@@ -98,11 +98,8 @@ export default function HomePage({
                 {/* Spotlight Effect */}
                 <Spotlight />
                 
-                {/* Grid pattern overlay */}
-                {/* <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--muted)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-30" /> */}
-                
                 <div className="relative z-10">
-                    <div className="text-center max-w-4xl mx-auto">
+                    <div className="text-center max-w-4xl mx-auto px-6">
                         <motion.div 
                             className="mb-6 inline-block relative"
                             initial={{ scale: 0.8, opacity: 0, y: 20 }}

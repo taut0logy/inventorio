@@ -432,7 +432,14 @@
                     'stats.total_items': {{ 'stats.total_items'|trans|json_encode|raw }},
                     'stats.completion': {{ 'stats.completion'|trans|json_encode|raw }},
                     'stats.numeric_summary': {{ 'stats.numeric_summary'|trans|json_encode|raw }},
-                    'stats.string_breakdown': {{ 'stats.string_breakdown'|trans|json_encode|raw }}
+                    'stats.string_breakdown': {{ 'stats.string_breakdown'|trans|json_encode|raw }},
+
+                    // Export
+                    'export.title': {{ 'export.title'|trans|json_encode|raw }},
+                    'export.csv': {{ 'export.csv'|trans|json_encode|raw }},
+                    'export.excel': {{ 'export.excel'|trans|json_encode|raw }},
+                    'export.csv_success': {{ 'export.csv_success'|trans|json_encode|raw }},
+                    'export.excel_success': {{ 'export.excel_success'|trans|json_encode|raw }}
 
                 };
             </script>

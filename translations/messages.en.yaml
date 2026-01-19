@@ -444,3 +444,10 @@ stats.total_items: Total Items
 stats.completion: Field Completion
 stats.numeric_summary: Numeric Fields
 stats.string_breakdown: Text Field Breakdown
+
+# Export
+export.title: Export
+export.csv: Export as CSV
+export.excel: Export as Excel
+export.csv_success: Exported to CSV successfully
+export.excel_success: Exported to Excel successfully

@@ -37,7 +37,10 @@ import {
     Eye,
     User,
     Package,
-    BarChart3
+    BarChart3,
+    Download,
+    FileSpreadsheet,
+    FileText
 } from 'lucide-react';
 import { TrashToggle } from '@/components/common/TrashToggle';
 import { LinkPreview } from '@/components/ui/link-preview';
@@ -58,6 +61,8 @@ import ActivityTab from '@/components/inventory/ActivityTab';
 import StatsTab from '@/components/inventory/StatsTab';
 import RequestAccessButton from '@/components/inventory/RequestAccessButton';
 import { useConfirm } from '@/components/common/useConfirm';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 // Default order includes all fields
 const DEFAULT_ORDER = [
@@ -102,10 +107,9 @@ export default function InventoryShowPage({
     const [ConfirmDialog, confirm] = useConfirm();
     const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
 
-    // Inventory like state
     const [isInventoryLiked, setIsInventoryLiked] = useState(inventoryLiked);
     const [invLikeCount, setInvLikeCount] = useState(inventoryLikeCount);
-    const [invViewCount, setInvViewCount] = useState(inventoryViewCount); // Track view count
+    const [invViewCount, setInvViewCount] = useState(inventoryViewCount);
 
     // Real-time updates
     useMercure([`/inventory/${inventory.id}`], (data, type) => {
@@ -234,13 +238,11 @@ export default function InventoryShowPage({
         }
     };
 
-    // Stateful config (so settings changes reflect instantly)
     const [fieldsConfig, setFieldsConfig] = useState(() => {
         const config = inventory.customFieldsConfig || {};
         const fields = config?.fields || config;
         const order = (config?.order && config.order.length > 0) ? config.order : DEFAULT_ORDER;
 
-        // Apply defaults if no explicit config
         const normalizedFields = {};
         DEFAULT_ORDER.forEach((key, index) => {
             if (fields[key] !== undefined) {
@@ -262,11 +264,9 @@ export default function InventoryShowPage({
         return inventory.idGenerationConfig || {};
     });
 
-    // Derived values from state
     const fieldsData = fieldsConfig.fields;
     const fieldsOrder = fieldsConfig.order;
 
-    // Helper to get label
     const getLabel = (key, defaultLabel) => {
         const config = fieldsData[key];
         if (config?.label) {
@@ -275,22 +275,18 @@ export default function InventoryShowPage({
         return defaultLabel;
     };
 
-    // Helper to check visibility (default: only first 3 visible)
     const isVisible = (key) => {
         const config = fieldsData[key];
-        // If explicit config exists, use it
         if (config?.hidden === true) {
             return false;
         }
         if (config?.hidden === false) {
             return true;
         }
-        // No explicit config - default: only first 3 fields visible
         const defaultVisibleFields = ['string1', 'string2', 'string3'];
         return defaultVisibleFields.includes(key);
     };
 
-    // Get ordered visible columns for the table (show ALL unhidden fields)
     const tableColumns = fieldsOrder
         .filter(key => isVisible(key))
         .map(key => {
@@ -305,7 +301,6 @@ export default function InventoryShowPage({
             return { key, label: getLabel(key, defaults[key] || key) };
         });
 
-    // Map field key to item property
     const getItemValue = (item, key) => {
         if (key === 'customId') return item.customId;
         const propMap = {
@@ -320,11 +315,9 @@ export default function InventoryShowPage({
         return prop ? item[prop] : null;
     };
 
-    // Sorting state: initialized from saved config or defaults
     const [sortBy, setSortBy] = useState(() => fieldsConfig.sortBy || 'customId');
     const [sortDir, setSortDir] = useState(() => fieldsConfig.sortDir || 'asc');
 
-    // Save sort order to database
     const saveSortOrder = async (newSortBy, newSortDir) => {
         try {
             const updatedFieldsConfig = {
@@ -351,36 +344,30 @@ export default function InventoryShowPage({
         }
     };
 
-    // Handle column header click
     const handleSort = (key) => {
         let newSortBy = key;
         let newSortDir = 'asc';
 
         if (sortBy === key) {
-            // Toggle direction
             newSortDir = sortDir === 'asc' ? 'desc' : 'asc';
         }
 
         setSortBy(newSortBy);
         setSortDir(newSortDir);
 
-        // Persist to database
         saveSortOrder(newSortBy, newSortDir);
     };
 
-    // Filter and sort items
     const filteredItems = items
         .filter(item => item.customId.toLowerCase().includes(searchQuery.toLowerCase()))
         .sort((a, b) => {
             const valA = getItemValue(a, sortBy);
             const valB = getItemValue(b, sortBy);
 
-            // Handle nulls
             if (valA == null && valB == null) return 0;
             if (valA == null) return sortDir === 'asc' ? 1 : -1;
             if (valB == null) return sortDir === 'asc' ? -1 : 1;
 
-            // Compare based on type
             let comparison = 0;
             if (typeof valA === 'number' && typeof valB === 'number') {
                 comparison = valA - valB;
@@ -457,6 +444,80 @@ export default function InventoryShowPage({
             console.error('Delete error:', error);
             toast.error(t('error.network', 'An error occurred'));
         }
+    };
+
+    const getExportData = () => {
+        const headers = ['ID', ...tableColumns.map(col => col.label)];
+        const rows = filteredItems.map(item => {
+            const row = [item.customId];
+            tableColumns.forEach(col => {
+                const val = getItemValue(item, col.key);
+                row.push(val ?? '');
+            });
+            return row;
+        });
+        return { headers, rows };
+    };
+
+    const handleExportCSV = () => {
+        const { headers, rows } = getExportData();
+
+        const escapeCSV = (val) => {
+            const str = String(val);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        };
+
+        const csvContent = [
+            headers.map(escapeCSV).join(','),
+            ...rows.map(row => row.map(escapeCSV).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, `${inventory.title}_items.csv`);
+        toast.success(t('export.csv_success', 'Exported to CSV'));
+    };
+
+    const handleExportExcel = async () => {
+        const { headers, rows } = getExportData();
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'Inventorio';
+        workbook.created = new Date();
+
+        const worksheet = workbook.addWorksheet(inventory.title.substring(0, 31));
+
+        worksheet.addRow(headers);
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true };
+        headerRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF4F46E5' }
+        };
+        headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+        rows.forEach(row => {
+            worksheet.addRow(row);
+        });
+
+        worksheet.columns.forEach((column, index) => {
+            let maxLength = headers[index]?.length || 10;
+            rows.forEach(row => {
+                const cellValue = String(row[index] ?? '');
+                if (cellValue.length > maxLength) {
+                    maxLength = cellValue.length;
+                }
+            });
+            column.width = Math.min(maxLength + 2, 50);
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `${inventory.title}_items.xlsx`);
+        toast.success(t('export.excel_success', 'Exported to Excel'));
     };
 
     return (
@@ -615,6 +676,27 @@ export default function InventoryShowPage({
                                 <Button variant="outline" size="icon">
                                     <Filter className="h-4 w-4" />
                                 </Button>
+
+                                {/* Export Dropdown */}
+                                {items.length > 0 && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="icon" title={t('export.title', 'Export')}>
+                                                <Download className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={handleExportCSV}>
+                                                <FileText className="mr-2 h-4 w-4" />
+                                                {t('export.csv', 'Export as CSV')}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={handleExportExcel}>
+                                                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                                {t('export.excel', 'Export as Excel')}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
                             </div>
 
 

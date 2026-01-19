@@ -446,3 +446,10 @@ stats.total_items: মোট আইটেম
 stats.completion: ফিল্ড পূর্ণতা
 stats.numeric_summary: সংখ্যাসূচক ফিল্ড
 stats.string_breakdown: টেক্সট ফিল্ড বিশ্লেষণ
+
+# Export
+export.title: এক্সপোর্ট
+export.csv: CSV হিসাবে এক্সপোর্ট করুন
+export.excel: এক্সেল হিসাবে এক্সপোর্ট করুন
+export.csv_success: CSV তে সফলভাবে এক্সপোর্ট হয়েছে
+export.excel_success: এক্সেল এ সফলভাবে এক্সপোর্ট হয়েছে
