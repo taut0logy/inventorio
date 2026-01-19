@@ -11,6 +11,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`users`')]
@@ -74,9 +76,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
 
+
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: SalesforceProfile::class, cascade: ['persist', 'remove'])]
+    private ?SalesforceProfile $salesforceProfile = null;
+
     public function __construct()
     {
         $this->id = Uuid::v7();
+
     }
 
     #[ORM\PrePersist]
@@ -321,9 +329,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * Get initials for avatar fallback
-     */
+    public function getSalesforceProfile(): ?SalesforceProfile
+    {
+        return $this->salesforceProfile;
+    }
+
+    public function setSalesforceProfile(SalesforceProfile $salesforceProfile): static
+    {
+        if ($salesforceProfile->getUser() !== $this) {
+            $salesforceProfile->setUser($this);
+        }
+
+        $this->salesforceProfile = $salesforceProfile;
+
+        return $this;
+    }
+
     public function getInitials(): string
     {
         $parts = explode(' ', $this->name ?? '');

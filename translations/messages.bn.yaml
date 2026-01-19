@@ -453,3 +453,20 @@ export.csv: CSV হিসাবে এক্সপোর্ট করুন
 export.excel: এক্সেল হিসাবে এক্সপোর্ট করুন
 export.csv_success: CSV তে সফলভাবে এক্সপোর্ট হয়েছে
 export.excel_success: এক্সেল এ সফলভাবে এক্সপোর্ট হয়েছে
+
+# Salesforce Integration
+salesforce.success: সেলসফোর্সের সাথে সফলভাবে সিঙ্ক হয়েছে!
+salesforce.error.failed: সেলসফোর্সের সাথে সিঙ্ক করতে ব্যর্থ হয়েছে
+salesforce.error.unexpected: একটি অপ্রত্যাশিত ত্রুটি ঘটেছে
+salesforce.synced: সেলসফোর্সের সাথে সিঙ্ক করা হয়েছে
+salesforce.sync_btn: সেলসফোর্সে সিঙ্ক করুন
+salesforce.modal.title: সেলসফোর্সে সিঙ্ক করুন
+salesforce.modal.desc: আপনার প্রোফাইলের জন্য একটি সেলসফোর্স অ্যাকাউন্ট এবং কন্টাক্ট তৈরি করুন। অ্যাকাউন্ট তৈরি করতে আমাদের একটি কোম্পানির নাম প্রয়োজন।
+salesforce.field.company: কোম্পানি / সংস্থা
+salesforce.field.title: চাকরির পদবি
+salesforce.field.phone: ফোন নম্বর
+salesforce.placeholder.company: অ্যাকমি কর্পোরেশন
+salesforce.placeholder.title: ইনভেন্টরি ম্যানেজার
+salesforce.modal.submit: প্রোফাইল সিঙ্ক করুন
+salesforce.modal.syncing: সিঙ্ক হচ্ছে...
+

@@ -73,6 +73,13 @@ class UserProfileController extends AbstractController
             'viewCount' => $row[0]->getViewCount(),
             'createdAt' => $row[0]->getCreatedAt()->format('Y-m-d'),
         ], $inventoryResults);
+
+        $isSalesforceSynced = false;
+        $isSalesforceSynced = false;
+        $profile = $profileUser->getSalesforceProfile();
+        if ($profile && $profile->getProvider() === 'salesforce') {
+            $isSalesforceSynced = true;
+        }
         
         return $this->render('user/profile.html.twig', [
             'profileUser' => $profileUser,
@@ -84,6 +91,7 @@ class UserProfileController extends AbstractController
             'canSeeDeleted' => $canSeeDeleted,
             'visibility' => $visibility,
             'showDeleted' => $showDeleted,
+            'isSalesforceSynced' => $isSalesforceSynced,
         ]);
     }
 

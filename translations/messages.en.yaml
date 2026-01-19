@@ -451,3 +451,20 @@ export.csv: Export as CSV
 export.excel: Export as Excel
 export.csv_success: Exported to CSV successfully
 export.excel_success: Exported to Excel successfully
+
+# Salesforce Integration
+salesforce.success: Successfully synced with Salesforce!
+salesforce.error.failed: Failed to sync with Salesforce
+salesforce.error.unexpected: An unexpected error occurred
+salesforce.synced: Synced with Salesforce
+salesforce.sync_btn: Sync to Salesforce
+salesforce.modal.title: Sync to Salesforce
+salesforce.modal.desc: Create a Salesforce Account and Contact for your profile. We need a Company Name to create the Account.
+salesforce.field.company: Company / Organization
+salesforce.field.title: Job Title
+salesforce.field.phone: Phone Number
+salesforce.placeholder.company: Acme Corp
+salesforce.placeholder.title: Inventory Manager
+salesforce.modal.submit: Sync Profile
+salesforce.modal.syncing: Syncing...
+

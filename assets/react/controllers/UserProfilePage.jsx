@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
 import box from '@/../images/box-icon.svg';
 import UserActivityTab from '@/components/profile/UserActivityTab';
+import SalesforceSyncModal from '@/components/profile/SalesforceSyncModal';
 
 export default function UserProfilePage({
     profileUser,
@@ -35,9 +36,11 @@ export default function UserProfilePage({
     canSeePrivate,
     canSeeDeleted,
     currentVisibility,
-    showDeleted
+    showDeleted,
+    isSalesforceSynced
 }) {
     const [visibility, setVisibility] = useState(currentVisibility);
+    const [isSynced, setIsSynced] = useState(isSalesforceSynced);
     const [deletedMode, setDeletedMode] = useState(showDeleted);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -113,6 +116,13 @@ export default function UserProfilePage({
                             <Badge variant="outline" className="border-primary text-primary">
                                 {t('profile.viewing_as_admin', 'Admin View')}
                             </Badge>
+                        )}
+                        {(isOwner || isAdmin) && (
+                            <SalesforceSyncModal
+                                userId={profileUser.id}
+                                isSynced={isSynced}
+                                onSyncSuccess={() => setIsSynced(true)}
+                            />
                         )}
                     </div>
                 </div>

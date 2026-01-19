@@ -439,7 +439,23 @@
                     'export.csv': {{ 'export.csv'|trans|json_encode|raw }},
                     'export.excel': {{ 'export.excel'|trans|json_encode|raw }},
                     'export.csv_success': {{ 'export.csv_success'|trans|json_encode|raw }},
-                    'export.excel_success': {{ 'export.excel_success'|trans|json_encode|raw }}
+                    'export.excel_success': {{ 'export.excel_success'|trans|json_encode|raw }},
+                    
+                    // Salesforce Integration
+                    'salesforce.success': {{ 'salesforce.success'|trans|json_encode|raw }},
+                    'salesforce.error.failed': {{ 'salesforce.error.failed'|trans|json_encode|raw }},
+                    'salesforce.error.unexpected': {{ 'salesforce.error.unexpected'|trans|json_encode|raw }},
+                    'salesforce.synced': {{ 'salesforce.synced'|trans|json_encode|raw }},
+                    'salesforce.sync_btn': {{ 'salesforce.sync_btn'|trans|json_encode|raw }},
+                    'salesforce.modal.title': {{ 'salesforce.modal.title'|trans|json_encode|raw }},
+                    'salesforce.modal.desc': {{ 'salesforce.modal.desc'|trans|json_encode|raw }},
+                    'salesforce.field.company': {{ 'salesforce.field.company'|trans|json_encode|raw }},
+                    'salesforce.field.title': {{ 'salesforce.field.title'|trans|json_encode|raw }},
+                    'salesforce.field.phone': {{ 'salesforce.field.phone'|trans|json_encode|raw }},
+                    'salesforce.placeholder.company': {{ 'salesforce.placeholder.company'|trans|json_encode|raw }},
+                    'salesforce.placeholder.title': {{ 'salesforce.placeholder.title'|trans|json_encode|raw }},
+                    'salesforce.modal.submit': {{ 'salesforce.modal.submit'|trans|json_encode|raw }},
+                    'salesforce.modal.syncing': {{ 'salesforce.modal.syncing'|trans|json_encode|raw }}
 
                 };
             </script>
