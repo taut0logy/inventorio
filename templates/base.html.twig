@@ -474,7 +474,12 @@
             locale: app.request.locale,
             translations: {
                 app_name: 'app_name'|trans
-            }
+            },
+            user: app.user ? {
+                id: app.user.id ~ '',
+                name: app.user.name,
+                email: app.user.email
+            } : null
         }, {permanent: true}) }}>
         </div>
     </body>
