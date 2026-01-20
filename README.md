@@ -94,6 +94,66 @@ Full support for global deployment.
 
 ---
 
+## Integrations
+
+Inventorio supports seamless integration with enterprise platforms to extend functionality.
+
+### 1. Odoo Integration
+Sync inventory data from Inventorio into **Odoo ERP** for centralized business management.
+
+- **API Token Authentication**: Generate secure API tokens per inventory from Settings → API tab.
+- **Odoo Module**: Install the `inventorio_connector` module to import inventory metadata, stats, and field definitions.
+- **Data Synced**: Title, description, owner, category, item counts, field stats, and custom field schemas.
+
+**Quick Start:**
+1. Generate an API token in Inventorio (Settings → API → Generate Token)
+2. Install the Inventorio module in Odoo (Apps → Update Apps List → Search "Inventorio")
+3. Create an External Inventory record and click "Sync Now"
+
+### 2. Power Automate Integration (Support Tickets)
+Enable mobile push notifications for support tickets via **Microsoft Power Automate** and **OneDrive**.
+
+- **OneDrive Storage**: Support tickets are saved as JSON files to a designated OneDrive folder.
+- **Power Automate Trigger**: Automatically triggers a flow when a new ticket file is created.
+- **Mobile Notifications**: Receive instant push notifications on the Power Automate mobile app.
+- **Email Notifications**: Sent directly to the email addresses specified in the environment variable `SUPPORT_ADMIN_EMAILS`.
+
+**Architecture:**
+```
+User submits ticket → Symfony uploads JSON to OneDrive → Power Automate triggers → Push notification
+```
+
+**Environment Variables:**
+```env
+ONEDRIVE_CLIENT_ID=your-client-id
+ONEDRIVE_CLIENT_SECRET=your-client-secret
+ONEDRIVE_REFRESH_TOKEN=your-refresh-token
+ONEDRIVE_FOLDER_PATH=/SupportTickets
+SUPPORT_ADMIN_EMAILS=admin1@example.com,admin2@example.com
+```
+
+### 3. Salesforce CRM Integration
+Sync user profiles to **Salesforce** as Accounts and Contacts for CRM workflows.
+
+- **Server-to-Server Auth**: OAuth 2.0 User credentials flow for secure backend integration.
+- **Account & Contact Creation**: Creates a Salesforce Account (organization) and linked Contact (user).
+- **Profile Sync**: Trigger sync from User Profile → "Sync to Salesforce" button.
+
+**Synced Data:**
+- User name, email, company
+- Phone number, job title
+- External Salesforce IDs stored for future updates
+
+**Environment Variables:**
+```env
+SALESFORCE_CLIENT_ID=your-consumer-key
+SALESFORCE_CLIENT_SECRET=your-consumer-secret
+SALESFORCE_USERNAME=integration-user@example.com
+SALESFORCE_PASSWORD=password+securitytoken
+```
+
+---
+
 ## Installation & Setup
 
 ### Prerequisites
