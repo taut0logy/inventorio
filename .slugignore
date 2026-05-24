@@ -1,0 +1,7 @@
+/tests
+/phpunit.dist.xml
+/.phpunit.result.cache
+/_integrations
+/_server
+/.vscode
+/README.md
