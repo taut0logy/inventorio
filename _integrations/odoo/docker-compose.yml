@@ -6,6 +6,7 @@ services:
         condition: service_healthy
     ports:
       - "8069:8069"
+      - "8072:8072"
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./addons:/mnt/extra-addons
@@ -14,6 +15,7 @@ services:
       - HOST=db
       - USER=odoo
       - PASSWORD=odoo
+      - PROXY_MODE=True
 
   db:
     image: postgres:15

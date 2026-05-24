@@ -13,14 +13,18 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         // We let the form submit naturally to the backend controller
-        setIsLoading(true);
-        if (!email) {
+        const form = e.currentTarget;
+        if (!form.checkValidity()) {
             e.preventDefault();
-            setError(t('val.email_enter', 'Please enter your email address.'));
-            setIsLoading(false);
+            form.reportValidity();
+            setError(t('val.email_enter', 'Please enter a valid email address.'));
+            return;
         }
+        
+        setError('');
+        setIsLoading(true);
     };
 
     return (
@@ -32,7 +36,7 @@ export default function ForgotPasswordPage({ loginPath, csrfToken }) {
                         {t('reset.forgot.desc', "Enter your email address and we'll send you a link to reset your password.")}
                     </CardDescription>
                 </CardHeader>
-                <form method="post" onSubmit={handleSubmit}>
+                <form method="post" onSubmit={handleSubmit} data-turbo="false">
                     <CardContent className="space-y-4">
                         {error && (
                             <Alert variant="destructive">
